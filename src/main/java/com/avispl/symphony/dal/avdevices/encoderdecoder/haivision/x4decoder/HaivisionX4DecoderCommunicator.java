@@ -58,6 +58,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	public List<Statistics> getMultipleStatistics() throws Exception {
 		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
 		Map<String, String> stats = new HashMap<>();
+		stats.put("Properties", "value");
 		extendedStatistics.setStatistics(stats);
 
 		return Collections.singletonList(extendedStatistics);
