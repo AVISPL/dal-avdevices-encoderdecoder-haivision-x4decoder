@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of RestCommunicator to provide communication and interaction with Haivision X4 Encoders
+ * An implementation of RestCommunicator to provide communication and interaction with Haivision X4 Decoders
  * Supported features are:
  * <p>
  * Monitoring:
