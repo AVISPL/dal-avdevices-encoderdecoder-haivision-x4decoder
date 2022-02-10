@@ -11,18 +11,20 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  * @since 1.0
  */
 public enum MonitoringMetricGroup {
-	DECODER_STATISTICS("Decoder Statistics"),
-	STREAM_STATISTICS("Stream Statistics");
+	DECODER_STATISTICS("Decoder Statistics", true),
+	STREAM_STATISTICS("Stream Statistics", true);
 
 	private final String name;
+	private final boolean isFailedMonitorCheck;
 
 	/**
 	 *Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */
-	MonitoringMetricGroup(String name) {
+	MonitoringMetricGroup(String name, boolean isFailedMonitor) {
 		this.name = name;
+		this.isFailedMonitorCheck = isFailedMonitor;
 	}
 
 	/**
@@ -32,5 +34,13 @@ public enum MonitoringMetricGroup {
 	 */
 	public String getName() {
 		return this.name;
+	}
+
+	/**
+	 *
+	 * @return isFailedMonitorCheck
+	 */
+	public boolean isFailedMonitorCheck() {
+		return isFailedMonitorCheck;
 	}
 }

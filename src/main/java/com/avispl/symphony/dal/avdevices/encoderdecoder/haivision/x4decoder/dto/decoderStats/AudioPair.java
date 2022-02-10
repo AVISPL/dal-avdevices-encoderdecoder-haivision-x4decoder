@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AudioPairs {
+public class AudioPair {
 
 	@JsonAlias("audioPairMode")
 	private String audioPairMode;

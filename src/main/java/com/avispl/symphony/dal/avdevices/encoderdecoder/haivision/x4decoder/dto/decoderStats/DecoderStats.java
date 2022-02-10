@@ -4,6 +4,8 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats;
 
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -110,7 +112,7 @@ public class DecoderStats {
 	private String audioSkippedFrames;
 
 	@JsonAlias("audioPairs")
-	private AudioPairs audioPairs;
+	private List<AudioPair> audioPairs;
 
 	@JsonAlias("clockTrackingMode")
 	private String clockTrackingMode;
@@ -714,16 +716,16 @@ public class DecoderStats {
 	 *
 	 * @return value of {@link #audioPairs}
 	 */
-	public AudioPairs getAudioPairs() {
+	public List<AudioPair> getAudioPairs() {
 		return audioPairs;
 	}
 
 	/**
 	 * Sets {@code audioPairs}
 	 *
-	 * @param audioPairs the {@code com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPairs} field
+	 * @param audioPairs the {@code java.util.List<com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPairs>} field
 	 */
-	public void setAudioPairs(AudioPairs audioPairs) {
+	public void setAudioPairs(List<AudioPair> audioPairs) {
 		this.audioPairs = audioPairs;
 	}
 

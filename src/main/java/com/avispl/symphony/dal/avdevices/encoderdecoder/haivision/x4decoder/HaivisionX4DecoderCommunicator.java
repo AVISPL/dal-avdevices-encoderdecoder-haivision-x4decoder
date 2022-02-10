@@ -3,27 +3,13 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
-import com.avispl.symphony.api.dal.control.Controller;
-import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
-import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
-import com.avispl.symphony.api.dal.dto.monitor.Statistics;
-import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
-import com.avispl.symphony.api.dal.monitor.Monitorable;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPairs;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderInfo;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderStats;
-import com.avispl.symphony.dal.communicator.RestCommunicator;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,6 +18,36 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+
+import com.avispl.symphony.api.dal.control.Controller;
+import com.avispl.symphony.api.dal.dto.control.AdvancedControllableProperty;
+import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
+import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
+import com.avispl.symphony.api.dal.dto.monitor.Statistics;
+import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
+import com.avispl.symphony.api.dal.monitor.Monitorable;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.SRT;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.Stream;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamStats;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPair;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderStats;
+import com.avispl.symphony.dal.communicator.RestCommunicator;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * An implementation of RestCommunicator to provide communication and interaction with Haivision X4 Decoders
@@ -48,7 +64,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	private AuthenticationCookie authenticationCookie;
 	private HashMap<String, String> failedMonitor;
-
+	private final ReentrantLock reentrantLock = new ReentrantLock();
+	private ExtendedStatistics localExtStat = null;
+	private boolean isEmergencyDelivery = false;
+	private UpdateLocalExtStat updateLocalExtStatDto;
 	/**
 	 * This method is called by Symphony to control the properties in the device
 	 *
@@ -79,11 +98,33 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	@Override
 	public List<Statistics> getMultipleStatistics() throws Exception {
 		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-		Map<String, String> stats = new HashMap<>();
-		stats.put("deviceInfo#firstProperties", "value");
-		extendedStatistics.setStatistics(stats);
+		// This is to make sure if the statistics is being fetched before/after any set of control operations
+		reentrantLock.lock();
+		try {
 
-		return Collections.singletonList(extendedStatistics);
+			if (isEmergencyDelivery && localExtStat != null) {
+				isEmergencyDelivery = false;
+			} else {
+				Map<String, String> stats = new HashMap<>();
+				List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
+
+				failedMonitor = new HashMap<>();
+				authenticationCookie = new AuthenticationCookie();
+
+				populateQSYSMonitoringMetrics(stats);
+
+				extendedStatistics.setStatistics(stats);
+				localExtStat = extendedStatistics;
+			}
+
+			if (updateLocalExtStatDto != null) {
+				updateLocalExtStatDto = null;
+			}
+		} finally {
+			reentrantLock.unlock();
+		}
+
+		return Collections.singletonList(localExtStat);
 	}
 
 	@Override
@@ -99,12 +140,46 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		headers.set("Content-Type", "text/xml");
 		headers.set("Content-Type", "application/json");
 
-		String uid = authenticationCookie.getUid().toString();
-		if (uid != null && !uid.equals(DecoderConstant.AUTHORIZED)) {
-			headers.set("Cookie", authenticationCookie.getUid().toString());
+		String sessionID = authenticationCookie.getSessionID();
+		if (sessionID != null && !sessionID.equals(DecoderConstant.AUTHORIZED)) {
+			headers.set("Cookie", authenticationCookie.getSessionID());
 		}
 		return super.putExtraRequestHeaders(httpMethod, uri, headers);
 	}
+
+//	@Override
+//	public String doPost(String uri, String data) throws Exception {
+//		HttpClient httpClient = this.obtainHttpClient(true);
+//
+//		StringBuilder stringBuilder = new StringBuilder();
+//		HttpPost httppost = new HttpPost(uri);
+//		httppost.setHeader("Content-Type", "text/xml");
+//		httppost.setHeader("Content-Type", "application/json");
+//
+//		ObjectMapper mapper = new ObjectMapper();
+//		ObjectNode request = mapper.readValue(data, ObjectNode.class);
+//
+//		StringEntity entity = new StringEntity(request.toString());
+//
+//		httppost.setEntity(entity);
+//		HttpResponse response = null;
+//		String response1;
+//		try {
+//			response = httpClient.execute(httppost);
+//			Header[] headerResponse = response.getAllHeaders();
+//			response1 = headerResponse.toString();
+//
+//			for (Header header : headerResponse) {
+//				stringBuilder.append('\"' + header.getName() + '\"' + DecoderConstant.COLON + '\"' + header.getValue() + '\"');
+//			}
+//		} finally {
+//			if (response instanceof CloseableHttpResponse) {
+//				((CloseableHttpResponse) response).close();
+//			}
+//		}
+//		return response1;
+//	}
+
 
 	/**
 	 * @param path url of the request
@@ -113,7 +188,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private String buildDeviceFullPath(String path) {
 		Objects.requireNonNull(path);
 
-		return DecoderConstant.HTTP
+		return DecoderConstant.HTTPS
 				+ getHost()
 				+ path;
 	}
@@ -123,7 +198,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * When there is no token data or having an Exception, The Token of login information is going to set with null value
 	 */
-	private void retrieveCookieFromDevice() {
+	private void retrieveSessionFromDecoder() {
 		String login = getLogin();
 		String password = getPassword();
 
@@ -132,19 +207,33 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		request.put(DecoderConstant.PASSWORD, password);
 
 		try {
-			if (this.authenticationCookie.isTimeout() || this.authenticationCookie.getUid() == null) {
-				JsonNode responseData = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION), request, JsonNode.class);
+			if (this.authenticationCookie.getSessionID() == null) {
+				HttpClient httpClient = this.obtainHttpClient(true);
 
-				if (responseData != null) {
-					ObjectMapper mapper = new ObjectMapper();
-					authenticationCookie = mapper.readValue(responseData.toString(), AuthenticationCookie.class);
+				HttpPost httppost = new HttpPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION));
+				httppost.setHeader("Content-Type", "text/xml");
+				httppost.setHeader("Content-Type", "application/json");
+				StringEntity entity = new StringEntity(request.toString());
+				httppost.setEntity(entity);
+				HttpResponse response = null;
 
+				// Get SessionID
+				try {
+					response = httpClient.execute(httppost);
+				} finally {
+					if (response instanceof CloseableHttpResponse) {
+						((CloseableHttpResponse) response).close();
+					}
+				}
+				Header headerResponse = response.getFirstHeader("Set-Cookie");
+
+				if (headerResponse != null) {
+					authenticationCookie.setSessionID(headerResponse.getValue());
 				} else {
 					throw new ResourceNotReachableException(DecoderConstant.GETTING_COOKIE_ERR);
 				}
 			}
 		} catch (Exception e) {
-			this.authenticationCookie.setUid(null);
 			throw new ResourceNotReachableException(DecoderConstant.GETTING_COOKIE_ERR);
 		}
 	}
@@ -158,79 +247,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * Value of list statistics property of decoder is NONE
-	 *
-	 * @param stats list statistics property
-	 */
-	private void contributeNoneValueForDecoderStatistics(Map<String, String> stats, Integer decoderID) {
-		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID + DecoderConstant.HASH;
-
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OVERSUBSCRIBED_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_STATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_MODE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_ADJUSTMENTS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_LATENCY.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STC_TO_PCR_LEAD_TIME.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_ALGORITHM.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_PROFILE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_LEVEL.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_OUTPUT_FORMAT.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_FRAMING.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_SLICES_PER_FRAME.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_INPUT_FRAME_RATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STILL_IMAGE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_DECODER_STATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_DISPLAY_FORMAT.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.LOAD_PERCENTAGE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.PREPROCESSOR_STATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TROUBLE_CODE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DISPLAYED_OUTPUT_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.SKIPPED_OUTPUT_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.REPLAYED_OUTPUT_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_STATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_SAMPLE_RATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PAIRS_AMOUNT.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_DECODED_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PLAYED_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_SKIPPED_FRAMES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PAIR_MODE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.COMPRESSION.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BITRATE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AV_SYNC_MS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DISCONTINUITIES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODE_ERRORS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OUTPUT_ERRORS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.SAMPE_RATE_IN.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.SAMPE_RATE_OUT.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_TRACKING_MODE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_STATUS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_RE_SYNC_COUNT.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_CURRENT_STC.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_STC_AVG.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.HDR_TYPE_IN.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.HDR_TYPE.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.HDR_COLOUR_PRIMARIES.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.HDR_TRANSFER_CHARACTERISTICS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.HDR_MATRIX_COEFFICIENTS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_RECEIVED_PACKETS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_OUTPUT_PACKETS.getName(), DecoderConstant.NONE);
-		stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_FREED_PACKETS.getName(), DecoderConstant.NONE);
-	}
-
-	/**
 	 * Update failedMonitor with Getting device info error message
 	 *
 	 * @param failedMonitor list statistics property
 	 */
 	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
-		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DEVICE_INFO_ERR);
+		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR);
 	}
 
 	/**
-	 * This method is used to retrieve device information by send GET request to http://
+	 * This method is used to retrieve device information by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *
 	 * @param stats list statistics property
 	 *
@@ -240,25 +266,26 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void retrieveDecoderStats(Map<String, String> stats, Integer decoderID) {
 		try {
-			if (this.authenticationCookie.getUid() != null) {
+			if (this.authenticationCookie.getSessionID() != null) {
 				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), JsonNode.class);
 
 				if (!response.get(DecoderConstant.STATISTICS).isEmpty()) {
 					ObjectMapper objectMapper = new ObjectMapper();
-					DecoderInfo decoderInfo = objectMapper.readValue(response.toString(), DecoderInfo.class);
+					DecoderData decoderData = objectMapper.readValue(response.toString(), DecoderData.class);
 
-					DecoderStats decoderStatistics = decoderInfo.getDecoderStatistics();
-					AudioPairs audioPairs = decoderStatistics.getAudioPairs();
+					DecoderStats decoderStatistics = decoderData.getDecoderStats();
+					List<AudioPair> audioPairs = decoderStatistics.getAudioPairs();
 					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID + DecoderConstant.HASH;
 
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), checkForNullData(decoderStatistics.getDecoderID().toString()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), checkForNullData(decoderStatistics.getState().toString()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), checkForNullData(decoderStatistics.getUptime()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OVERSUBSCRIBED_FRAMES.getName(), checkForNullData(decoderStatistics.getOversubscribedFrames()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_STATE.getName(), checkForNullData(decoderStatistics.getBufferingState()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_MODE.getName(), checkForNullData(decoderStatistics.getBufferingMode()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_ADJUSTMENTS.getName(), checkForNullData(decoderStatistics.getBufferingAdjustments()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_LATENCY.getName(), checkForNullData(decoderStatistics.getVideoLatency()));
+					int j = 0;
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName() , checkForNullData(decoderStatistics.getDecoderID().toString()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName() , checkForNullData(decoderStatistics.getState().toString()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName() , checkForNullData(decoderStatistics.getUptime()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OVERSUBSCRIBED_FRAMES.getName() , checkForNullData(decoderStatistics.getOversubscribedFrames()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_STATE.getName() , checkForNullData(decoderStatistics.getBufferingState()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_MODE.getName() , checkForNullData(decoderStatistics.getBufferingMode()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_ADJUSTMENTS.getName() , checkForNullData(decoderStatistics.getBufferingAdjustments()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_LATENCY.getName() , checkForNullData(decoderStatistics.getVideoLatency()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STC_TO_PCR_LEAD_TIME.getName(), checkForNullData(decoderStatistics.getStcToPcrLeadTime()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_ALGORITHM.getName(), checkForNullData(decoderStatistics.getVideoAlgorithm()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.VIDEO_PROFILE.getName(), checkForNullData(decoderStatistics.getVideoProfile()));
@@ -282,15 +309,22 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_DECODED_FRAMES.getName(), checkForNullData(decoderStatistics.getAudioDecodedFrames()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PLAYED_FRAMES.getName(), checkForNullData(decoderStatistics.getAudioPlayedFrames()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_SKIPPED_FRAMES.getName(), checkForNullData(decoderStatistics.getAudioSkippedFrames()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PAIR_MODE.getName(), checkForNullData(audioPairs.getAudioPairMode()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.COMPRESSION.getName(), checkForNullData(audioPairs.getCompression()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BITRATE.getName(), checkForNullData(audioPairs.getBitrate()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.AV_SYNC_MS.getName(), checkForNullData(audioPairs.getAvSyncMs()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DISCONTINUITIES.getName(), checkForNullData(audioPairs.getDiscontinuities().toString()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODE_ERRORS.getName(), checkForNullData(audioPairs.getDecodeErrors()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OUTPUT_ERRORS.getName(), checkForNullData(audioPairs.getOutputErrors()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.SAMPE_RATE_IN.getName(), checkForNullData(audioPairs.getSampeRateIn().toString()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.SAMPE_RATE_OUT.getName(), checkForNullData(audioPairs.getSampeRateOut().toString()));
+
+					if (audioPairs.size() > 0) {
+						for (int i = 1; i < audioPairs.size(); i++) {
+							String audioPair = decoderStatisticGroup + DecoderMonitoringMetric.AUDIO_PAIR + i + DecoderConstant.COLON;
+							stats.put(audioPair + DecoderMonitoringMetric.AUDIO_PAIR_MODE.getName(), checkForNullData(audioPairs.get(i).getAudioPairMode()));
+							stats.put(audioPair + DecoderMonitoringMetric.COMPRESSION.getName(), checkForNullData(audioPairs.get(i).getCompression()));
+							stats.put(audioPair + DecoderMonitoringMetric.BITRATE.getName(), checkForNullData(audioPairs.get(i).getBitrate()));
+							stats.put(audioPair + DecoderMonitoringMetric.AV_SYNC_MS.getName(), checkForNullData(audioPairs.get(i).getAvSyncMs()));
+							stats.put(audioPair + DecoderMonitoringMetric.DISCONTINUITIES.getName(), checkForNullData(audioPairs.get(i).getDiscontinuities().toString()));
+							stats.put(audioPair + DecoderMonitoringMetric.DECODE_ERRORS.getName(), checkForNullData(audioPairs.get(i).getDecodeErrors()));
+							stats.put(audioPair + DecoderMonitoringMetric.OUTPUT_ERRORS.getName(), checkForNullData(audioPairs.get(i).getOutputErrors()));
+							stats.put(audioPair + DecoderMonitoringMetric.SAMPE_RATE_IN.getName(), checkForNullData(audioPairs.get(i).getSampeRateIn().toString()));
+							stats.put(audioPair + DecoderMonitoringMetric.SAMPE_RATE_OUT.getName(), checkForNullData(audioPairs.get(i).getSampeRateOut().toString()));
+						}
+					}
+
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_TRACKING_MODE.getName(), checkForNullData(decoderStatistics.getClockTrackingMode()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_STATUS.getName(), checkForNullData(decoderStatistics.getClockStatus()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_RE_SYNC_COUNT.getName(), checkForNullData(decoderStatistics.getClockReSyncCount().toString()));
@@ -305,24 +339,145 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_OUTPUT_PACKETS.getName(), checkForNullData(decoderStatistics.getTcOutputPackets()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_FREED_PACKETS.getName(), checkForNullData(decoderStatistics.getTcFreedPackets()));
 				} else {
-					contributeNoneValueForDecoderStatistics(stats, decoderID);
 					updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 				}
 			} else {
-				contributeNoneValueForDecoderStatistics(stats, decoderID);
 				updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 			}
 		} catch (Exception e) {
-			contributeNoneValueForDecoderStatistics(stats, decoderID);
 			updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 		}
 	}
 
 	/**
-	 * Value of list statistics property of stream is NONE
+	 * Update failedMonitor with Getting stream statistics error message
+	 *
+	 * @param failedMonitor list statistics property
+	 */
+	private void updateStreamStatisticsFailedMonitor(Map<String, String> failedMonitor) {
+		failedMonitor.put(MonitoringMetricGroup.STREAM_STATISTICS.getName(), DecoderConstant.GETTING_STREAM_STATS_ERR);
+	}
+
+	/**
+	 * This method is used to retrieve device information by send GET request to http://{IP_Address}apis/streams
 	 *
 	 * @param stats list statistics property
+	 *
+	 * When token is null, the stats is going to contribute with NONE value and the failedMonitor is going to update
+	 * When there is no response data, the stats is going to contribute with none value and the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
-	private void contributeNoneValueForStreamStatistics(Map<String, String> stats, Integer streamID) {
+	private void retrieveStreamStats(Map<String, String> stats) {
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), JsonNode.class);
+
+				if (!response.get(DecoderConstant.STATISTICS).isEmpty()) {
+					ObjectMapper objectMapper = new ObjectMapper();
+					StreamData streamData = objectMapper.readValue(response.toString(), StreamData.class);
+					List<Stream> streams = streamData.getStreams();
+					for (Stream stream : streams) {
+						StreamInfo streamInfo = stream.getStreamInfo();
+						String streamID = streamInfo.getId();
+						StreamStats streamStats = stream.getStreamStats();
+						SRT srt = streamStats.getSrt();
+						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + streamStats.getName() + DecoderConstant.HASH;
+
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamStats.getName()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamID));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCAPSULATION.getName(), checkForNullData(streamStats.getEncapsulation()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.DECODER_ID.getName(), checkForNullData(streamStats.getDecoderId()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.STATE.getName(), checkForNullData(streamStats.getState()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.SOURCE_ADDRESS.getName(), checkForNullData(streamStats.getSourceAddress()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.BIT_RATE.getName(), checkForNullData(streamStats.getBitRate()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.CONNECTIONS.getName(), checkForNullData(streamStats.getConnections()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_PACKET.getName(), checkForNullData(streamStats.getReceivedPacket()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_BYTES.getName(), checkForNullData(streamStats.getReceivedBytes()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.LAST_RECEIVED.getName(), checkForNullData(streamStats.getLastReceived()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_PACKETS.getName(), checkForNullData(streamStats.getOutputPackets()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_BYTES.getName(), checkForNullData(streamStats.getOutputBytes()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.PROGRAM_NUMBER.getName(), checkForNullData(streamStats.getProgramNumber()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.PCR_PID.getName(), checkForNullData(streamStats.getPcrPid()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_SUMMARY.getName(), checkForNullData(streamStats.getStreamSummary()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.CORRUPTED_FRAMES.getName(), checkForNullData(streamStats.getCorruptedFrames()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.RESTARTS.getName(), checkForNullData(streamStats.getRestarts()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.LOCAL_PORT.getName(), checkForNullData(streamStats.getLocalPort()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.REMOTE_PORT.getName(), checkForNullData(streamStats.getRemotePort()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_ERRO.getName(), checkForNullData(streamStats.getReceivedErrors()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCRYPTION.getName(), checkForNullData(srt.getEncryption()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.KEY_LENGTH.getName(), checkForNullData(srt.getKeyLength()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.DECRYPT_STATE.getName(), checkForNullData(srt.getDecryptState()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.LOST_PACKETS.getName(), checkForNullData(srt.getLostPackets()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_ACKS.getName(), checkForNullData(srt.getSentAcks()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_NAKS.getName(), checkForNullData(srt.getSentNaks()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.PATH_MAX_BANDWIDTH.getName(), checkForNullData(srt.getPathMaxBandwidth()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.RTT.getName(), checkForNullData(srt.getRtt()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.BUFFER.getName(), checkForNullData(srt.getBuffer()));
+						stats.put(streamStatisticGroup + StreamMonitoringMetric.LATENCY.getName(), checkForNullData(srt.getLatency()));
+					}
+
+				} else {
+					updateStreamStatisticsFailedMonitor(failedMonitor);
+				}
+			} else {
+				updateStreamStatisticsFailedMonitor(failedMonitor);
+			}
+		} catch (Exception e) {
+			updateStreamStatisticsFailedMonitor(failedMonitor);
+		}
+	}
+
+
+	/**
+	 * Counting metric group is failed to monitor
+	 *
+	 * @return number failed monitoring metric group in the metric
+	 */
+	private int getNoOfFailedMonitorMetricGroup() {
+		int noOfFailedMonitorMetric = 3;
+		for (MonitoringMetricGroup metric : MonitoringMetricGroup.values()) {
+			if (metric.isFailedMonitorCheck()) {
+				noOfFailedMonitorMetric++;
+			}
+		}
+		return noOfFailedMonitorMetric;
+	}
+
+	/**
+	 * This method is used to populate all monitoring properties:
+	 * <li>Device ID</li>
+	 * <li>Device name</li>
+	 * <li>Device model</li>
+	 * <li>Firmware version</li>
+	 * <li>Serial number</li>
+	 * <li>IP Address</li>
+	 *
+	 * @param stats list statistic property
+	 * @throws ResourceNotReachableException when failedMonitor said all device monitoring data are failed to get
+	 */
+	private void populateQSYSMonitoringMetrics(Map<String, String> stats) {
+		Objects.requireNonNull(stats);
+		if (!StringUtils.isNullOrEmpty(getPassword()) && !StringUtils.isNullOrEmpty(getLogin())) {
+			retrieveSessionFromDecoder();
+		} else {
+			this.authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
+		}
+		// retrieving all decoder stats
+		for (int decoderID = 0; decoderID < 4; decoderID++) {
+			retrieveDecoderStats(stats, decoderID);
+		}
+		//retrieving all stream stats
+		retrieveStreamStats(stats);
+
+		if (failedMonitor.size() == getNoOfFailedMonitorMetricGroup()) {
+			StringBuilder errBuilder = new StringBuilder();
+			for (Map.Entry<String, String> failedMetric : failedMonitor.entrySet()) {
+				errBuilder.append(failedMetric.getValue());
+				errBuilder.append(DecoderConstant.NEXT_LINE);
+			}
+			throw new ResourceNotReachableException(errBuilder.toString());
+		}
 	}
 }
