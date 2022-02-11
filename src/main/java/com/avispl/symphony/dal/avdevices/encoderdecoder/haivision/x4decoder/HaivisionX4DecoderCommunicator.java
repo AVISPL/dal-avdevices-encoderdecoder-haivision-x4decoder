@@ -321,7 +321,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						String streamID = streamInfo.getId();
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
-						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
+						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
 
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamID));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamInfo.getName()));
