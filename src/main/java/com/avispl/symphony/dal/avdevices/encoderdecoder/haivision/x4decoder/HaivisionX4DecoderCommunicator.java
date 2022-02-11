@@ -216,10 +216,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 					DecoderStats decoderStats = decoderData.getDecoderStats();
 					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
-					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID + DecoderConstant.HASH;
+					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
 
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), checkForNullData(decoderStats.getDecoderID().toString()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), checkForNullData(decoderStats.getState().toString()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), checkForNullData(decoderStats.getState()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), checkForNullData(decoderStats.getUptime()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OVERSUBSCRIBED_FRAMES.getName(), checkForNullData(decoderStats.getOversubscribedFrames()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_STATE.getName(), checkForNullData(decoderStats.getBufferingState()));
@@ -321,7 +321,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						String streamID = streamInfo.getId();
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
-						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + streamInfo.getName() + DecoderConstant.HASH;
+						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
 
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamID));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamInfo.getName()));

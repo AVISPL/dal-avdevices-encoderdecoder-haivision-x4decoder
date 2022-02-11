@@ -26,7 +26,7 @@ public class StreamStats {
 	private String decoderId;
 
 	@JsonAlias("state")
-	private String state;
+	private Integer state;
 
 	@JsonAlias("sourceAddress")
 	private String sourceAddress;
@@ -142,7 +142,32 @@ public class StreamStats {
 	 * @return value of {@link #state}
 	 */
 	public String getState() {
-		return state;
+		switch (state) {
+			case 0:
+				return "UNKNOWN";
+			case 1:
+				return "STOPPED";
+			case 2:
+				return "LISTENING";
+			case 3:
+				return "ACTIVE";
+			case 4:
+				return "RESOLVING";
+			case 5:
+				return "CONNECTING";
+			case 6:
+				return "SCRAMBLED";
+			case 7:
+				return "SECURING";
+			case -1:
+				return "INVALID";
+			case -2:
+				return "FAILED";
+			case -3:
+				return "UNLICENSED";
+			default:
+				return "";
+		}
 	}
 
 	/**
@@ -150,7 +175,7 @@ public class StreamStats {
 	 *
 	 * @param state the {@code java.lang.String} field
 	 */
-	public void setState(String state) {
+	public void setState(Integer state) {
 		this.state = state;
 	}
 

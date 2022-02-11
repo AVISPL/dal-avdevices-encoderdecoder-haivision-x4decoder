@@ -16,6 +16,7 @@ public class DecoderConstant {
 	public static final char COLON= ':';
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
+	public static final String SPACE =  " ";
 	public static final String HTTPS = "https://";
 	public static final String NONE = "None";
 	public static final String AUTHORIZED = "Authorized";
