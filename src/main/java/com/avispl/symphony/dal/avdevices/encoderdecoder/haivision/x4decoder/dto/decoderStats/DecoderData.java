@@ -39,4 +39,22 @@ public class DecoderData {
 	public void setDecoderStats(DecoderStats decoderStats) {
 		this.decoderStats = decoderStats;
 	}
+
+	/**
+	 * Retrieves {@code {@link #decoderInfo}}
+	 *
+	 * @return value of {@link #decoderInfo}
+	 */
+	public DecoderInfo getDecoderInfo() {
+		return decoderInfo;
+	}
+
+	/**
+	 * Sets {@code decoderInfo}
+	 *
+	 * @param decoderInfo the {@code com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderInfo} field
+	 */
+	public void setDecoderInfo(DecoderInfo decoderInfo) {
+		this.decoderInfo = decoderInfo;
+	}
 }
