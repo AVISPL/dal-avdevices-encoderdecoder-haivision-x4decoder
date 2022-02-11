@@ -56,10 +56,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 	void testHaivisionX4DecoderCommunicator() throws Exception {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
-		System.out.println(stats.get(MonitoringMetricGroup.DECODER_STATISTICS.getName() + 1 + DecoderConstant.HASH + DecoderMonitoringMetric.DECODER_ID.getName()) );
-		System.out.println(MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + "SRT - WAN Listen (6518)" +
-				DecoderConstant.HASH + StreamMonitoringMetric.ID.getName() + " " + stats.get(MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + "SRT - WAN Listen (6518)" +
-				DecoderConstant.HASH + StreamMonitoringMetric.ID.getName()));
 		Assertions.assertNotNull(stats.get(MonitoringMetricGroup.DECODER_STATISTICS.getName() + 1 + DecoderConstant.HASH + DecoderMonitoringMetric.DECODER_ID.getName()));
 		Assertions.assertNotNull(stats.get(MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + "SRT - WAN Listen (6518)" +
 				DecoderConstant.HASH + StreamMonitoringMetric.ID.getName()));
