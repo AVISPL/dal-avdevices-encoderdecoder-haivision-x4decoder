@@ -16,6 +16,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StreamInfo {
 
+	@JsonAlias("name")
+	private String name;
+
 	@JsonAlias("id")
 	private String id;
 
@@ -72,6 +75,24 @@ public class StreamInfo {
 
 	@JsonAlias("fecRtp")
 	private String fecRtp;
+
+	/**
+	 * Retrieves {@code {@link #name}}
+	 *
+	 * @return value of {@link #name}
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Sets {@code name}
+	 *
+	 * @param name the {@code java.lang.String} field
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	/**
 	 * Retrieves {@code {@link #id}}

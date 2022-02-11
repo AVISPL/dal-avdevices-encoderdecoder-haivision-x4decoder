@@ -100,7 +100,7 @@ public class DecoderStats {
 	private String audioSampleRate;
 
 	@JsonAlias("audioPairsAmount")
-	private String audioPairsAmount;
+	private Integer audioPairsAmount ;
 
 	@JsonAlias("audioDecodedFrames")
 	private String audioDecodedFrames;
@@ -644,7 +644,7 @@ public class DecoderStats {
 	 *
 	 * @return value of {@link #audioPairsAmount}
 	 */
-	public String getAudioPairsAmount() {
+	public Integer getAudioPairsAmount() {
 		return audioPairsAmount;
 	}
 
@@ -653,7 +653,7 @@ public class DecoderStats {
 	 *
 	 * @param audioPairsAmount the {@code java.lang.String} field
 	 */
-	public void setAudioPairsAmount(String audioPairsAmount) {
+	public void setAudioPairsAmount(Integer audioPairsAmount) {
 		this.audioPairsAmount = audioPairsAmount;
 	}
 

@@ -19,6 +19,9 @@ public class DecoderData {
 	@JsonAlias ("stats")
 	private DecoderStats decoderStats;
 
+	@JsonAlias("info")
+	private DecoderInfo decoderInfo;
+
 	/**
 	 * Retrieves {@code {@link #decoderStats }}
 	 *

@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StreamData {
+	@JsonAlias("data")
+	List<Stream> streams = new LinkedList<>();
 
 	/**
 	 * Retrieves {@code {@link #streams }}
@@ -37,6 +39,4 @@ public class StreamData {
 		this.streams = streams;
 	}
 
-	@JsonAlias("data")
-	List<Stream> streams = new LinkedList<>();
 }
