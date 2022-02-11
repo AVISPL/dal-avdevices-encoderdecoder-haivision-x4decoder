@@ -37,7 +37,7 @@ public enum DecoderMonitoringMetric {
 	DISPLAYED_OUTPUT_FRAMES("Video: Displayed Output Frames"),
 	SKIPPED_OUTPUT_FRAMES("Video: Skipped Output Frames"),
 	REPLAYED_OUTPUT_FRAMES("Video: Replayed Output Frames"),
-	AUDIO_STATE("Audio: State"),
+	AUDIO_STATE("Decoder Audio: State"),
 	AUDIO_SAMPLE_RATE("Decoder Audio: Sample Rate"),
 	AUDIO_PAIRS_AMOUNT("Decoder Decoder Audio: Pairs Amount"),
 	AUDIO_DECODED_FRAMES("Decoder Audio: Decoded Frames"),
