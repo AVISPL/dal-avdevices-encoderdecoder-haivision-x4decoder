@@ -179,27 +179,13 @@ public class DecoderStats {
 	public String getState() {
 		switch (state) {
 			case 0:
-				return "UNKNOWN";
+				return "Stopped";
 			case 1:
-				return "STOPPED";
+				return "Started";
 			case 2:
-				return "LISTENING";
-			case 3:
-				return "ACTIVE";
-			case 4:
-				return "RESOLVING";
-			case 5:
-				return "CONNECTING";
-			case 6:
-				return "SCRAMBLED";
-			case 7:
-				return "SECURING";
+				return "Active";
 			case -1:
-				return "INVALID";
-			case -2:
-				return "FAILED";
-			case -3:
-				return "UNLICENSED";
+				return "Not Decoding";
 			default:
 				return "";
 		}
