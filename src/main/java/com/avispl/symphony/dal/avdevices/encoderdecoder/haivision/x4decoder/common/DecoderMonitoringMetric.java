@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2022 AVI-SPL, Inc. All Rights Reserved.
  */
-
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**
@@ -16,9 +15,11 @@ public enum DecoderMonitoringMetric {
 	STATE("Content State"),
 	UPTIME("Content Uptime"),
 	OVERSUBSCRIBED_FRAMES("Content Oversubscribed Frames"),
-	BUFFERING_STATE("Decoder Buffering Buffering State"),
-	BUFFERING_MODE("Decoder Buffering Buffering Mode"),
-	BUFFERING_ADJUSTMENTS("Decoder Buffering Buffering Adjustments"),
+	BUFFERING_STATE("Decoder Buffering State"),
+	BUFFERING_MODE("Decoder Buffering Mode"),
+	BUFFERING_ADJUSTMENTS("Decoder Buffering Adjustments"),
+	BUFFERING_DELAY("Decoder Buffering Delay"),
+	LATENCY("Decoder Latency"),
 	VIDEO_LATENCY("Video Latency"),
 	STC_TO_PCR_LEAD_TIME("Video Stc To Pcr Lead Time"),
 	VIDEO_ALGORITHM("Video Algorithm"),
@@ -86,5 +87,6 @@ public enum DecoderMonitoringMetric {
 	public String getName() {
 		return this.name;
 	}
+
 }
 

@@ -1,7 +1,6 @@
 /*
- *  Copyright (c) 2021 AVI-SPL, Inc. All Rights Reserved.
+ *  Copyright (c) 2022 AVI-SPL, Inc. All Rights Reserved.
  */
-
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**

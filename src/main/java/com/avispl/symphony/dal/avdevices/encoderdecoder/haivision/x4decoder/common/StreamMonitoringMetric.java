@@ -4,6 +4,8 @@
 
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.Stream;
+
 /**
  * Set of stream monitoring metrics keys
  *
@@ -27,6 +29,7 @@ public enum StreamMonitoringMetric {
 	PROGRAM_NUMBER("General ProgramNumber"),
 	PCR_PID("General PcrPid"),
 	RECEIVED_ERRO("Stream Error ReceivedError"),
+	STREAM_LATENCY("Stream Latency"),
 	STREAM_SUMMARY("SRT StreamSummary"),
 	DROPPED_PACKETS("SRT DroppedPackets"),
 	CORRUPTED_FRAMES("SRT CorruptedFrames"),
@@ -37,13 +40,12 @@ public enum StreamMonitoringMetric {
 	KEY_LENGTH("SRT KeyLength"),
 	DECRYPT_STATE("SRT DecryptState"),
 	LOST_PACKETS("SRT LostPackets"),
-	SRT_DROPPED_PACKETS("SRT DroppedPackets"),
 	SENT_ACKS("SRT SentAcks"),
 	SENT_NAKS("SRT SentNaks"),
 	PATH_MAX_BANDWIDTH("SRT PathMaxBandwidth"),
 	RTT("SRT Rtt"),
 	BUFFER("SRT Buffer"),
-	LATENCY("SRT Latency");
+	SRT_LATENCY("SRT Latency");
 
 	private final String name;
 

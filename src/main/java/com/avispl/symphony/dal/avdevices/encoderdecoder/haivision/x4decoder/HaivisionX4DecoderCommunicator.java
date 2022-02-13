@@ -42,6 +42,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPair;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderStats;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.avispl.symphony.dal.util.StringUtils;
@@ -94,11 +95,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	public List<Statistics> getMultipleStatistics() throws Exception {
 		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
 		Map<String, String> stats = new HashMap<>();
+		Map<String, String> dynamicStats = new HashMap<>();
 		failedMonitor = new HashMap<>();
-		authenticationCookie = new AuthenticationCookie();
+		authenticationCookie = initAuthenticationCookie();
 
-		populateDecoderMonitoringMetrics(stats);
+		populateDecoderMonitoringMetrics(stats, dynamicStats);
 		extendedStatistics.setStatistics(stats);
+		extendedStatistics.setDynamicStatistics(dynamicStats);
 
 		return Collections.singletonList(extendedStatistics);
 	}
@@ -121,6 +124,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			headers.set("Cookie", authenticationCookie.getSessionID());
 		}
 		return super.putExtraRequestHeaders(httpMethod, uri, headers);
+	}
+
+	/**
+	 * Init instance of Authentication Cookie
+	 *
+	 * @return AuthenticationCookie
+	 */
+	protected AuthenticationCookie initAuthenticationCookie() {
+		return new AuthenticationCookie();
 	}
 
 	/**
@@ -167,16 +179,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						((CloseableHttpResponse) response).close();
 					}
 				}
-				Header headerResponse = response.getFirstHeader("Set-Cookie");
+				Header headerResponse = response.getFirstHeader(DecoderConstant.SESSION_ID);
 
-				if (headerResponse != null) {
+				if (headerResponse.getValue() != null) {
 					authenticationCookie.setSessionID(headerResponse.getValue());
 				} else {
-					throw new ResourceNotReachableException(DecoderConstant.GETTING_COOKIE_ERR);
+					throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
 				}
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.GETTING_COOKIE_ERR);
+			throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
 		}
 	}
 
@@ -206,18 +218,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * When there is no response data, the failedMonitor is going to update
 	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
-	private void retrieveDecoderStats(Map<String, String> stats, Integer decoderID) {
+	private void retrieveDecoderStats(Map<String, String> stats, Map<String, String> dynamicStats, Integer decoderID) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), JsonNode.class);
 				if (!response.isEmpty()) {
 					objectMapper = new ObjectMapper();
 					DecoderData decoderData = objectMapper.readValue(response.toString(), DecoderData.class);
-
 					DecoderStats decoderStats = decoderData.getDecoderStats();
+					DecoderInfo decoderInfo = decoderData.getDecoderInfo();
 					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
+
 					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
 
+					// Update static stats
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), checkForNullData(decoderStats.getDecoderID().toString()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), checkForNullData(decoderStats.getState()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), checkForNullData(decoderStats.getUptime()));
@@ -264,7 +278,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 							stats.put(audioPair + DecoderMonitoringMetric.SAMPE_RATE_OUT.getName(), checkForNullData(audioPairs.get(i).getSampeRateOut().toString()));
 						}
 					}
-
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_TRACKING_MODE.getName(), checkForNullData(decoderStats.getClockTrackingMode()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_STATUS.getName(), checkForNullData(decoderStats.getClockStatus()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.CLOCK_RE_SYNC_COUNT.getName(), checkForNullData(decoderStats.getClockReSyncCount().toString()));
@@ -278,6 +291,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_RECEIVED_PACKETS.getName(), checkForNullData(decoderStats.getTcReceivedPackets()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_OUTPUT_PACKETS.getName(), checkForNullData(decoderStats.getTcOutputPackets()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_FREED_PACKETS.getName(), checkForNullData(decoderStats.getTcFreedPackets()));
+				
+//					// Update dynamic stats
+					dynamicStats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_DELAY.getName(), checkForNullData(decoderInfo.getBufferingDelay()));
+					dynamicStats.put(decoderStatisticGroup + DecoderMonitoringMetric.LATENCY.getName(), checkForNullData(decoderInfo.getLatency()));
+
 				} else {
 					updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 				}
@@ -307,7 +325,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * When there is no response data, the failedMonitor is going to update
 	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
-	private void retrieveStreamStats(Map<String, String> stats) {
+	private void retrieveStreamStats(Map<String, String> stats, Map<String, String> dynamicStats) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), JsonNode.class);
@@ -316,13 +334,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					objectMapper = new ObjectMapper();
 					StreamData streamData = objectMapper.readValue(response.toString(), StreamData.class);
 					List<Stream> streams = streamData.getStreams();
+
 					for (Stream stream : streams) {
 						StreamInfo streamInfo = stream.getStreamInfo();
 						String streamID = streamInfo.getId();
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
+
 						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
 
+						// Update static stats
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamID));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamInfo.getName()));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCAPSULATION.getName(), checkForNullData(streamStats.getEncapsulation()));
@@ -346,6 +367,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.REMOTE_PORT.getName(), checkForNullData(streamStats.getRemotePort()));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_ERRO.getName(), checkForNullData(streamStats.getReceivedErrors()));
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
+
 						if (srt != null) {
 							stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCRYPTION.getName(), checkForNullData(srt.getEncryption()));
 							stats.put(streamStatisticGroup + StreamMonitoringMetric.KEY_LENGTH.getName(), checkForNullData(srt.getKeyLength()));
@@ -356,8 +378,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 							stats.put(streamStatisticGroup + StreamMonitoringMetric.PATH_MAX_BANDWIDTH.getName(), checkForNullData(srt.getPathMaxBandwidth()));
 							stats.put(streamStatisticGroup + StreamMonitoringMetric.RTT.getName(), checkForNullData(srt.getRtt()));
 							stats.put(streamStatisticGroup + StreamMonitoringMetric.BUFFER.getName(), checkForNullData(srt.getBuffer()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.LATENCY.getName(), checkForNullData(srt.getLatency()));
+							stats.put(streamStatisticGroup + StreamMonitoringMetric.SRT_LATENCY.getName(), checkForNullData(srt.getLatency()));
 						}
+
+						// Update dynamic stats
+						dynamicStats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_LATENCY.getName(), checkForNullData(streamInfo.getLatency()));
 					}
 				} else {
 					updateStreamStatisticsFailedMonitor(failedMonitor);
@@ -394,19 +419,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param stats list statistic property
 	 * @throws ResourceNotReachableException when failedMonitor said all device monitoring data are failed to get
 	 */
-	private void populateDecoderMonitoringMetrics(Map<String, String> stats) {
+	private void populateDecoderMonitoringMetrics(Map<String, String> stats, Map<String, String> dynamicStats) {
 		Objects.requireNonNull(stats);
+
 		if (!StringUtils.isNullOrEmpty(getPassword()) && !StringUtils.isNullOrEmpty(getLogin())) {
 			retrieveSessionFromDecoder();
 		} else {
 			this.authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
 		}
-		// retrieving all decoder stats
+		// retrieving all decoders stats
 		for (int decoderID = 0; decoderID < 4; decoderID++) {
-			retrieveDecoderStats(stats, decoderID);
+			retrieveDecoderStats(stats, dynamicStats, decoderID);
 		}
-		//retrieving all stream stats
-		retrieveStreamStats(stats);
+		//retrieving all streams stats
+		retrieveStreamStats(stats, dynamicStats);
 
 		if (failedMonitor.size() == getNoOfFailedMonitorMetricGroup()) {
 			authenticationCookie.setSessionID(null);

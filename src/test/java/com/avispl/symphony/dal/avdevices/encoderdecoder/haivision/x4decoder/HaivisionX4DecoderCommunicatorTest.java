@@ -4,6 +4,8 @@
 
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
+import static org.mockito.Mockito.doReturn;
+
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -11,12 +13,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
+import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 
 /**
  * Unit test for QSYSCoreCommunicator
@@ -56,8 +61,51 @@ public class HaivisionX4DecoderCommunicatorTest {
 	void testHaivisionX4DecoderCommunicator() throws Exception {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
-		Assertions.assertNotNull(stats.get(MonitoringMetricGroup.DECODER_STATISTICS.getName() + 1 + DecoderConstant.HASH + DecoderMonitoringMetric.DECODER_ID.getName()));
-		Assertions.assertNotNull(stats.get(MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.COLON + "SRT - WAN Listen (6518)" +
-				DecoderConstant.HASH + StreamMonitoringMetric.ID.getName()));
+
+		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + 1 + DecoderConstant.HASH;
+		Assertions.assertNotNull(stats.get(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName()));
+	}
+
+	/**
+	 * Test QSYSCoreCommunicator.getMultipleStatistics will not throw ResourceNotReachableException when Username or Password are incorrect
+	 * Expected throw ResourceNotReachableException "Username and Password are incorrect";
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testHaivisionX4DecoderCommunicatorLogInFailed() {
+		HaivisionX4DecoderCommunicator haivisionX4DecoderCommunicatorSpy = Mockito.spy(HaivisionX4DecoderCommunicator.class);
+		haivisionX4DecoderCommunicatorSpy.setHost("mx4d.demo.haivision.com");
+		Mockito.when(haivisionX4DecoderCommunicatorSpy.getLogin()).thenReturn("123");
+		Mockito.when(haivisionX4DecoderCommunicatorSpy.getPassword()).thenReturn("456");
+		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
+			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
+		});
+
+		Assertions.assertEquals(ExceptionMessage.GETTING_SESSION_ID_ERRO.getMessage(), exception.getMessage());
+	}
+
+	/**
+	 * Test QSYSCoreCommunicator.getMultipleStatistics get errors when retrieving decoders statistic and streams statistics
+	 * Expected throw ResourceNotReachableException
+	 *  failed to get decoder statistic3
+	 * 	failed to get decoder statistic1
+	 * 	failed to get decoder statistic2
+	 * 	failed to get decoder statistic0
+	 * 	failed to get stream statistic
+	 */
+	@Tag("Mock")
+	@Test
+	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
+		AuthenticationCookie authenticationCookie = new AuthenticationCookie();
+		authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
+		HaivisionX4DecoderCommunicator haivisionX4DecoderCommunicatorSpy = Mockito.spy(new HaivisionX4DecoderCommunicator());
+		doReturn(authenticationCookie).when(haivisionX4DecoderCommunicatorSpy).initAuthenticationCookie();
+		haivisionX4DecoderCommunicatorSpy.setHost("mx4d.demo.haivision.com");
+
+		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
+			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
+		});
+
+		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage(), exception.getMessage());
 	}
 }
