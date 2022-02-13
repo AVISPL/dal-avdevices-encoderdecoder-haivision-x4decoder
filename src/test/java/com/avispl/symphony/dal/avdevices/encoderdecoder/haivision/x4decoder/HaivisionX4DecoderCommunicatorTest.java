@@ -21,6 +21,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 
 /**
@@ -63,7 +64,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
 		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + 1 + DecoderConstant.HASH;
-		Assertions.assertNotNull(stats.get(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName()));
+		Assertions.assertEquals(MonitoringData.DECODER_ID.getData(),stats.get(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName()));
 	}
 
 	/**
