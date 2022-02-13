@@ -25,9 +25,4 @@ public class DecoderConstant {
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String SESSION_ID = "Set-Cookie";
-	/**
-	 * Token timeout is 1 hour ( 60 minutes), as this case reserve 5 minutes to make sure we never failed because of the timeout
-	 */
-	public static final long TIMEOUT = 55;
-
 }

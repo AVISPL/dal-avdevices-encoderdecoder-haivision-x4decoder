@@ -81,7 +81,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
 			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
-
 		Assertions.assertEquals(ExceptionMessage.GETTING_SESSION_ID_ERRO.getMessage(), exception.getMessage());
 	}
 
@@ -106,7 +105,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
 			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
-
 		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage(), exception.getMessage());
 	}
 }
