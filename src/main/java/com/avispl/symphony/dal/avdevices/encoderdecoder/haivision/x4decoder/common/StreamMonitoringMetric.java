@@ -4,8 +4,6 @@
 
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.Stream;
-
 /**
  * Set of stream monitoring metrics keys
  *
