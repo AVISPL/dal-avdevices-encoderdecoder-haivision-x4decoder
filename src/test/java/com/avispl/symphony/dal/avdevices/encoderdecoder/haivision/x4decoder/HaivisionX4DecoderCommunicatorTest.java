@@ -25,11 +25,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 
 /**
- * Unit test for QSYSCoreCommunicator
- *
- * Send and retrieve data success
- * Failed retrieve data
- * Existing Extended Statistics
+ * Unit test for HaivisionX4DecoderCommunicator
  *
  * @author Harry
  * @version 1.0
@@ -59,7 +55,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	 */
 	@Tag("RealDevice")
 	@Test
-	void testHaivisionX4DecoderCommunicator() throws Exception {
+	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() throws Exception {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -68,7 +64,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test QSYSCoreCommunicator.getMultipleStatistics will not throw ResourceNotReachableException when Username or Password are incorrect
+	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics will throw ResourceNotReachableException when Username or Password are incorrect
 	 * Expected throw ResourceNotReachableException "Username and Password are incorrect";
 	 */
 	@Tag("RealDevice")
@@ -85,7 +81,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test QSYSCoreCommunicator.getMultipleStatistics get errors when retrieving decoders statistic and streams statistics
+	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics get errors when retrieving decoders statistic and streams statistics
 	 * Expected throw ResourceNotReachableException
 	 *  failed to get decoder statistic3
 	 * 	failed to get decoder statistic1
@@ -95,7 +91,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	 */
 	@Tag("Mock")
 	@Test
-	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
+	void testHaivisionX4DecoderCommunicatorGetMonitoringDataFailed() {
 		AuthenticationCookie authenticationCookie = new AuthenticationCookie();
 		authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
 		HaivisionX4DecoderCommunicator haivisionX4DecoderCommunicatorSpy = Mockito.spy(new HaivisionX4DecoderCommunicator());
