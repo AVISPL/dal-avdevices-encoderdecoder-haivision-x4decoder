@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
@@ -63,8 +65,6 @@ import com.avispl.symphony.dal.util.StringUtils;
  */
 public class HaivisionX4DecoderCommunicator extends RestCommunicator implements Monitorable, Controller {
 
-	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
-	private final String uuidSeconds = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	private AuthenticationCookie authenticationCookie;
 	private HashMap<String, String> failedMonitor;
 	private ObjectMapper objectMapper;
@@ -213,7 +213,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
 		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR + decoderID);
 	}
-
 	/**
 	 * Format time data
 	 *
@@ -224,14 +223,41 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (DecoderConstant.NONE.equals(time)) {
 			return DecoderConstant.NONE;
 		}
-		int index = time.indexOf(DecoderConstant.SPACE);
+		int index = time.indexOf("s");
 		if (index > -1) {
 			time = time.substring(0, index + 1);
 		}
-		time.replace("d", uuidDay).replace("s", uuidSeconds);
-		return time.replace(uuidDay, DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE).replace(uuidSeconds, DecoderConstant.SECOND);
+		int indexDay = time.indexOf("d");
+		int indexHour = time.indexOf("h");
+		int indexMinute = time.indexOf("m");
+		StringBuilder stringBuilder = new StringBuilder();
+		if (indexDay > -1) {
+			stringBuilder.append(time, 0, indexDay);
+			stringBuilder.append(DecoderConstant.DAY);
+			stringBuilder.append(time, indexDay + 1, indexHour);
+			stringBuilder.append(DecoderConstant.HOUR);
+			stringBuilder.append(time, indexHour + 1, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else if (indexHour > -1) {
+			stringBuilder.append(time, 0, indexHour);
+			stringBuilder.append(DecoderConstant.HOUR);
+			stringBuilder.append(time, indexHour + 1, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else if (indexMinute > -1) {
+			stringBuilder.append(time, 0, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else {
+			stringBuilder.append(time, 0, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		}
+		return String.valueOf(stringBuilder);
 	}
-
 	/**
 	 * This method is used to retrieve decoder statistic by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *

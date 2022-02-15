@@ -13,6 +13,7 @@ public class DecoderConstant {
 
 	public static final char HASH = '#';
 	public static final char COLON= ':';
+	public static final char COMMA = ',';
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
 	public static final String DASH = "-";
@@ -30,4 +31,7 @@ public class DecoderConstant {
 	public static final String HOUR = " hour(s) ";
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
+	public static final String SPECIAL_CHARS_PATTERN = ".*[~!@#$%^&\\\\'].*|.*<(\\?).*|.*(\\<)(\\/).*";
+	public static final String INVALID_PORT_RANGE= "port range input is in valid";
+
 }
