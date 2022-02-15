@@ -3,6 +3,8 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
+import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.HASH;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -208,7 +210,51 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
 		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR + decoderID);
 	}
-
+	/**
+	 * Format time data
+	 *
+	 * @param time the time is String
+	 * @return String
+	 */
+	private String formatTimeData(String time) {
+		if (DecoderConstant.NONE.equals(time)) {
+			return DecoderConstant.NONE;
+		}
+		int index = time.indexOf("s");
+		if (index > -1) {
+			time = time.substring(0, index + 1);
+		}
+		int indexDay = time.indexOf("d");
+		int indexHour = time.indexOf("h");
+		int indexMinute = time.indexOf("m");
+		StringBuilder stringBuilder = new StringBuilder();
+		if (indexDay > -1) {
+			stringBuilder.append(time, 0, indexDay);
+			stringBuilder.append(DecoderConstant.DAY);
+			stringBuilder.append(time, indexDay + 1, indexHour);
+			stringBuilder.append(DecoderConstant.HOUR);
+			stringBuilder.append(time, indexHour + 1, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else if (indexHour > -1) {
+			stringBuilder.append(time, 0, indexHour);
+			stringBuilder.append(DecoderConstant.HOUR);
+			stringBuilder.append(time, indexHour + 1, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else if (indexMinute > -1) {
+			stringBuilder.append(time, 0, indexMinute);
+			stringBuilder.append(DecoderConstant.MINUTE);
+			stringBuilder.append(time, indexMinute + 1, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		} else {
+			stringBuilder.append(time, 0, index);
+			stringBuilder.append(DecoderConstant.SECOND);
+		}
+		return String.valueOf(stringBuilder);
+	}
 	/**
 	 * This method is used to retrieve decoder statistic by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *
@@ -229,12 +275,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					DecoderInfo decoderInfo = decoderData.getDecoderInfo();
 					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
 
-					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
+					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + HASH;
 
 					// Update static stats
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), checkForNullData(decoderStats.getDecoderID().toString()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.STATE.getName(), checkForNullData(decoderStats.getState()));
-					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), checkForNullData(decoderStats.getUptime()));
+					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.UPTIME.getName(), checkForNullData(formatTimeData(decoderStats.getUptime())));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.OVERSUBSCRIBED_FRAMES.getName(), checkForNullData(decoderStats.getOversubscribedFrames()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_STATE.getName(), checkForNullData(decoderStats.getBufferingState()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_MODE.getName(), checkForNullData(decoderStats.getBufferingMode()));
@@ -341,7 +387,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
 
-						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
+						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + HASH;
 
 						// Update static stats
 						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamID));

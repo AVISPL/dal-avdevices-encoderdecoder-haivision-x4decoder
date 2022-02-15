@@ -25,4 +25,8 @@ public class DecoderConstant {
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String SESSION_ID = "Set-Cookie";
+	public static final String DAY = " day(s) ";
+	public static final String HOUR = " hour(s) ";
+	public static final String MINUTE = " minute(s) ";
+	public static final String SECOND = " second(s) ";
 }
