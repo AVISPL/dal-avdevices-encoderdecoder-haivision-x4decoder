@@ -5,6 +5,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
 import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.HASH;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -65,9 +66,89 @@ import com.avispl.symphony.dal.util.StringUtils;
  */
 public class HaivisionX4DecoderCommunicator extends RestCommunicator implements Monitorable, Controller {
 
+	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
+	private final String uuidSeconds = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	private AuthenticationCookie authenticationCookie;
 	private HashMap<String, String> failedMonitor;
 	private ObjectMapper objectMapper;
+
+	//Adapter Properties
+	private String streamsName;
+	private String portNumber;
+	private String portNumberRange;
+	private String streamStatus;
+
+	/**
+	 * Retrieves {@code {@link #streamsName}}
+	 *
+	 * @return value of {@link #streamsName}
+	 */
+	public String getStreamsName() {
+		return streamsName;
+	}
+
+	/**
+	 * Sets {@code streamsName}
+	 *
+	 * @param streamsName the {@code java.lang.String} field
+	 */
+	public void setStreamsName(String streamsName) {
+		this.streamsName = streamsName;
+	}
+
+	/**
+	 * Retrieves {@code {@link #portNumber}}
+	 *
+	 * @return value of {@link #portNumber}
+	 */
+	public String getPortNumber() {
+		return portNumber;
+	}
+
+	/**
+	 * Sets {@code portNumber}
+	 *
+	 * @param portNumber the {@code java.lang.String} field
+	 */
+	public void setPortNumber(String portNumber) {
+		this.portNumber = portNumber;
+	}
+
+	/**
+	 * Retrieves {@code {@link #portNumberRange}}
+	 *
+	 * @return value of {@link #portNumberRange}
+	 */
+	public String getPortNumberRange() {
+		return portNumberRange;
+	}
+
+	/**
+	 * Sets {@code portNumberRange}
+	 *
+	 * @param portNumberRange the {@code java.lang.String} field
+	 */
+	public void setPortNumberRange(String portNumberRange) {
+		this.portNumberRange = portNumberRange;
+	}
+
+	/**
+	 * Retrieves {@code {@link #streamStatus}}
+	 *
+	 * @return value of {@link #streamStatus}
+	 */
+	public String getStreamStatus() {
+		return streamStatus;
+	}
+
+	/**
+	 * Sets {@code streamStatus}
+	 *
+	 * @param streamStatus the {@code java.lang.String} field
+	 */
+	public void setStreamStatus(String streamStatus) {
+		this.streamStatus = streamStatus;
+	}
 
 	/**
 	 * This method is called by Symphony to control the properties in the device
@@ -77,7 +158,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	@Override
 	public void controlProperty(ControllableProperty controllableProperty) throws Exception {
-
 	}
 
 	/**
@@ -213,6 +293,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
 		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR + decoderID);
 	}
+
 	/**
 	 * Format time data
 	 *
@@ -223,41 +304,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (DecoderConstant.NONE.equals(time)) {
 			return DecoderConstant.NONE;
 		}
-		int index = time.indexOf("s");
+		int index = time.indexOf(DecoderConstant.SPACE);
 		if (index > -1) {
 			time = time.substring(0, index + 1);
 		}
-		int indexDay = time.indexOf("d");
-		int indexHour = time.indexOf("h");
-		int indexMinute = time.indexOf("m");
-		StringBuilder stringBuilder = new StringBuilder();
-		if (indexDay > -1) {
-			stringBuilder.append(time, 0, indexDay);
-			stringBuilder.append(DecoderConstant.DAY);
-			stringBuilder.append(time, indexDay + 1, indexHour);
-			stringBuilder.append(DecoderConstant.HOUR);
-			stringBuilder.append(time, indexHour + 1, indexMinute);
-			stringBuilder.append(DecoderConstant.MINUTE);
-			stringBuilder.append(time, indexMinute + 1, index);
-			stringBuilder.append(DecoderConstant.SECOND);
-		} else if (indexHour > -1) {
-			stringBuilder.append(time, 0, indexHour);
-			stringBuilder.append(DecoderConstant.HOUR);
-			stringBuilder.append(time, indexHour + 1, indexMinute);
-			stringBuilder.append(DecoderConstant.MINUTE);
-			stringBuilder.append(time, indexMinute + 1, index);
-			stringBuilder.append(DecoderConstant.SECOND);
-		} else if (indexMinute > -1) {
-			stringBuilder.append(time, 0, indexMinute);
-			stringBuilder.append(DecoderConstant.MINUTE);
-			stringBuilder.append(time, indexMinute + 1, index);
-			stringBuilder.append(DecoderConstant.SECOND);
-		} else {
-			stringBuilder.append(time, 0, index);
-			stringBuilder.append(DecoderConstant.SECOND);
-		}
-		return String.valueOf(stringBuilder);
+		time.replace("d", uuidDay).replace("s", uuidSeconds);
+		return time.replace(uuidDay, DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE).replace(uuidSeconds, DecoderConstant.SECOND);
 	}
+
 	/**
 	 * This method is used to retrieve decoder statistic by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *
@@ -340,7 +394,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_RECEIVED_PACKETS.getName(), checkForNullData(decoderStats.getTcReceivedPackets()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_OUTPUT_PACKETS.getName(), checkForNullData(decoderStats.getTcOutputPackets()));
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.TC_FREED_PACKETS.getName(), checkForNullData(decoderStats.getTcFreedPackets()));
-				
+
 //					// Update dynamic stats
 					dynamicStats.put(decoderStatisticGroup + DecoderMonitoringMetric.BUFFERING_DELAY.getName(), checkForNullData(decoderInfo.getBufferingDelay()));
 					dynamicStats.put(decoderStatisticGroup + DecoderMonitoringMetric.LATENCY.getName(), checkForNullData(decoderInfo.getLatency()));
@@ -366,6 +420,60 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * This method is used update stream statistic
+	 *
+	 * @param stats list statistics property
+	 * @param dynamicStats list dynamic statistics property
+	 * @param streamInfo List stream config properties
+	 * @param streamStats List stream statistic properties
+	 * @param srt List SRT
+	 */
+	private void updateStreamStats(Map<String, String> stats, Map<String, String> dynamicStats, StreamInfo streamInfo, StreamStats streamStats, SRT srt) {
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + HASH;
+
+		// Update static stats
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamInfo.getId()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamInfo.getName()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCAPSULATION.getName(), checkForNullData(streamStats.getEncapsulation()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.DECODER_ID.getName(), checkForNullData(streamStats.getDecoderId()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.STATE.getName(), checkForNullData(streamStats.getState()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.SOURCE_ADDRESS.getName(), checkForNullData(streamStats.getSourceAddress()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.BIT_RATE.getName(), checkForNullData(streamStats.getBitRate()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.CONNECTIONS.getName(), checkForNullData(streamStats.getConnections()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_PACKET.getName(), checkForNullData(streamStats.getReceivedPacket()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_BYTES.getName(), checkForNullData(streamStats.getReceivedBytes()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.LAST_RECEIVED.getName(), checkForNullData(streamStats.getLastReceived()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_PACKETS.getName(), checkForNullData(streamStats.getOutputPackets()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_BYTES.getName(), checkForNullData(streamStats.getOutputBytes()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.PROGRAM_NUMBER.getName(), checkForNullData(streamStats.getProgramNumber()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.PCR_PID.getName(), checkForNullData(streamStats.getPcrPid()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_SUMMARY.getName(), checkForNullData(streamStats.getStreamSummary()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.CORRUPTED_FRAMES.getName(), checkForNullData(streamStats.getCorruptedFrames()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.RESTARTS.getName(), checkForNullData(streamStats.getRestarts()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.LOCAL_PORT.getName(), checkForNullData(streamStats.getLocalPort()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.REMOTE_PORT.getName(), checkForNullData(streamStats.getRemotePort()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_ERRO.getName(), checkForNullData(streamStats.getReceivedErrors()));
+		stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
+
+		if (srt != null) {
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCRYPTION.getName(), checkForNullData(srt.getEncryption()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.KEY_LENGTH.getName(), checkForNullData(srt.getKeyLength()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.DECRYPT_STATE.getName(), checkForNullData(srt.getDecryptState()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.LOST_PACKETS.getName(), checkForNullData(srt.getLostPackets()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_ACKS.getName(), checkForNullData(srt.getSentAcks()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_NAKS.getName(), checkForNullData(srt.getSentNaks()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.PATH_MAX_BANDWIDTH.getName(), checkForNullData(srt.getPathMaxBandwidth()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.RTT.getName(), checkForNullData(srt.getRtt()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.BUFFER.getName(), checkForNullData(srt.getBuffer()));
+			stats.put(streamStatisticGroup + StreamMonitoringMetric.SRT_LATENCY.getName(), checkForNullData(srt.getLatency()));
+		}
+
+		// Update dynamic stats
+		dynamicStats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_LATENCY.getName(), checkForNullData(streamInfo.getLatency()));
+	}
+
+	/**
 	 * This method is used to retrieve streams statistics by send GET request to http://{IP_Address}apis/streams
 	 *
 	 * @param stats list statistics property
@@ -386,52 +494,42 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 					for (Stream stream : streams) {
 						StreamInfo streamInfo = stream.getStreamInfo();
-						String streamID = streamInfo.getId();
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
 
-						String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + HASH;
-
-						// Update static stats
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamID));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.NAME.getName(), checkForNullData(streamInfo.getName()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCAPSULATION.getName(), checkForNullData(streamStats.getEncapsulation()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.DECODER_ID.getName(), checkForNullData(streamStats.getDecoderId()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.STATE.getName(), checkForNullData(streamStats.getState()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.SOURCE_ADDRESS.getName(), checkForNullData(streamStats.getSourceAddress()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.BIT_RATE.getName(), checkForNullData(streamStats.getBitRate()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.CONNECTIONS.getName(), checkForNullData(streamStats.getConnections()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_PACKET.getName(), checkForNullData(streamStats.getReceivedPacket()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_BYTES.getName(), checkForNullData(streamStats.getReceivedBytes()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.LAST_RECEIVED.getName(), checkForNullData(streamStats.getLastReceived()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_PACKETS.getName(), checkForNullData(streamStats.getOutputPackets()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.OUTPUT_BYTES.getName(), checkForNullData(streamStats.getOutputBytes()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.PROGRAM_NUMBER.getName(), checkForNullData(streamStats.getProgramNumber()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.PCR_PID.getName(), checkForNullData(streamStats.getPcrPid()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_SUMMARY.getName(), checkForNullData(streamStats.getStreamSummary()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.CORRUPTED_FRAMES.getName(), checkForNullData(streamStats.getCorruptedFrames()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.RESTARTS.getName(), checkForNullData(streamStats.getRestarts()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.LOCAL_PORT.getName(), checkForNullData(streamStats.getLocalPort()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.REMOTE_PORT.getName(), checkForNullData(streamStats.getRemotePort()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.RECEIVED_ERRO.getName(), checkForNullData(streamStats.getReceivedErrors()));
-						stats.put(streamStatisticGroup + StreamMonitoringMetric.DROPPED_PACKETS.getName(), checkForNullData(streamStats.getDroppedPackets()));
-
-						if (srt != null) {
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.ENCRYPTION.getName(), checkForNullData(srt.getEncryption()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.KEY_LENGTH.getName(), checkForNullData(srt.getKeyLength()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.DECRYPT_STATE.getName(), checkForNullData(srt.getDecryptState()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.LOST_PACKETS.getName(), checkForNullData(srt.getLostPackets()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_ACKS.getName(), checkForNullData(srt.getSentAcks()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.SENT_NAKS.getName(), checkForNullData(srt.getSentNaks()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.PATH_MAX_BANDWIDTH.getName(), checkForNullData(srt.getPathMaxBandwidth()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.RTT.getName(), checkForNullData(srt.getRtt()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.BUFFER.getName(), checkForNullData(srt.getBuffer()));
-							stats.put(streamStatisticGroup + StreamMonitoringMetric.SRT_LATENCY.getName(), checkForNullData(srt.getLatency()));
+						// stream name filtering
+						if (this.streamsName != null) {
+							Set<String> streamsNames = handleAdapterPropertiesInputFromUser(this.streamsName);
+							if (!streamsNames.contains(streamInfo.getName())) {
+								continue;
+							}
 						}
 
-						// Update dynamic stats
-						dynamicStats.put(streamStatisticGroup + StreamMonitoringMetric.STREAM_LATENCY.getName(), checkForNullData(streamInfo.getLatency()));
+						// port number filtering
+						if (this.portNumber != null) {
+							Set<String> portNumbers = handleAdapterPropertiesInputFromUser(this.portNumber);
+							if (!portNumbers.contains(streamInfo.getPort())) {
+								continue;
+							}
+						}
+
+						//port number range filtering
+						if (this.portNumberRange != null) {
+							List<Integer> portNumberRange = handleAdapterPortRangeFromUser(this.portNumberRange);
+							int port = Integer.parseInt(streamInfo.getPort());
+							if (portNumberRange.get(0) > port || portNumberRange.get(1) < port) {
+								continue;
+							}
+						}
+
+						// stream status filtering
+						if (this.streamStatus != null) {
+							Set<String> streamStatus = handleAdapterPropertiesInputFromUser(this.streamStatus);
+							if (!streamStatus.contains(streamStats.getState())) {
+								continue;
+							}
+						}
+						updateStreamStats(stats, dynamicStats, streamInfo, streamStats, srt);
 					}
 				} else {
 					updateStreamStatisticsFailedMonitor(failedMonitor);
@@ -443,7 +541,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			updateStreamStatisticsFailedMonitor(failedMonitor);
 		}
 	}
-
 
 	/**
 	 * Counting metric group is failed to monitor
@@ -459,6 +556,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		return noOfFailedMonitorMetric;
 	}
+
 
 	/**
 	 * This method is used to populate all monitoring properties:
@@ -492,5 +590,56 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 			throw new ResourceNotReachableException(errBuilder.toString());
 		}
+	}
+
+	/**
+	 * This method is used to handle  input from adapter properties and convert it to Set of String  for control
+	 *
+	 * @return Set<String> is the Set of String of filter element
+	 */
+	public Set<String> handleAdapterPropertiesInputFromUser(String input) {
+		String[] listAdapterPropertyElement = input.split(String.valueOf(DecoderConstant.COMMA));
+		StringBuilder errorMessages = new StringBuilder();
+
+		// Remove start and end spaces of each gain
+		Set<String> setAdapterPropertiesElement = new TreeSet<>();
+		for (int i = 0; i < listAdapterPropertyElement.length; ++i) {
+			setAdapterPropertiesElement.add(listAdapterPropertyElement[i].trim());
+
+			if (listAdapterPropertyElement[i].matches(DecoderConstant.SPECIAL_CHARS_PATTERN)) {
+				errorMessages.append("Component ").append(listAdapterPropertyElement[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or contains <? ");
+			}
+		}
+
+		// Has error message
+		if (errorMessages.length() > 0) {
+			throw new IllegalArgumentException(errorMessages.toString());
+		}
+		return setAdapterPropertiesElement;
+	}
+
+	/**
+	 * This method is used to handle  input from adapter properties (port range) and convert it to List of Integer for control
+	 *
+	 * @return List<Integer> is the Set of Integer port value
+	 */
+	public List<Integer> handleAdapterPortRangeFromUser(String input) {
+		String[] listAdapterPropertyElement = input.split(String.valueOf(DecoderConstant.COMMA));
+
+		// Has error
+		if (listAdapterPropertyElement.length > 2) {
+			throw new IllegalArgumentException(DecoderConstant.INVALID_PORT_RANGE);
+		}
+
+		// Remove start and end spaces of each gain
+		List<Integer> setAdapterPropertiesElement = new ArrayList<>();
+		try {
+			for (int i = 0; i < listAdapterPropertyElement.length; ++i) {
+				setAdapterPropertiesElement.add(Integer.parseInt(listAdapterPropertyElement[i].trim()));
+			}
+		} catch (NumberFormatException f) {
+			throw new IllegalArgumentException(DecoderConstant.INVALID_PORT_RANGE);
+		}
+		return setAdapterPropertiesElement;
 	}
 }
