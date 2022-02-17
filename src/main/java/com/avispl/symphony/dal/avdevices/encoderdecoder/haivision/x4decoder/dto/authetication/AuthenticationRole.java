@@ -3,6 +3,7 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -12,26 +13,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthenticationCookie {
+public class AuthenticationRole {
 
-	private String sessionID;
+	@JsonAlias("role")
+	private String role;
 
 	/**
-	 * Retrieves {@code {@link #sessionID }}
+	 * Retrieves {@code {@link #role}}
 	 *
-	 * @return value of {@link #sessionID}
+	 * @return value of {@link #role}
 	 */
-	public String getSessionID() {
-		return sessionID;
+	public String getRole() {
+		return role;
 	}
 
 	/**
-	 * Sets {@code sessionID}
+	 * Sets {@code role}
 	 *
-	 * @param sessionID the {@code java.lang.Integer} field
+	 * @param role the {@code java.lang.String} field
 	 */
-	public void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
+	public void setRole(String role) {
+		this.role = role;
 	}
-
 }

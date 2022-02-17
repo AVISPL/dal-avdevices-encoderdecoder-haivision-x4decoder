@@ -15,5 +15,6 @@ public class DecoderURL {
 	public static final String AUTHENTICATION = "/authentication";
 	public static final String DECODERS = "/decoders";
 	public static final String STREAMS = "/streams";
+	public static final String ROLE_BASED = "/accounts";
 
 }
