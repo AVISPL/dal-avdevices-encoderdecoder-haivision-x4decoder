@@ -24,14 +24,20 @@ public class DecoderConstant {
 	public static final String GETTING_DECODER_STATS_ERR = "failed to get decoder statistic";
 	public static final String GETTING_STREAM_STATS_ERR = "failed to get stream statistic";
 	public static final String GETTING_SESSION_ID_ERR = "Username and Password are incorrect";
+	public static final String ROLE_BASED_ERR = "required admin or operator role-based";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
+	public static final String GUEST_ROLE= "Guest";
+	public static final String OPERATOR_ROLE= "Operator";
+	public static final String ADMIN_ROLE= "Admin";
 	public static final String SESSION_ID = "Set-Cookie";
+	public static final String COOKIE = "Cookie";
 	public static final String DAY = " day(s) ";
 	public static final String HOUR = " hour(s) ";
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
 	public static final String SPECIAL_CHARS_PATTERN = ".*[~!@#$%^&\\\\'].*|.*<(\\?).*|.*(\\<)(\\/).*";
 	public static final String INVALID_PORT_RANGE= "port range input is in valid";
+	public static final String INVALID_INPUT= "is invalid or not exist";
 
 }

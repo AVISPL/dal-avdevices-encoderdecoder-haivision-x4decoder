@@ -4,6 +4,7 @@
 
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
+import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.HASH;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.Map;
@@ -20,7 +21,10 @@ import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamConfigMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.FilteringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 
@@ -103,4 +107,32 @@ public class HaivisionX4DecoderCommunicatorTest {
 		});
 		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage(), exception.getMessage());
 	}
+
+	/**
+	 * Test HaivisionX4DecoderCommunicator adapter filtering in case having 3 filtering
+	 *
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testHaivisionX4DecoderCommunicatorFilteringCase1() throws Exception {
+		String streamsName = "Harry-test, test, test  test , test    ";
+		String streamsStatus = "ACTIVE, TEST";
+		String portNumber = "1234, 1257-9000, 10000-50000, 1534, 9000000-80000000";
+
+		haivisionX4DecoderCommunicator.setStreamsName(streamsName);
+		haivisionX4DecoderCommunicator.setStreamStatus(streamsStatus);
+		haivisionX4DecoderCommunicator.setPortNumber(portNumber);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String StreamGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE;
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamMonitoringMetric.NAME.getName() + DecoderConstant.SPACE + "test"));
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamMonitoringMetric.NAME.getName() + DecoderConstant.SPACE + "test  test"));
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamMonitoringMetric.STATE.getName() + DecoderConstant.SPACE + "TEST"));
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE  + "9000000-80000000"));
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE  + "1234"));
+		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),stats.get(StreamGroup + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE  + "1534"));
+	}
+
 }
