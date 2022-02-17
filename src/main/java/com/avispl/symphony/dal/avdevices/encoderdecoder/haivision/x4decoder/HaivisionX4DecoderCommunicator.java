@@ -281,8 +281,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					if (!roleBase.equals(OPERATOR_ROLE) && !roleBase.equals(ADMIN_ROLE) && !roleBase.equals(GUEST_ROLE)) {
 						throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 					}
+				} else {
+					throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 				}
-				throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 			}
 		} catch (Exception e) {
 			throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
