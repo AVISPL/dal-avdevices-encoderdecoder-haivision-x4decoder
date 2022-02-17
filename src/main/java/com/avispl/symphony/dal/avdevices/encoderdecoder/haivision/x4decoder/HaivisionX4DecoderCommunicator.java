@@ -284,6 +284,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				} else {
 					throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 				}
+			} else {
+				throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 			}
 		} catch (Exception e) {
 			throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
@@ -610,11 +612,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		} else {
 			this.authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
 		}
-		// retrieving all decoders stats
+		// Retrieving all decoders stats
 		for (int decoderID = 0; decoderID < 4; decoderID++) {
 			retrieveDecoderStats(stats, decoderID);
 		}
-		//retrieving all streams stats
+		// Retrieving all streams stats
 		retrieveStreamStats(stats);
 
 		if (failedMonitor.size() == getNoOfFailedMonitorMetricGroup()) {
