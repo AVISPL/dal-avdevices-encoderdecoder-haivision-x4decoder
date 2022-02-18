@@ -30,7 +30,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-
 import com.avispl.symphony.api.dal.control.Controller;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
@@ -178,7 +177,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	@Override
 	protected void authenticate() throws Exception {
-
 	}
 
 	/**
@@ -261,7 +259,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
 		}
 	}
-
 
 	/**
 	 * This method is used to retrieve User Role by send GET request to http://{IP_Address}/apis/accounts/{username}
@@ -528,7 +525,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamStats streamStats = stream.getStreamStats();
 						SRT srt = streamStats.getSrt();
 
-						// stream name filtering
+						// Stream name filtering
 						if (this.streamsName != null) {
 							streamsNames = handleAdapterPropertiesInputFromUser(this.streamsName);
 							if (streamsNames.remove(streamInfo.getName())) {
@@ -537,7 +534,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 							}
 						}
 
-						// stream status filtering
+						// Stream status filtering
 						if (this.streamStatus != null) {
 							streamsStatus = handleAdapterPropertiesInputFromUser(this.streamStatus);
 							if (!streamsStatus.remove(streamStats.getState())) {
@@ -545,7 +542,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 							}
 						}
 
-						//port number filtering
+						// Port number filtering
 						if (this.portNumber != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
 							boolean isValidPort = handleAdapterPortRangeFromUser(this.portNumber, port, portNumbers);
@@ -556,15 +553,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						updateStreamStats(stats, streamInfo, streamStats, srt);
 					}
 
-					// update invalid streams name
+					// Update invalid streams name
 					if (streamsNames != null) {
 						updateInvalidAdapterProperties(stats, streamsNames, StreamMonitoringMetric.NAME.getName());
 					}
-					// update invalid stream status
+					// Update invalid stream status
 					if (streamsStatus != null) {
 						updateInvalidAdapterProperties(stats, streamsStatus, StreamMonitoringMetric.STATE.getName());
 					}
-					// update invalid port number
+					// Update invalid port number
 					if (portNumbers != null) {
 						updateInvalidAdapterProperties(stats, portNumbers, StreamConfigMetric.PORT.getName());
 					}
