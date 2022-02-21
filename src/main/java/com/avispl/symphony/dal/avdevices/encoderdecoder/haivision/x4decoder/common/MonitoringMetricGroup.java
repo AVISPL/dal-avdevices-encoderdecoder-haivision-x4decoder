@@ -10,14 +10,16 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  * @since 1.0
  */
 public enum MonitoringMetricGroup {
+
 	DECODER_STATISTICS("Decoder Statistics", true),
-	STREAM_STATISTICS("Stream Statistics", true);
+	STREAM_STATISTICS("Stream Statistics", true),
+	DEVICE_INFO("Device Info", true);
 
 	private final String name;
 	private final boolean isFailedMonitorCheck;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */

@@ -11,6 +11,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dat
  */
 public enum ExceptionMessage {
 	GETTING_SESSION_ID_ERRO("Username and Password are incorrect"),
+	GETTING_DEVICE_INFO("failed to get device info\n"),
 	GETTING_DECODER_STATS_ERR("failed to get decoder statistic3\n"
 			+ "failed to get decoder statistic1\n"
 			+ "failed to get decoder statistic2\n"

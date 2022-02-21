@@ -3,11 +3,6 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
-import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.ADMIN_ROLE;
-import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.GUEST_ROLE;
-import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.HASH;
-import static com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant.OPERATOR_ROLE;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +25,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+
 import com.avispl.symphony.api.dal.control.Controller;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
@@ -39,20 +35,23 @@ import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.FilteringErrorGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamConfigMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamMonitoringMetric;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.SRT;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.Stream;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamData;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamInfo;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.StreamStats.StreamStats;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationInfo;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.AudioPair;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderData;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderInfo;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderStats.DecoderStats;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.AudioPair;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderStats;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.DeviceInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.SRT;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Stream;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamStats;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.avispl.symphony.dal.util.StringUtils;
 
@@ -72,22 +71,22 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	private final String uuidSeconds = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	private AuthenticationCookie authenticationCookie;
-	AuthenticationInfo authenticationInfo;
+	private AuthenticationInfo authenticationInfo;
 	private HashMap<String, String> failedMonitor;
 	private ObjectMapper objectMapper;
 
 	//Adapter Properties
-	private String streamsName;
+	private String streamName;
 	private String portNumber;
 	private String streamStatus;
 
 	/**
-	 * Retrieves {@code {@link #streamsName}}
+	 * Retrieves {@code {@link #streamName }}
 	 *
-	 * @return value of {@link #streamsName}
+	 * @return value of {@link #streamName}
 	 */
-	public String getStreamsName() {
-		return streamsName;
+	public String getStreamName() {
+		return streamName;
 	}
 
 	/**
@@ -95,8 +94,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param streamsName the {@code java.lang.String} field
 	 */
-	public void setStreamsName(String streamsName) {
-		this.streamsName = streamsName;
+	public void setStreamName(String streamsName) {
+		this.streamName = streamsName;
 	}
 
 	/**
@@ -273,9 +272,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				if (response != null) {
 					objectMapper = new ObjectMapper();
 					authenticationInfo = objectMapper.readValue(response.toString(), AuthenticationInfo.class);
-					String roleBase = authenticationInfo.getAuthenticationRole().getRole();
+					authenticationInfo.getAuthenticationRole().getRole();
 
-					if (!roleBase.equals(OPERATOR_ROLE) && !roleBase.equals(ADMIN_ROLE) && !roleBase.equals(GUEST_ROLE)) {
+					if (authenticationInfo.getAuthenticationRole().getRole() == null) {
 						throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 					}
 				} else {
@@ -290,20 +289,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * @param value value of device info
+	 * check for null data
+	 *
+	 * @param value value of monitoring properties
 	 * @return String (none/value)
 	 */
 	private String checkForNullData(String value) {
 		return value == null || value.equals("") ? DecoderConstant.NONE : value;
-	}
-
-	/**
-	 * Update failedMonitor with Getting device info error message
-	 *
-	 * @param failedMonitor list statistics property
-	 */
-	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
-		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR + decoderID);
 	}
 
 	/**
@@ -325,9 +317,65 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * Update failedMonitor with getting device info error message
+	 *
+	 * @param failedMonitor list statistics property
+	 */
+	private void updateDeviceInfoFailedMonitor(Map<String, String> failedMonitor) {
+		failedMonitor.put(MonitoringMetricGroup.DEVICE_INFO.getName(), DecoderConstant.GETTING_DEVICE_INFO_ERR);
+	}
+
+
+	/**
+	 * This method is used to retrieve device info by send GET request to http://{IP_Address}/apis/status
+	 *
+	 * @param stats list statistics property
+	 *
+	 * When sessionID is null, the failedMonitor is going to update
+	 * When there is no response data, the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
+	 */
+	private void retrieveDeviceInfo(Map<String, String> stats) {
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DEVICE_INFO), JsonNode.class);
+				if (!response.isEmpty()) {
+					objectMapper = new ObjectMapper();
+					DeviceInfo deviceInfo = objectMapper.readValue(response.toString(), DeviceInfo.class);
+
+					String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.SPACE + DecoderConstant.HASH;
+
+					stats.put(deviceInfoGroup + DeviceInfoMetric.SERIAL_NUMBER.getName(), checkForNullData(deviceInfo.getSerialNumber()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.HARDWARE_REVISION.getName(), checkForNullData(deviceInfo.getHardwareRevision()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.PART_NUMBER.getName(), checkForNullData(deviceInfo.getPartNumber()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_VERSION.getName(), checkForNullData(deviceInfo.getFirmwareVersion()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.TEMPERATURE.getName(), checkForNullData(deviceInfo.getTemperature()));
+				} else {
+					updateDeviceInfoFailedMonitor(failedMonitor);
+				}
+			} else {
+				updateDeviceInfoFailedMonitor(failedMonitor);
+			}
+		} catch (Exception e) {
+			updateDeviceInfoFailedMonitor(failedMonitor);
+		}
+	}
+
+	/**
+	 * Update failedMonitor with Getting decoder stats error message
+	 *
+	 * @param failedMonitor list statistics property
+	 * @param decoderID ID of the decoder
+	 */
+	private void updateDecoderStatisticsFailedMonitor(Map<String, String> failedMonitor, Integer decoderID) {
+		failedMonitor.put(MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID, DecoderConstant.GETTING_DECODER_STATS_ERR + decoderID);
+	}
+
+	/**
 	 * This method is used to retrieve decoder statistic by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *
 	 * @param stats list statistics property
+	 * @param decoderID ID of the decoder
 	 *
 	 * When sessionID is null, the failedMonitor is going to update
 	 * When there is no response data, the failedMonitor is going to update
@@ -344,7 +392,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					DecoderInfo decoderInfo = decoderData.getDecoderInfo();
 					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
 
-					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + HASH;
+					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
 
 					// Update static stats
 					stats.put(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName(), checkForNullData(decoderStats.getDecoderID().toString()));
@@ -430,7 +478,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * This method is used update stream statistic
+	 * This method is used update stream statistic from DTO
 	 *
 	 * @param stats list statistics property
 	 * @param streamInfo List stream config properties
@@ -438,7 +486,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param srt List SRT
 	 */
 	private void updateStreamStats(Map<String, String> stats, StreamInfo streamInfo, StreamStats streamStats, SRT srt) {
-		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + HASH;
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + streamInfo.getName() + DecoderConstant.HASH;
 
 		// Update static stats
 		stats.put(streamStatisticGroup + StreamMonitoringMetric.ID.getName(), checkForNullData(streamInfo.getId()));
@@ -485,16 +533,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param stats list statistics property
 	 * @param adapterProperties list adapterProperties element
+	 * @param filteringErrorGroup filtering error group
 	 * @param adapterPropertiesName Name of adapterProperties
 	 */
-	private void updateInvalidAdapterProperties(Map<String, String> stats, Set<String> adapterProperties, String adapterPropertiesName) {
+	private void updateInvalidAdapterProperties(Map<String, String> stats, Set<String> adapterProperties, String filteringErrorGroup, String adapterPropertiesName) {
 		Objects.requireNonNull(adapterProperties);
-		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE;
+		String streamStatisticGroup = filteringErrorGroup + DecoderConstant.HASH;
 
 		for (String adapterProperty : adapterProperties) {
 			stats.put(streamStatisticGroup + adapterPropertiesName + DecoderConstant.SPACE + adapterProperty, DecoderConstant.INVALID_INPUT);
 		}
-
 	}
 
 	/**
@@ -507,9 +555,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
 	private void retrieveStreamStats(Map<String, String> stats) {
-		Set<String> streamsNames = new HashSet<>();
-		Set<String> streamsStatus = new HashSet<>();
-		Set<String> portNumbers = new HashSet<>();
+		Set<String> setStreamName = new HashSet<>();
+		Set<String> setStreamStatus = new HashSet<>();
+		Set<String> setPortNumber = new HashSet<>();
+
+		// Retrieve Adapter Properties
+		if (this.streamName != null) {
+			setStreamName = handleAdapterPropertiesInputFromUser(this.streamName);
+		}
+		if (this.streamStatus != null) {
+			setStreamStatus = handleAdapterPropertiesInputFromUser(this.streamStatus);
+		}
+		if (this.portNumber != null) {
+			setPortNumber = handleAdapterPropertiesInputFromUser(this.portNumber);
+		}
 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
@@ -526,26 +585,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						SRT srt = streamStats.getSrt();
 
 						// Stream name filtering
-						if (this.streamsName != null) {
-							streamsNames = handleAdapterPropertiesInputFromUser(this.streamsName);
-							if (streamsNames.remove(streamInfo.getName())) {
-								updateStreamStats(stats, streamInfo, streamStats, srt);
-								continue;
-							}
+						if (this.streamName != null && setStreamName.remove(streamInfo.getName())) {
+							updateStreamStats(stats, streamInfo, streamStats, srt);
+							continue;
 						}
 
 						// Stream status filtering
-						if (this.streamStatus != null) {
-							streamsStatus = handleAdapterPropertiesInputFromUser(this.streamStatus);
-							if (!streamsStatus.remove(streamStats.getState())) {
-								continue;
-							}
+						if (this.streamStatus != null && !setStreamStatus.remove(streamStats.getState())) {
+							continue;
 						}
 
 						// Port number filtering
 						if (this.portNumber != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
-							boolean isValidPort = handleAdapterPortRangeFromUser(this.portNumber, port, portNumbers);
+							boolean isValidPort = handleAdapterPortRangeFromUser(port, setPortNumber);
 							if (!isValidPort) {
 								continue;
 							}
@@ -554,16 +607,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					}
 
 					// Update invalid streams name
-					if (streamsNames != null) {
-						updateInvalidAdapterProperties(stats, streamsNames, StreamMonitoringMetric.NAME.getName());
+					if (setStreamName != null) {
+						updateInvalidAdapterProperties(stats, setStreamName, FilteringErrorGroup.STREAM_NAME.getName(), StreamMonitoringMetric.NAME.getName());
 					}
 					// Update invalid stream status
-					if (streamsStatus != null) {
-						updateInvalidAdapterProperties(stats, streamsStatus, StreamMonitoringMetric.STATE.getName());
+					if (setStreamStatus != null) {
+						updateInvalidAdapterProperties(stats, setStreamStatus, FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName(), StreamMonitoringMetric.STATE.getName());
 					}
 					// Update invalid port number
-					if (portNumbers != null) {
-						updateInvalidAdapterProperties(stats, portNumbers, StreamConfigMetric.PORT.getName());
+					if (setPortNumber != null) {
+						updateInvalidAdapterProperties(stats, setPortNumber, FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName(), StreamConfigMetric.PORT.getName());
 					}
 				} else {
 					updateStreamStatisticsFailedMonitor(failedMonitor);
@@ -609,10 +662,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		} else {
 			this.authenticationCookie.setSessionID(DecoderConstant.AUTHORIZED);
 		}
+		// Retrieving all device info
+		retrieveDeviceInfo(stats);
+
 		// Retrieving all decoders stats
 		for (int decoderID = 0; decoderID < 4; decoderID++) {
 			retrieveDecoderStats(stats, decoderID);
 		}
+
 		// Retrieving all streams stats
 		retrieveStreamStats(stats);
 
@@ -654,51 +711,44 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * This method is used to handle  input from adapter properties (port range) and convert it to List of Integer for control
+	 * This method is used to handle  input from adapter properties (port, port range)
+	 * When the input is an Integer value this method will check whether it is match with port from stream stats or not
+	 * When the input is a range value this method will convert the range to min/ max port value and check whether it covers port from stream stats or not
 	 *
-	 * @return List<Integer> is the Set of Integer port value
+	 * @return boolean the
 	 */
-	public boolean handleAdapterPortRangeFromUser(String input, Integer portNumber, Set<String> portNumbersFromAdapterProperties) {
+	public boolean handleAdapterPortRangeFromUser(Integer portNumber, Set<String> setPortNumber) {
 		int minPortNumber;
 		int maxPortNumber;
 
-		String[] listAdapterPropertyElement = input.split(String.valueOf(DecoderConstant.COMMA));
-
-		// Remove start and end spaces
 		try {
-			for (int i = 0; i < listAdapterPropertyElement.length; ++i) {
+			for (String portNumberFromAdapterProperties : setPortNumber) {
 
-				// Remove start and end spaces
-				listAdapterPropertyElement[i] = listAdapterPropertyElement[i].trim();
-				portNumbersFromAdapterProperties.add(listAdapterPropertyElement[i]);
-			}
-
-			for (int i = 0; i < portNumbersFromAdapterProperties.size(); ++i) {
 				// Port range filtering
-				if (listAdapterPropertyElement[i].contains(DecoderConstant.DASH)) {
-					String[] rangeList = listAdapterPropertyElement[i].split(DecoderConstant.DASH);
+				if (portNumberFromAdapterProperties.contains(DecoderConstant.DASH)) {
+					String[] rangeList = portNumberFromAdapterProperties.split(DecoderConstant.DASH);
 					minPortNumber = Integer.parseInt(rangeList[0]);
 					maxPortNumber = Integer.parseInt(rangeList[1]);
 
+					// Swapping if min value > max value
 					if (minPortNumber > maxPortNumber) {
 						int temp = minPortNumber;
 						minPortNumber = maxPortNumber;
 						maxPortNumber = temp;
 					}
-
 					if (portNumber >= minPortNumber && portNumber <= maxPortNumber) {
-						portNumbersFromAdapterProperties.remove(listAdapterPropertyElement[i]);
+						setPortNumber.remove(portNumberFromAdapterProperties);
 						return true;
 					}
 
 					// Port filtering
-				} else if (listAdapterPropertyElement[i].equals(portNumber.toString())) {
-					portNumbersFromAdapterProperties.remove(listAdapterPropertyElement[i]);
+				} else if (portNumberFromAdapterProperties.equals(portNumber.toString())) {
+					setPortNumber.remove(portNumberFromAdapterProperties);
 					return true;
 				}
 			}
 		} catch (NumberFormatException f) {
-			throw new IllegalArgumentException(DecoderConstant.INVALID_PORT_RANGE);
+			logger.info(f.getMessage());
 		}
 		return false;
 	}
