@@ -11,6 +11,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  * @since 1.0
  */
 public enum StreamMonitoringMetric {
+
 	ID("Content ID"),
 	NAME("Content Name"),
 	DECODER_ID("Content DecoderId"),
