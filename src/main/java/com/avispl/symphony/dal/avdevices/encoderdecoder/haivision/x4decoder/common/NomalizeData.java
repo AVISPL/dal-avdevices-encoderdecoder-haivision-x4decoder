@@ -25,6 +25,6 @@ public class NomalizeData {
 		if (index > -1) {
 			time = time.substring(0, index + 1);
 		}
-		return time.replace("d", DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE).replace("s", DecoderConstant.SECOND);
+		return time.replace("s", DecoderConstant.SECOND).replace("d", DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE);
 	}
 }
