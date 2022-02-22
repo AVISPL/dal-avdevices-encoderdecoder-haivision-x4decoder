@@ -13,9 +13,9 @@ public class DecoderConstant {
 
 	public static final char HASH = '#';
 	public static final char COLON= ':';
-	public static final char COMMA = ',';
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
+	public static final String COMMA = ",";
 	public static final String DASH = "-";
 	public static final String SPACE =  " ";
 	public static final String HTTPS = "https://";
@@ -26,18 +26,19 @@ public class DecoderConstant {
 	public static final String GETTING_STREAM_STATS_ERR = "failed to get stream statistic";
 	public static final String GETTING_SESSION_ID_ERR = "Username and Password are incorrect";
 	public static final String ROLE_BASED_ERR = "required admin or operator role-based";
+	public static final String PORT_NUMBER_ERROR = "invalid port number";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	//	public static final String OPERATOR_ROLE= "Operator";
-//	public static final String ADMIN_ROLE= "Admin";
+	//	public static final String ADMIN_ROLE= "Admin";
 	public static final String SESSION_ID = "Set-Cookie";
 	public static final String COOKIE = "Cookie";
 	public static final String DAY = " day(s) ";
 	public static final String HOUR = " hour(s) ";
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
-	public static final String SPECIAL_CHARS_PATTERN = ".*[~!@#$%^&\\\\'].*|.*<(\\?).*|.*(\\<)(\\/).*";
-	public static final String INVALID_PORT_RANGE = "port range input is invalid";
-	public static final String INVALID_INPUT = "is invalid or not exist";
+	public static final String AUDIO_PAIR = "Decoder Audio Pair";
+	public static final int MIN_DECODER_ID = 0;
+	public static final int MAX_DECODER_ID = 4;
 
 }

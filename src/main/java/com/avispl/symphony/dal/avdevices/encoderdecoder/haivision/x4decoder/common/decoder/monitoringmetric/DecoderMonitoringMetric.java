@@ -1,16 +1,17 @@
 /*
  * Copyright (c) 2022 AVI-SPL, Inc. All Rights Reserved.
  */
-package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
+package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric;
 
 /**
- * Set of monitoring Metrics keys
+ * Set of decoder monitoring metrics keys
  *
  * @author Harry
  * @since 1.0
  */
 public enum DecoderMonitoringMetric {
 
+	// Static metric
 	DECODER_ID("Content Decoder ID"),
 	STATE("Content State"),
 	UPTIME("Content Uptime"),
@@ -44,16 +45,6 @@ public enum DecoderMonitoringMetric {
 	AUDIO_DECODED_FRAMES("Decoder Audio Decoded Frames"),
 	AUDIO_PLAYED_FRAMES("Decoder Audio Played Frames"),
 	AUDIO_SKIPPED_FRAMES("Decoder Audio Skipped Frames"),
-	AUDIO_PAIR("Decoder Audio Pair"),
-	AUDIO_PAIR_MODE("Pair Mode"),
-	COMPRESSION("Compression"),
-	BITRATE("Bitrate"),
-	AV_SYNC_MS("Av Sync Ms"),
-	DISCONTINUITIES("Discontinuities"),
-	DECODE_ERRORS("Decode Errors"),
-	OUTPUT_ERRORS("Output Errors"),
-	SAMPE_RATE_IN("Sampe Rate In"),
-	SAMPE_RATE_OUT(" Sampe Rate Out"),
 	CLOCK_TRACKING_MODE("Decoder Clock Tracking Mode"),
 	CLOCK_STATUS("Decoder Clock Status"),
 	CLOCK_RE_SYNC_COUNT("Decoder Clock Re Sync Count"),

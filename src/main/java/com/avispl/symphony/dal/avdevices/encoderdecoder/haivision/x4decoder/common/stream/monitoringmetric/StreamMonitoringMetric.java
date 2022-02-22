@@ -2,7 +2,7 @@
  * Copyright (c) 2022 AVI-SPL, Inc. All Rights Reserved.
  */
 
-package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
+package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric;
 
 /**
  * Set of stream monitoring metrics keys
@@ -12,11 +12,12 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  */
 public enum StreamMonitoringMetric {
 
+	// Static metric
 	ID("Content ID"),
 	NAME("Content Name"),
 	DECODER_ID("Content DecoderId"),
 	ENCAPSULATION("General Encapsulation"),
-	STATE("General State"),
+	STATE("General Stream Status"),
 	SOURCE_ADDRESS("General SourceAddress"),
 	BIT_RATE("General BitRate"),
 	CONNECTIONS("General Connections"),
@@ -34,17 +35,7 @@ public enum StreamMonitoringMetric {
 	CORRUPTED_FRAMES("SRT CorruptedFrames"),
 	RESTARTS("SRT Restarts"),
 	LOCAL_PORT("SRT LocalPort"),
-	REMOTE_PORT("SRT RemotePort"),
-	ENCRYPTION("SRT Encryption"),
-	KEY_LENGTH("SRT KeyLength"),
-	DECRYPT_STATE("SRT DecryptState"),
-	LOST_PACKETS("SRT LostPackets"),
-	SENT_ACKS("SRT SentAcks"),
-	SENT_NAKS("SRT SentNaks"),
-	PATH_MAX_BANDWIDTH("SRT PathMaxBandwidth"),
-	RTT("SRT Rtt"),
-	BUFFER("SRT Buffer"),
-	SRT_LATENCY("SRT Latency");
+	REMOTE_PORT("SRT RemotePort");
 
 	private final String name;
 

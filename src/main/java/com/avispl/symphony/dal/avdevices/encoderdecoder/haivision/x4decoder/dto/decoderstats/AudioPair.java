@@ -6,6 +6,9 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.AudioPairMetric;
+
 /**
  * Decoder audio pairs
  *
@@ -202,5 +205,36 @@ public class AudioPair {
 	 */
 	public void setSampeRateOut(Integer sampeRateOut) {
 		this.sampeRateOut = sampeRateOut;
+	}
+
+	/**
+	 * @param audioPairMetric
+	 *
+	 * @return String value of audio pair monitoring properties by metric
+	 */
+	public String getValueByAudioPairMetric(AudioPairMetric audioPairMetric) {
+
+		switch (audioPairMetric) {
+			case AUDIO_PAIR_MODE:
+				return getAudioPairMode();
+			case COMPRESSION:
+				return getCompression();
+			case BITRATE:
+				return getBitrate();
+			case AV_SYNC_MS:
+				return getAvSyncMs();
+			case DISCONTINUITIES:
+				return getDiscontinuities().toString();
+			case DECODE_ERRORS:
+				return getDecodeErrors();
+			case OUTPUT_ERRORS:
+				return getOutputErrors();
+			case SAMPE_RATE_IN:
+				return getSampeRateIn().toString();
+			case SAMPE_RATE_OUT:
+				return getSampeRateOut().toString();
+			default:
+				return DecoderConstant.NONE;
+		}
 	}
 }
