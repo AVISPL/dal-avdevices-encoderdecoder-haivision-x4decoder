@@ -6,6 +6,9 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SRTMetric;
+
 /**
  * Stream SRT
  *
@@ -223,5 +226,35 @@ public class SRT {
 	 */
 	public void setDecryptState(String decryptState) {
 		this.decryptState = decryptState;
+	}
+
+	/**
+	 * @return String value of SRT monitoring properties by metric
+	 */
+	public String getValueBySRTMonitoringMetric(SRTMetric srtMetric) {
+		switch (srtMetric) {
+			case ENCRYPTION:
+				return getEncryption();
+			case KEY_LENGTH:
+				return getKeyLength();
+			case DECRYPT_STATE:
+				return getDecryptState();
+			case LOST_PACKETS:
+				return getLostPackets();
+			case SENT_ACKS:
+				return getSentAcks();
+			case SENT_NAKS:
+				return getSentNaks();
+			case PATH_MAX_BANDWIDTH:
+				return getPathMaxBandwidth();
+			case RTT:
+				return getRtt();
+			case BUFFER:
+				return getBuffer();
+			case SRT_LATENCY:
+				return getLatency();
+			default:
+				return DecoderConstant.NONE;
+		}
 	}
 }

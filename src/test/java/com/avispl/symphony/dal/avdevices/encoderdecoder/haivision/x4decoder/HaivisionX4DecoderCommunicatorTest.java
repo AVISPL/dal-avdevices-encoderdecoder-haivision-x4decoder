@@ -18,14 +18,11 @@ import org.mockito.Mockito;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.FilteringErrorGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamConfigMetric;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.StreamMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.FilteringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 
@@ -86,7 +83,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getLogin()).thenReturn("123");
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getPassword()).thenReturn("456");
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
-			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
+			 haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
 		Assertions.assertEquals(ExceptionMessage.GETTING_SESSION_ID_ERRO.getMessage(), exception.getMessage());
 	}
@@ -111,7 +108,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicatorSpy.setHost("***REMOVED***");
 
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
-			ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
+			haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
 		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage() + ExceptionMessage.GETTING_DEVICE_INFO.getMessage(),
 				exception.getMessage());
@@ -123,9 +120,9 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderCommunicatorFiltering() throws Exception {
-		String streamName = "Harry-test, test, test  test , test    ";
-		String streamsStatus = "ACTIVE, TEST";
-		String portNumber = "1234, 1257-9000, 1534, 9000000-80000000, 90000-50000, 6009-ad";
+		String streamName = "Harry-test, test";
+		String streamsStatus = "ACTIVE";
+		String portNumber = "1257-9000";
 
 		haivisionX4DecoderCommunicator.setStreamName(streamName);
 		haivisionX4DecoderCommunicator.setStreamStatus(streamsStatus);
@@ -134,23 +131,15 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),
-				stats.get(FilteringErrorGroup.STREAM_NAME.getName() + DecoderConstant.HASH + StreamMonitoringMetric.NAME.getName() + DecoderConstant.SPACE + "test"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(),
-				stats.get(FilteringErrorGroup.STREAM_NAME.getName() + DecoderConstant.HASH + StreamMonitoringMetric.NAME.getName() + DecoderConstant.SPACE + "test  test"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamMonitoringMetric.STATE.getName() + DecoderConstant.SPACE + "TEST"));
-		Assertions.assertNull(stats.get(FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamMonitoringMetric.STATE.getName() + DecoderConstant.SPACE + "ACTIVE"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE + "1234"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE + "1534"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE + "9000000-80000000"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE + "90000-50000"));
-		Assertions.assertEquals(FilteringData.INVALID_INPUT.getData(), stats.get(
-				FilteringErrorGroup.STREAM_STATUS_AND_PORT_NUMBER.getName() + DecoderConstant.HASH + StreamConfigMetric.PORT.getName() + DecoderConstant.SPACE + "6009-ad"));
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "MX4E Demo 6009" + DecoderConstant.HASH;
+		Assertions.assertEquals("MX4E Demo 6009", stats.get(streamStatisticGroup + StreamMonitoringMetric.NAME.getName()));
+
+		String streamStatisticGroup2 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "Harry-test" + DecoderConstant.HASH;
+		Assertions.assertEquals("Harry-test", stats.get(streamStatisticGroup2 + StreamMonitoringMetric.NAME.getName()));
+
+		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "test" + DecoderConstant.HASH;
+		Assertions.assertNull( stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
+
 	}
 
 }
