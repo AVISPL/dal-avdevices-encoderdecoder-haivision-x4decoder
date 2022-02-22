@@ -17,7 +17,7 @@ public enum DeviceInfoMetric {
 	PART_NUMBER("Part Number"),
 	FIRMWARE_VERSION("Firmware Version"),
 
-	// To Do: Can be Historical metric in next version
+	// TODO: Can be Historical metric in next version
 	TEMPERATURE("Temperature");
 	private final String name;
 
