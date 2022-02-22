@@ -20,7 +20,7 @@ public class NomalizeData {
 	 * @param time the time is String
 	 * @return String
 	 */
-	private String formatTimeData(String time) {
+	public String formatTimeData(String time) {
 		if (DecoderConstant.NONE.equals(time)) {
 			return DecoderConstant.NONE;
 		}
