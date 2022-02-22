@@ -3,6 +3,8 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
+import java.util.UUID;
+
 /**
  * Normalized Data
  *
@@ -10,14 +12,15 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  * @since 1.0
  */
 public class NomalizeData {
-
+	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
+	private final String uuidSeconds = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	/**
 	 * Format time data
 	 *
 	 * @param time the time is String
 	 * @return String
 	 */
-	public String formatTimeData(String time) {
+	private String formatTimeData(String time) {
 		if (DecoderConstant.NONE.equals(time)) {
 			return DecoderConstant.NONE;
 		}
@@ -25,6 +28,7 @@ public class NomalizeData {
 		if (index > -1) {
 			time = time.substring(0, index + 1);
 		}
-		return time.replace("s", DecoderConstant.SECOND).replace("d", DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE);
+		time.replace("d", uuidDay).replace("s", uuidSeconds);
+		return time.replace(uuidDay, DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE).replace(uuidSeconds, DecoderConstant.SECOND);
 	}
 }
