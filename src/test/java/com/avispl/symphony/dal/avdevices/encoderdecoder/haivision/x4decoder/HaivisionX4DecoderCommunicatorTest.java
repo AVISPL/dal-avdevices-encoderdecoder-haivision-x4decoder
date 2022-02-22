@@ -57,7 +57,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	 */
 	@Tag("RealDevice")
 	@Test
-	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() throws Exception {
+	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -119,7 +119,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	 */
 	@Tag("RealDevice")
 	@Test
-	void testHaivisionX4DecoderCommunicatorFiltering() throws Exception {
+	void testHaivisionX4DecoderCommunicatorFiltering() {
 		String streamName = "Harry-test, test";
 		String streamsStatus = "ACTIVE";
 		String portNumber = "1257-9000";
@@ -139,7 +139,5 @@ public class HaivisionX4DecoderCommunicatorTest {
 
 		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "test" + DecoderConstant.HASH;
 		Assertions.assertNull( stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
-
 	}
-
 }
