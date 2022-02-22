@@ -22,7 +22,7 @@ public enum SRTMetric {
 	PATH_MAX_BANDWIDTH("SRT PathMaxBandwidth"),
 	RTT("SRT Rtt"),
 
-	// To Do: Can be Historical metric in next version
+	// TODO: Can be Historical metric in next version
 	BUFFER("SRT Buffer"),
 	SRT_LATENCY("SRT Latency");
 

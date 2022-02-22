@@ -146,7 +146,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	@Override
 	public void controlProperty(ControllableProperty controllableProperty) {
-		// To do
+		//TODO
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	@Override
 	public void controlProperties(List<ControllableProperty> list) {
-		// To do
+		// TODO
 	}
 
 	/**
@@ -555,7 +555,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return Set<String> is the Set of String of filter element
 	 */
 	public Set<String> handleAdapterPropertiesInputFromUser(String input) {
-		String[] listAdapterPropertyElement = input.split(String.valueOf(DecoderConstant.COMMA));
+		String[] listAdapterPropertyElement = input.split(DecoderConstant.COMMA);
 
 		// Remove start and end spaces of each gain
 		Set<String> setAdapterPropertiesElement = new HashSet<>();
