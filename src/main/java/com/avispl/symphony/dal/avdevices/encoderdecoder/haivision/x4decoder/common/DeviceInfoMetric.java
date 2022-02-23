@@ -12,13 +12,23 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 public enum DeviceInfoMetric {
 
 	// Static metric
-	SERIAL_NUMBER("Serial Number"),
-	HARDWARE_REVISION("Hardware Revision"),
-	PART_NUMBER("Part Number"),
-	FIRMWARE_VERSION("Firmware Version"),
+	UPTIME("Uptime"),
+	CARD_STATUS("CardStatus"),
+	SERIAL_NUMBER("SerialNumber"),
+	HARDWARE_COMPATIBILITY("HardwareCompatibility"),
+	MEZZANINE_PRESENT("MezzaninePresent"),
+	HARDWARE_REVISION("HardwareRevision"),
+	CPLD_REVISION("CpldRevision"),
+	BOOT_VERSION("BootVersion"),
+	CARD_TYPE("CardType"),
+	PART_NUMBER("PartNumber"),
+	FIRMWARE_DATE("FirmwareDate"),
+	FIRMWARE_VERSION("FirmwareVersion"),
+	FIRMWARE_OPTIONS("FirmwareOptions"),
 
 	// TODO: Can be Historical metric in next version
 	TEMPERATURE("Temperature");
+
 	private final String name;
 
 	/**

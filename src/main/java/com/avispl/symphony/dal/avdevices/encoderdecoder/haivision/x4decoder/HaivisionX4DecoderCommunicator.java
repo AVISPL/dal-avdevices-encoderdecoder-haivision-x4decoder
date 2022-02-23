@@ -271,13 +271,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		String login = getLogin();
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
-				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.ROLE_BASED + DecoderConstant.SLASH + login), JsonNode.class);
-				if (response != null) {
-					objectMapper = new ObjectMapper();
-					authenticationInfo = objectMapper.readValue(response.toString(), AuthenticationInfo.class);
-
-					if (authenticationInfo.getAuthenticationRole() != null) {
-						if (authenticationInfo.getAuthenticationRole().getRole() == null) {
+				 authenticationInfo = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.ROLE_BASED + DecoderConstant.SLASH + login), AuthenticationInfo.class);
+				if (authenticationInfo != null) {
+					if (this.authenticationInfo.getAuthenticationRole() != null) {
+						if (this.authenticationInfo.getAuthenticationRole().getRole() == null) {
 							throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 						}
 					} else {
@@ -325,18 +322,25 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void retrieveDeviceInfo(Map<String, String> stats) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
-				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DEVICE_INFO), JsonNode.class);
-				if (!response.isEmpty()) {
-					objectMapper = new ObjectMapper();
-					DeviceInfo deviceInfo = objectMapper.readValue(response.toString(), DeviceInfo.class);
-
+				DeviceInfo deviceInfo = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DEVICE_INFO), DeviceInfo.class);
+				if (deviceInfo != null) {
 					String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.SPACE + DecoderConstant.HASH;
 
 					stats.put(deviceInfoGroup + DeviceInfoMetric.SERIAL_NUMBER.getName(), checkForNullData(deviceInfo.getSerialNumber()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.CARD_STATUS.getName(), checkForNullData(deviceInfo.getCardStatus()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.HARDWARE_COMPATIBILITY.getName(), checkForNullData(deviceInfo.getHardwareCompatibility()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.MEZZANINE_PRESENT.getName(), checkForNullData(deviceInfo.getMezzaninePresent()));
 					stats.put(deviceInfoGroup + DeviceInfoMetric.HARDWARE_REVISION.getName(), checkForNullData(deviceInfo.getHardwareRevision()));
-					stats.put(deviceInfoGroup + DeviceInfoMetric.PART_NUMBER.getName(), checkForNullData(deviceInfo.getPartNumber()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.CPLD_REVISION.getName(), checkForNullData(deviceInfo.getCpldRevision()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.BOOT_VERSION.getName(), checkForNullData(deviceInfo.getBootVersion()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.CARD_TYPE.getName(), checkForNullData(deviceInfo.getCardType()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_DATE.getName(), checkForNullData(deviceInfo.getFirmwareDate()));
 					stats.put(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_VERSION.getName(), checkForNullData(deviceInfo.getFirmwareVersion()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_OPTIONS.getName(), checkForNullData(deviceInfo.getFirmwareOptions()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.UPTIME.getName(), checkForNullData(deviceInfo.getUptime()));
+					stats.put(deviceInfoGroup + DeviceInfoMetric.PART_NUMBER.getName(), checkForNullData(deviceInfo.getPartNumber()));
 					stats.put(deviceInfoGroup + DeviceInfoMetric.TEMPERATURE.getName(), checkForNullData(deviceInfo.getTemperature()));
+
 				} else {
 					updateDeviceInfoFailedMonitor(failedMonitor);
 				}
@@ -371,10 +375,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void retrieveDecoderStats(Map<String, String> stats, Integer decoderID) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
-				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), JsonNode.class);
-				if (!response.isEmpty()) {
-					objectMapper = new ObjectMapper();
-					DecoderData decoderData = objectMapper.readValue(response.toString(), DecoderData.class);
+				DecoderData decoderData = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), DecoderData.class);
+				if (decoderData != null) {
 					DecoderStats decoderStats = decoderData.getDecoderStats();
 					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
 
@@ -456,11 +458,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
-				JsonNode response = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), JsonNode.class);
+				StreamData streamData = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), StreamData.class);
 
-				if (!response.isEmpty()) {
-					objectMapper = new ObjectMapper();
-					StreamData streamData = objectMapper.readValue(response.toString(), StreamData.class);
+				if (streamData != null) {
 					List<Stream> streams = streamData.getStreams();
 
 					for (Stream stream : streams) {
