@@ -15,8 +15,6 @@ import java.util.Set;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.Header;
@@ -75,7 +73,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private AuthenticationCookie authenticationCookie;
 	private AuthenticationInfo authenticationInfo;
 	private HashMap<String, String> failedMonitor;
-	private ObjectMapper objectMapper;
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
 	private Set<String> portNumberSet;
