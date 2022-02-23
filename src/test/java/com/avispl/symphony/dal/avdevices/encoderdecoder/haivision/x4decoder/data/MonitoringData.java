@@ -15,7 +15,12 @@ public enum MonitoringData {
 	SERIAL_NUMBER("HAI-032024020197"),
 	HARDWARE_REVISION("A"),
 	PART_NUMBER("S-MX4D-SDI"),
-	FIRMWARE_VERSION("1.3.0-47");
+	FIRMWARE_VERSION("1.3.0-47"),
+	HARDWARE_COMPATIBILITY("-003G"),
+	CPLD_REVISION("4 (Official, Internal flash)"),
+	BOOT_VERSION("U-Boot 2018.01 (Apr 06 2021 - 14:11:03 -0400)"),
+	CARD_TYPE("Makito X4 SDI Decoder"),
+	FIRMWARE_DATE("Aug 17 2021");
 
 	private final String data;
 

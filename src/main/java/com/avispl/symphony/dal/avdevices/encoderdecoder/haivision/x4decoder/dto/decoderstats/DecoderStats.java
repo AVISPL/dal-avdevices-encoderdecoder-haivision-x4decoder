@@ -100,7 +100,7 @@ public class DecoderStats {
 	private String audioSampleRate;
 
 	@JsonAlias("audioPairsAmount")
-	private Integer audioPairsAmount ;
+	private Integer audioPairsAmount;
 
 	@JsonAlias("audioDecodedFrames")
 	private String audioDecodedFrames;

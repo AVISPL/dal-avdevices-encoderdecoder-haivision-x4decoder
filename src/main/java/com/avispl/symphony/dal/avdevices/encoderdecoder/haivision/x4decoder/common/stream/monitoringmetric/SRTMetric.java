@@ -13,14 +13,14 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 public enum SRTMetric {
 
 	// Static metric
-	ENCRYPTION("SRT Encryption"),
-	KEY_LENGTH("SRT KeyLength"),
-	DECRYPT_STATE("SRT DecryptState"),
-	LOST_PACKETS("SRT LostPackets"),
-	SENT_ACKS("SRT SentAcks"),
-	SENT_NAKS("SRT SentNaks"),
-	PATH_MAX_BANDWIDTH("SRT PathMaxBandwidth"),
-	RTT("SRT Rtt"),
+	ENCRYPTION("SRTEncryption"),
+	KEY_LENGTH("SRTKeyLength"),
+	DECRYPT_STATE("SRTDecryptState"),
+	LOST_PACKETS("SRTLostPackets"),
+	SENT_ACKS("SRTSentAcks"),
+	SENT_NAKS("SRTSentNaks"),
+	PATH_MAX_BANDWIDTH("SRTPathMaxBandwidth"),
+	RTT("SRTRtt"),
 
 	// TODO: Can be Historical metric in next version
 	BUFFER("SRT Buffer"),

@@ -12,15 +12,15 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 public enum AudioPairMetric {
 
 	// Static metric
-	AUDIO_PAIR_MODE("Pair Mode"),
+	AUDIO_PAIR_MODE("PairMode"),
 	COMPRESSION("Compression"),
 	BITRATE("Bitrate"),
-	AV_SYNC_MS("Av Sync Ms"),
+	AV_SYNC_MS("AvSyncMs"),
 	DISCONTINUITIES("Discontinuities"),
-	DECODE_ERRORS("Decode Errors"),
-	OUTPUT_ERRORS("Output Errors"),
-	SAMPE_RATE_IN("Sampe Rate In"),
-	SAMPE_RATE_OUT(" Sampe Rate Out");
+	DECODE_ERRORS("DecodeErrors"),
+	OUTPUT_ERRORS("OutputErrors"),
+	SAMPE_RATE_IN("SampeRateIn"),
+	SAMPE_RATE_OUT(" SampeRateOut");
 
 	private final String name;
 
