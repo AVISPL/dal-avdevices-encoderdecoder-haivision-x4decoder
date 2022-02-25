@@ -3,10 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Set of still image mode option
@@ -76,6 +78,17 @@ public enum HDR {
 			nameToValue.put(hdr.getCode(), hdr.getName());
 		}
 		return nameToValue;
+	}
+
+	/**
+	 * This method is used to get HDR mode by name
+	 *
+	 * @param name is the name of HDR mode that want to get
+	 * @return HDR is the HDR that want to get
+	 */
+	public static HDR getByName(String name) {
+		Optional<HDR> hdr = Arrays.stream(HDR.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return hdr.orElse(null);
 	}
 }
 

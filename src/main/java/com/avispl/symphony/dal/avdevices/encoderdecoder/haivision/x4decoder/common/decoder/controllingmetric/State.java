@@ -3,10 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Set of still image mode option
@@ -87,6 +89,17 @@ public enum State {
 			nameToValue.put(state.getCode(), state.getName());
 		}
 		return nameToValue;
+	}
+
+	/**
+	 * This method is used to get state by name
+	 *
+	 * @param name is the name of state that want to get
+	 * @return State is the state that want to get
+	 */
+	public static State getByCode(Integer name) {
+		Optional<State> state = Arrays.stream(State.values()).filter(com -> com.getCode().equals(name)).findFirst();
+		return state.orElse(null);
 	}
 }
 

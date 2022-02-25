@@ -13,7 +13,6 @@ import java.util.UUID;
  */
 public class NomalizeData {
 	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
-	private final String uuidSeconds = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
 	/**
 	 * Format time data
 	 *
@@ -28,7 +27,7 @@ public class NomalizeData {
 		if (index > -1) {
 			time = time.substring(0, index + 1);
 		}
-		time.replace("d", uuidDay).replace("s", uuidSeconds);
-		return time.replace(uuidDay, DecoderConstant.DAY).replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE).replace(uuidSeconds, DecoderConstant.SECOND);
+		return time.replace("d", uuidDay).replace("s", DecoderConstant.SECOND).replace(uuidDay, DecoderConstant.DAY)
+				.replace("h", DecoderConstant.HOUR).replace("m", DecoderConstant.MINUTE);
 	}
 }

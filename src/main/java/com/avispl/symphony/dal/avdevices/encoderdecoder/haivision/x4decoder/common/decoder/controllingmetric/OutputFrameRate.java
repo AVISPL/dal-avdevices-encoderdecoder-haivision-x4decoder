@@ -3,10 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Set of output frame rate option
@@ -81,6 +83,17 @@ public enum OutputFrameRate {
 			nameToValue.put(outputFrameRate.getCode(), outputFrameRate.getName());
 		}
 		return nameToValue;
+	}
+
+	/**
+	 * This method is used to get output frame rate by name
+	 *
+	 * @param name is the name of output frame rate that want to get
+	 * @return OutputFrameRate is the output frame rate that want to get
+	 */
+	public static OutputFrameRate getByName(String name) {
+		Optional<OutputFrameRate> outputFrameRate = Arrays.stream(OutputFrameRate.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return outputFrameRate.orElse(null);
 	}
 }
 

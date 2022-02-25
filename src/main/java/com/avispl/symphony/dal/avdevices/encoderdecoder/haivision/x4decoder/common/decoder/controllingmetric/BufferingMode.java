@@ -3,10 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Set of buffering mode option
@@ -75,6 +77,17 @@ public enum BufferingMode {
 			nameToValue.put(bufferingMode.getCode(), bufferingMode.getName());
 		}
 		return nameToValue;
+	}
+
+	/**
+	 * This method is used to get buffering mode by name
+	 *
+	 * @param name is the name of buffering mode that want to get
+	 * @return BufferingMode is the command that want to get
+	 */
+	public static BufferingMode getByName(String name) {
+		Optional<BufferingMode> bufferingMode = Arrays.stream(BufferingMode.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return bufferingMode.orElse(null);
 	}
 }
 
