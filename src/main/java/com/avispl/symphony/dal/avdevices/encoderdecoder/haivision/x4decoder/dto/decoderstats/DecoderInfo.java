@@ -6,6 +6,15 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.HDR;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.OutputFrameRate;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.QuadMode;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.State;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
+import com.avispl.symphony.dal.util.StringUtils;
+
 /**
  * Decoder information
  *
@@ -140,8 +149,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #state}
 	 */
-	public String getState() {
-		return state;
+	public State getState() {
+		if (StringUtils.isNullOrEmpty(this.state)) {
+			for (State state : State.values()) {
+				if (state.getCode().equals(this.state)) {
+					return state;
+				}
+			}
+		}
+		return State.STOPPED;
 	}
 
 	/**
@@ -176,8 +192,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #stillImage}
 	 */
-	public String getStillImage() {
-		return stillImage;
+	public StillImage getStillImage() {
+		if (StringUtils.isNullOrEmpty(this.stillImage)) {
+			for (StillImage bufferingMode : StillImage.values()) {
+				if (bufferingMode.getCode().equals(this.stillImage)) {
+					return bufferingMode;
+				}
+			}
+		}
+		return StillImage.FREEZE;
 	}
 
 	/**
@@ -195,6 +218,9 @@ public class DecoderInfo {
 	 * @return value of {@link #stillImageDelay}
 	 */
 	public String getStillImageDelay() {
+		if (this.stillImageDelay == null){
+			return DecoderConstant.EMPTY;
+		}
 		return stillImageDelay;
 	}
 
@@ -248,8 +274,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #bufferingMode}
 	 */
-	public String getBufferingMode() {
-		return bufferingMode;
+	public BufferingMode getBufferingMode() {
+		if (StringUtils.isNullOrEmpty(this.bufferingMode)) {
+			for (BufferingMode bufferingMode : BufferingMode.values()) {
+				if (bufferingMode.getCode().equals(this.bufferingMode)) {
+					return bufferingMode;
+				}
+			}
+		}
+		return BufferingMode.AUTO;
 	}
 
 	/**
@@ -267,7 +300,7 @@ public class DecoderInfo {
 	 * @return value of {@link #bufferingDelay}
 	 */
 	public String getBufferingDelay() {
-		return bufferingDelay;
+		return this.bufferingDelay;
 	}
 
 	/**
@@ -302,8 +335,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #hdrDynamicRange}
 	 */
-	public String getHdrDynamicRange() {
-		return hdrDynamicRange;
+	public HDR getHdrDynamicRange() {
+		if (StringUtils.isNullOrEmpty(this.hdrDynamicRange)) {
+			for (HDR hdr : HDR.values()) {
+				if (hdr.getCode().equals(this.hdrDynamicRange)) {
+					return hdr;
+				}
+			}
+		}
+		return HDR.AUTO;
 	}
 
 	/**
@@ -338,8 +378,11 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output1}
 	 */
-	public String getOutput1() {
-		return output1;
+	public boolean getOutput1() {
+		if (StringUtils.isNullOrEmpty(this.output1)){
+			return false;
+		}
+		return Boolean.parseBoolean(this.output1);
 	}
 
 	/**
@@ -356,8 +399,11 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output2}
 	 */
-	public String getOutput2() {
-		return output2;
+	public boolean getOutput2() {
+		if (StringUtils.isNullOrEmpty(this.output2)){
+			return false;
+		}
+		return Boolean.parseBoolean(this.output2);
 	}
 
 	/**
@@ -374,8 +420,11 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output3}
 	 */
-	public String getOutput3() {
-		return output3;
+	public boolean getOutput3() {
+		if (StringUtils.isNullOrEmpty(this.output3)){
+			return false;
+		}
+		return Boolean.parseBoolean(this.output3);
 	}
 
 	/**
@@ -392,8 +441,11 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output4}
 	 */
-	public String getOutput4() {
-		return output4;
+	public boolean getOutput4() {
+		if (StringUtils.isNullOrEmpty(this.output4)){
+			return false;
+		}
+		return Boolean.parseBoolean(this.output4);
 	}
 
 	/**
@@ -410,9 +462,17 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #outputFrameRate}
 	 */
-	public String getOutputFrameRate() {
-		return outputFrameRate;
+	public OutputFrameRate getOutputFrameRate() {
+		if (StringUtils.isNullOrEmpty(this.outputFrameRate)) {
+			for (OutputFrameRate outputFrameRate : OutputFrameRate.values()) {
+				if (outputFrameRate.getCode().equals(this.outputFrameRate)) {
+					return outputFrameRate;
+				}
+			}
+		}
+		return OutputFrameRate.AUTO;
 	}
+
 
 	/**
 	 * Sets {@code outputFrameRate}
@@ -464,8 +524,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #quadMode}
 	 */
-	public String getQuadMode() {
-		return quadMode;
+	public QuadMode getQuadMode() {
+		if (StringUtils.isNullOrEmpty(this.quadMode)) {
+			for (QuadMode quadMode : QuadMode.values()) {
+				if (quadMode.getCode().equals(this.quadMode)) {
+					return quadMode;
+				}
+			}
+		}
+		return QuadMode.NORMAL;
 	}
 
 	/**
