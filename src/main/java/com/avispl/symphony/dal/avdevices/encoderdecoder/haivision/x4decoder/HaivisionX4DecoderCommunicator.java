@@ -769,21 +769,21 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
 
 		// Populate output switch control
-		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
+		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
 				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
-		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput2(),
+		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput2(),
 				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
-		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput3(),
+		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput3(),
 				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
-		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput4(),
+		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput4(),
 				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 
 		// Populate Start/Stop switch control
-		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
+		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 				DecoderConstant.OFF, DecoderConstant.ON));
 
 		// Populate apply change bottom control
-		advancedControllableProperties.add(createButton(decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName(), DecoderConstant.APPLY));
+		advancedControllableProperties.add(createButton(stats, decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName(), DecoderConstant.APPLY));
 
 		switch (bufferingMode) {
 			case AUTO:
@@ -795,14 +795,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate fixed delay text control
-				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getBufferingDelay()));
+				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
 
 			case MULTI_SYNC:
 				// Populate buffering mode dropdown list control
 				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate multi sync delay text control
-				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
+				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
 		}
 	}
 
@@ -818,12 +818,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param label default button label
 	 * @return instance of AdvancedControllableProperty with AdvancedControllableProperty.Button as type
 	 */
-	private AdvancedControllableProperty createButton(String name, String label) {
+	private AdvancedControllableProperty createButton(Map<String, String> stats, String name, String label) {
+		stats.put(name, DecoderConstant.EMPTY);
 		AdvancedControllableProperty.Button button = new AdvancedControllableProperty.Button();
 		button.setLabel(label);
-		button.setLabelPressed("Running...");
-		button.setGracePeriod(100L);
-
 		return new AdvancedControllableProperty(name, new Date(), button, "");
 	}
 
@@ -834,7 +832,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param status initial switch state (0|1)
 	 * @return AdvancedControllableProperty button instance
 	 */
-	private AdvancedControllableProperty createSwitch(String name, boolean status, String labelOff, String labelOn) {
+	private AdvancedControllableProperty createSwitch(Map<String, String> stats, String name, boolean status, String labelOff, String labelOn) {
 		AdvancedControllableProperty.Switch toggle = new AdvancedControllableProperty.Switch();
 		toggle.setLabelOff(labelOff);
 		toggle.setLabelOn(labelOn);
@@ -842,6 +840,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (status) {
 			statusValue = 1;
 		}
+		stats.put(name, String.valueOf(statusValue));
 		return new AdvancedControllableProperty(name, new Date(), toggle, statusValue);
 	}
 

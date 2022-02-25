@@ -338,7 +338,7 @@ public class DecoderInfo {
 	public HDR getHdrDynamicRange() {
 		if (!StringUtils.isNullOrEmpty(this.hdrDynamicRange)) {
 			for (HDR hdr : HDR.values()) {
-				if (hdr.getCode().toString().equals(Integer.parseInt(this.hdrDynamicRange))) {
+				if (hdr.getCode().equals(Integer.parseInt(this.hdrDynamicRange))) {
 					return hdr;
 				}
 			}
