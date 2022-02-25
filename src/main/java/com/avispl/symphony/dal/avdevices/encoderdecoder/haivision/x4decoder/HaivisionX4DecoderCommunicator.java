@@ -601,7 +601,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param advancedControllableProperties is the list that store all controllable properties
 	 */
 	private void populateControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties) {
-		String role = this.authenticationInfo.getAuthenticationRole().getRole();
 
 			// Decoder control
 			for (int decoderID = DecoderConstant.MIN_DECODER_ID; decoderID < DecoderConstant.MAX_DECODER_ID; decoderID++) {
