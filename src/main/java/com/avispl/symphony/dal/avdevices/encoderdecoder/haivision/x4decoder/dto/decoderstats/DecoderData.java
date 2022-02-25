@@ -85,7 +85,7 @@ public class DecoderData {
 			case BUFFERING_ADJUSTMENTS:
 				return decoderStats.getBufferingAdjustments();
 			case BUFFERING_DELAY:
-				return decoderInfo.getBufferingDelay();
+				return decoderInfo.getBufferingDelay().toString();
 			case LATENCY:
 				return decoderInfo.getLatency();
 			case VIDEO_LATENCY:
