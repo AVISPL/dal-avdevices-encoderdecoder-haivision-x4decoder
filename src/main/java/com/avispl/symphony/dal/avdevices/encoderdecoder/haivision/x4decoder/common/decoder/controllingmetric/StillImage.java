@@ -3,10 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Set of still image mode option
@@ -77,6 +79,17 @@ public enum StillImage {
 			nameToValue.put(stillImage.getCode(), stillImage.getName());
 		}
 		return nameToValue;
+	}
+
+	/**
+	 * This method is used to get still image by name
+	 *
+	 * @param name is the name of still image that want to get
+	 * @return StillImage is the still image that want to get
+	 */
+	public static StillImage getByName(String name) {
+		Optional<StillImage> stillImage = Arrays.stream(StillImage.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return stillImage.orElse(null);
 	}
 }
 

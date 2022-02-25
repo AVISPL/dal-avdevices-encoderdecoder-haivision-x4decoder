@@ -13,7 +13,6 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.QuadMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.State;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
-import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Decoder information
@@ -28,22 +27,22 @@ public class DecoderInfo {
 	private String id;
 
 	@JsonAlias("streamId")
-	private String streamId;
+	private Integer streamId;
 
 	@JsonAlias("altStreamId")
-	private String altStreamId;
+	private Integer altStreamId;
 
 	@JsonAlias("state")
-	private String state;
+	private Integer state;
 
 	@JsonAlias("latency")
 	private String latency;
 
 	@JsonAlias("stillImage")
-	private String stillImage;
+	private Integer stillImage;
 
 	@JsonAlias("stillImageDelay")
-	private String stillImageDelay;
+	private Integer stillImageDelay;
 
 	@JsonAlias("szStillImageFileName")
 	private String szStillImageFileName;
@@ -52,34 +51,34 @@ public class DecoderInfo {
 	private String enableBuffering;
 
 	@JsonAlias("bufferingMode")
-	private String bufferingMode;
+	private Integer bufferingMode;
 
 	@JsonAlias("bufferingDelay")
-	private String bufferingDelay;
+	private Integer bufferingDelay;
 
 	@JsonAlias("multisyncBufferingDelay")
-	private String multisyncBufferingDelay;
+	private Integer multisyncBufferingDelay;
 
 	@JsonAlias("hdrDynamicRange")
-	private String hdrDynamicRange;
+	private Integer hdrDynamicRange;
 
 	@JsonAlias("nNumOfOutputs")
 	private String nNumOfOutputs;
 
 	@JsonAlias("output1")
-	private String output1;
+	private Boolean output1;
 
 	@JsonAlias("output2")
-	private String output2;
+	private Boolean output2;
 
 	@JsonAlias("output3")
-	private String output3;
+	private Boolean output3;
 
 	@JsonAlias("output4")
-	private String output4;
+	private Boolean output4;
 
 	@JsonAlias("outputFrameRate")
-	private String outputFrameRate;
+	private Integer outputFrameRate;
 
 	@JsonAlias("previewEnabled")
 	private String previewEnabled;
@@ -88,7 +87,7 @@ public class DecoderInfo {
 	private String previewIntervalSec;
 
 	@JsonAlias("quadMode")
-	private String quadMode;
+	private Integer quadMode;
 
 	/**
 	 * Retrieves {@code {@link #id}}
@@ -113,16 +112,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #streamId}
 	 */
-	public String getStreamId() {
+	public Integer getStreamId() {
 		return streamId;
 	}
 
 	/**
 	 * Sets {@code streamId}
 	 *
-	 * @param streamId the {@code java.lang.String} field
+	 * @param streamId the {@code java.lang.Integer} field
 	 */
-	public void setStreamId(String streamId) {
+	public void setStreamId(Integer streamId) {
 		this.streamId = streamId;
 	}
 
@@ -131,16 +130,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #altStreamId}
 	 */
-	public String getAltStreamId() {
+	public Integer getAltStreamId() {
 		return altStreamId;
 	}
 
 	/**
 	 * Sets {@code altStreamId}
 	 *
-	 * @param altStreamId the {@code java.lang.String} field
+	 * @param altStreamId the {@code java.lang.Integer} field
 	 */
-	public void setAltStreamId(String altStreamId) {
+	public void setAltStreamId(Integer altStreamId) {
 		this.altStreamId = altStreamId;
 	}
 
@@ -150,9 +149,9 @@ public class DecoderInfo {
 	 * @return value of {@link #state}
 	 */
 	public State getState() {
-		if (!StringUtils.isNullOrEmpty(this.state)) {
+		if (this.state != null) {
 			for (State state : State.values()) {
-				if (state.getCode().equals(Integer.parseInt(this.state))) {
+				if (state.getCode().equals(this.state)) {
 					return state;
 				}
 			}
@@ -163,9 +162,9 @@ public class DecoderInfo {
 	/**
 	 * Sets {@code state}
 	 *
-	 * @param state the {@code java.lang.String} field
+	 * @param state the {@code java.lang.Integer} field
 	 */
-	public void setState(String state) {
+	public void setState(Integer state) {
 		this.state = state;
 	}
 
@@ -193,9 +192,9 @@ public class DecoderInfo {
 	 * @return value of {@link #stillImage}
 	 */
 	public StillImage getStillImage() {
-		if (!StringUtils.isNullOrEmpty(this.stillImage)) {
+		if (this.stillImage != null) {
 			for (StillImage stillImage : StillImage.values()) {
-				if (stillImage.getCode().equals(Integer.parseInt(this.stillImage))) {
+				if (stillImage.getCode().equals(this.stillImage)) {
 					return stillImage;
 				}
 			}
@@ -206,9 +205,9 @@ public class DecoderInfo {
 	/**
 	 * Sets {@code stillImage}
 	 *
-	 * @param stillImage the {@code java.lang.String} field
+	 * @param stillImage the {@code java.lang.Integer} field
 	 */
-	public void setStillImage(String stillImage) {
+	public void setStillImage(Integer stillImage) {
 		this.stillImage = stillImage;
 	}
 
@@ -221,15 +220,16 @@ public class DecoderInfo {
 		if (this.stillImageDelay == null){
 			return DecoderConstant.EMPTY;
 		}
-		return stillImageDelay;
+		return stillImageDelay.toString();
 	}
+
 
 	/**
 	 * Sets {@code stillImageDelay}
 	 *
-	 * @param stillImageDelay the {@code java.lang.String} field
+	 * @param stillImageDelay the {@code java.lang.Integer} field
 	 */
-	public void setStillImageDelay(String stillImageDelay) {
+	public void setStillImageDelay(Integer stillImageDelay) {
 		this.stillImageDelay = stillImageDelay;
 	}
 
@@ -275,9 +275,9 @@ public class DecoderInfo {
 	 * @return value of {@link #bufferingMode}
 	 */
 	public BufferingMode getBufferingMode() {
-		if (!StringUtils.isNullOrEmpty(this.bufferingMode)) {
+		if (this.bufferingMode != null) {
 			for (BufferingMode bufferingMode : BufferingMode.values()) {
-				if (bufferingMode.getCode().equals(Integer.parseInt(this.bufferingMode))) {
+				if (bufferingMode.getCode().equals(this.bufferingMode)) {
 					return bufferingMode;
 				}
 			}
@@ -288,9 +288,9 @@ public class DecoderInfo {
 	/**
 	 * Sets {@code bufferingMode}
 	 *
-	 * @param bufferingMode the {@code java.lang.String} field
+	 * @param bufferingMode the {@code java.lang.Integer} field
 	 */
-	public void setBufferingMode(String bufferingMode) {
+	public void setBufferingMode(Integer bufferingMode) {
 		this.bufferingMode = bufferingMode;
 	}
 
@@ -299,16 +299,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #bufferingDelay}
 	 */
-	public String getBufferingDelay() {
-		return this.bufferingDelay;
+	public Integer getBufferingDelay() {
+		return bufferingDelay;
 	}
 
 	/**
 	 * Sets {@code bufferingDelay}
 	 *
-	 * @param bufferingDelay the {@code java.lang.String} field
+	 * @param bufferingDelay the {@code java.lang.Integer} field
 	 */
-	public void setBufferingDelay(String bufferingDelay) {
+	public void setBufferingDelay(Integer bufferingDelay) {
 		this.bufferingDelay = bufferingDelay;
 	}
 
@@ -317,18 +317,19 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #multisyncBufferingDelay}
 	 */
-	public String getMultisyncBufferingDelay() {
+	public Integer getMultisyncBufferingDelay() {
 		return multisyncBufferingDelay;
 	}
 
 	/**
 	 * Sets {@code multisyncBufferingDelay}
 	 *
-	 * @param multisyncBufferingDelay the {@code java.lang.String} field
+	 * @param multisyncBufferingDelay the {@code java.lang.Integer} field
 	 */
-	public void setMultisyncBufferingDelay(String multisyncBufferingDelay) {
+	public void setMultisyncBufferingDelay(Integer multisyncBufferingDelay) {
 		this.multisyncBufferingDelay = multisyncBufferingDelay;
 	}
+
 
 	/**
 	 * Retrieves {@code {@link #hdrDynamicRange}}
@@ -336,9 +337,9 @@ public class DecoderInfo {
 	 * @return value of {@link #hdrDynamicRange}
 	 */
 	public HDR getHdrDynamicRange() {
-		if (!StringUtils.isNullOrEmpty(this.hdrDynamicRange)) {
+		if (this.hdrDynamicRange != null) {
 			for (HDR hdr : HDR.values()) {
-				if (hdr.getCode().equals(Integer.parseInt(this.hdrDynamicRange))) {
+				if (hdr.getCode().equals(this.hdrDynamicRange)) {
 					return hdr;
 				}
 			}
@@ -349,9 +350,9 @@ public class DecoderInfo {
 	/**
 	 * Sets {@code hdrDynamicRange}
 	 *
-	 * @param hdrDynamicRange the {@code java.lang.String} field
+	 * @param hdrDynamicRange the {@code java.lang.Integer} field
 	 */
-	public void setHdrDynamicRange(String hdrDynamicRange) {
+	public void setHdrDynamicRange(Integer hdrDynamicRange) {
 		this.hdrDynamicRange = hdrDynamicRange;
 	}
 
@@ -378,19 +379,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output1}
 	 */
-	public boolean getOutput1() {
-		if (!StringUtils.isNullOrEmpty(this.output1)){
-			return false;
-		}
-		return Boolean.parseBoolean(this.output1);
+	public Boolean getOutput1() {
+		return output1;
 	}
 
 	/**
 	 * Sets {@code output1}
 	 *
-	 * @param output1 the {@code java.lang.String} field
+	 * @param output1 the {@code java.lang.Boolean} field
 	 */
-	public void setOutput1(String output1) {
+	public void setOutput1(Boolean output1) {
 		this.output1 = output1;
 	}
 
@@ -399,19 +397,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output2}
 	 */
-	public boolean getOutput2() {
-		if (!StringUtils.isNullOrEmpty(this.output2)){
-			return false;
-		}
-		return Boolean.parseBoolean(this.output2);
+	public Boolean getOutput2() {
+		return output2;
 	}
 
 	/**
 	 * Sets {@code output2}
 	 *
-	 * @param output2 the {@code java.lang.String} field
+	 * @param output2 the {@code java.lang.Boolean} field
 	 */
-	public void setOutput2(String output2) {
+	public void setOutput2(Boolean output2) {
 		this.output2 = output2;
 	}
 
@@ -420,19 +415,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output3}
 	 */
-	public boolean getOutput3() {
-		if (!StringUtils.isNullOrEmpty(this.output3)){
-			return false;
-		}
-		return Boolean.parseBoolean(this.output3);
+	public Boolean getOutput3() {
+		return output3;
 	}
 
 	/**
 	 * Sets {@code output3}
 	 *
-	 * @param output3 the {@code java.lang.String} field
+	 * @param output3 the {@code java.lang.Boolean} field
 	 */
-	public void setOutput3(String output3) {
+	public void setOutput3(Boolean output3) {
 		this.output3 = output3;
 	}
 
@@ -441,19 +433,16 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #output4}
 	 */
-	public boolean getOutput4() {
-		if (!StringUtils.isNullOrEmpty(this.output4)){
-			return false;
-		}
-		return Boolean.parseBoolean(this.output4);
+	public Boolean getOutput4() {
+		return output4;
 	}
 
 	/**
 	 * Sets {@code output4}
 	 *
-	 * @param output4 the {@code java.lang.String} field
+	 * @param output4 the {@code java.lang.Boolean} field
 	 */
-	public void setOutput4(String output4) {
+	public void setOutput4(Boolean output4) {
 		this.output4 = output4;
 	}
 
@@ -463,9 +452,9 @@ public class DecoderInfo {
 	 * @return value of {@link #outputFrameRate}
 	 */
 	public OutputFrameRate getOutputFrameRate() {
-		if (!StringUtils.isNullOrEmpty(this.outputFrameRate)) {
+		if (this.outputFrameRate != null) {
 			for (OutputFrameRate outputFrameRate : OutputFrameRate.values()) {
-				if (outputFrameRate.getCode().equals(Integer.parseInt(this.outputFrameRate))) {
+				if (outputFrameRate.getCode().equals(this.outputFrameRate)) {
 					return outputFrameRate;
 				}
 			}
@@ -473,13 +462,12 @@ public class DecoderInfo {
 		return OutputFrameRate.AUTO;
 	}
 
-
 	/**
 	 * Sets {@code outputFrameRate}
 	 *
-	 * @param outputFrameRate the {@code java.lang.String} field
+	 * @param outputFrameRate the {@code java.lang.Integer} field
 	 */
-	public void setOutputFrameRate(String outputFrameRate) {
+	public void setOutputFrameRate(Integer outputFrameRate) {
 		this.outputFrameRate = outputFrameRate;
 	}
 
@@ -524,10 +512,15 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #quadMode}
 	 */
+	/**
+	 * Retrieves {@code {@link #quadMode}}
+	 *
+	 * @return value of {@link #quadMode}
+	 */
 	public QuadMode getQuadMode() {
-		if (!StringUtils.isNullOrEmpty(this.quadMode)) {
+		if (this.quadMode != null) {
 			for (QuadMode quadMode : QuadMode.values()) {
-				if (quadMode.getCode().equals(Integer.parseInt(this.quadMode))) {
+				if (quadMode.getCode().equals(this.quadMode)) {
 					return quadMode;
 				}
 			}
@@ -538,9 +531,9 @@ public class DecoderInfo {
 	/**
 	 * Sets {@code quadMode}
 	 *
-	 * @param quadMode the {@code java.lang.String} field
+	 * @param quadMode the {@code java.lang.Integer} field
 	 */
-	public void setQuadMode(String quadMode) {
+	public void setQuadMode(Integer quadMode) {
 		this.quadMode = quadMode;
 	}
 }

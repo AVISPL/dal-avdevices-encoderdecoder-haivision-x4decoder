@@ -3,6 +3,9 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * Set of decoder controlling metric keys
  *
@@ -11,7 +14,6 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  */
 public enum DecoderControllingMetric {
 
-	DECODER("Decoder"),
 	STREAM_ID("StreamId"),
 	ALT_STREAM_ID("AltStreamId"),
 	BUFFERING_DELAY("BufferingDelay"),
@@ -30,7 +32,7 @@ public enum DecoderControllingMetric {
 	PREVIEW_ENABLED("PreviewEnabled"),
 	PREVIEW_INTERVAL_SEC("PreviewIntervalSec"),
 	QUAD_MODE("QuadMode"),
-	STATE("State"),
+	STATE("Active"),
 	STILL_IMAGE("StillImage"),
 	STILL_IMAGE_DELAY("StillImageDelay"),
 	APPLY_CHANGE("ApplyChange");
@@ -55,5 +57,15 @@ public enum DecoderControllingMetric {
 		return this.name;
 	}
 
+	/**
+	 * This method is used to get decoder controlling metric by name
+	 *
+	 * @param name is the name of decoder controlling metric that want to get
+	 * @return DecoderControllingMetric is the decoder controlling metric that want to get
+	 */
+	public static DecoderControllingMetric getByName(String name) {
+		Optional<DecoderControllingMetric> decoderControllingMetric = Arrays.stream(DecoderControllingMetric.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return decoderControllingMetric.orElse(null);
+	}
 }
 
