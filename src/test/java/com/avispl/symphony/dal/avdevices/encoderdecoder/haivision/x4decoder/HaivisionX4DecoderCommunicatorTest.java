@@ -125,22 +125,20 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderCommunicatorFiltering() {
-		String streamName = "Harry-test, test";
-		String streamsStatus = "ACTIVE";
-		String portNumber = "1257-9000";
+		String streamName = "SRT - WAN Listen (6515), test";
+		String portNumber = "1257-90000";
 
 		haivisionX4DecoderCommunicator.setStreamName(streamName);
-		haivisionX4DecoderCommunicator.setStreamStatus(streamsStatus);
 		haivisionX4DecoderCommunicator.setPortNumber(portNumber);
 
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "MX4E Demo 6009" + DecoderConstant.HASH;
-		Assertions.assertEquals("MX4E Demo 6009", stats.get(streamStatisticGroup + StreamMonitoringMetric.NAME.getName()));
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "SRT - WAN Listen (6515)" + DecoderConstant.HASH;
+		Assertions.assertEquals("SRT - WAN Listen (6515)", stats.get(streamStatisticGroup + StreamMonitoringMetric.NAME.getName()));
 
-		String streamStatisticGroup2 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "Harry-test" + DecoderConstant.HASH;
-		Assertions.assertEquals("Harry-test", stats.get(streamStatisticGroup2 + StreamMonitoringMetric.NAME.getName()));
+		String streamStatisticGroup2 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "SRT - LAN Listen (55104)" + DecoderConstant.HASH;
+		Assertions.assertEquals("SRT - LAN Listen (55104)", stats.get(streamStatisticGroup2 + StreamMonitoringMetric.NAME.getName()));
 
 		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "test" + DecoderConstant.HASH;
 		Assertions.assertNull( stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));

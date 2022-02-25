@@ -3,10 +3,13 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +28,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 
 import com.avispl.symphony.api.dal.control.Controller;
+import com.avispl.symphony.api.dal.dto.control.AdvancedControllableProperty;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
@@ -34,6 +38,12 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.HDR;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.OutputFrameRate;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.QuadMode;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.AudioPairMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SRTMetric;
@@ -42,6 +52,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.AudioPair;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderStats;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.DeviceInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.SRT;
@@ -76,6 +87,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
 	private Set<String> portNumberSet;
+	private boolean isEmergencyCall = true;
+
+	// Decoder and stream DTO
+	private List<DecoderData> decoderDataList;
+	private List<Stream> streamDataList;
+	private List<DecoderData> localDecoderDataList;
+	private List<Stream> localStreamDataList;
 
 	//Adapter Properties
 	private String streamName;
@@ -163,15 +181,29 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	@Override
 	public List<Statistics> getMultipleStatistics() {
-		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-		Map<String, String> stats = new HashMap<>();
+		final ExtendedStatistics extendedStatistics = new ExtendedStatistics();
+		final Map<String, String> stats = new HashMap<>();
+		final List<AdvancedControllableProperty> advancedControllableProperties = new ArrayList<>();
 		failedMonitor = new HashMap<>();
+
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
 		}
+		if(decoderDataList == null){
+			decoderDataList = new ArrayList<>();
+		}
+		if(streamDataList == null){
+			streamDataList = new  ArrayList<>();
+		}
 
 		populateDecoderMonitoringMetrics(stats);
+		if (isEmergencyCall){
+			localDecoderDataList = decoderDataList ;
+			localStreamDataList = streamDataList;
+			populateControllingMetrics(stats, advancedControllableProperties);
+		}
 		extendedStatistics.setStatistics(stats);
+		extendedStatistics.setControllableProperties(advancedControllableProperties);
 
 		return Collections.singletonList(extendedStatistics);
 	}
@@ -295,7 +327,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return String (none/value)
 	 */
 	private String checkForNullData(String value) {
-		return value == null || value.equals("") ? DecoderConstant.NONE : value;
+		return value == null || value.equals(DecoderConstant.EMPTY) ? DecoderConstant.NONE : value;
 	}
 
 	/**
@@ -360,6 +392,32 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * This method is used update decoder statistic from DTO
+	 *
+	 * @param stats list statistics property
+	 * @param decoderData pair of decoder config and stats
+	 * @param decoderID ID of decoder
+	 */
+	private void populateDecoderStats(Map<String, String> stats, DecoderData decoderData, Integer decoderID) {
+		DecoderStats decoderStats = decoderData.getDecoderStats();
+		List<AudioPair> audioPairs = decoderStats.getAudioPairs();
+
+		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
+
+		for (DecoderMonitoringMetric item : DecoderMonitoringMetric.values()) {
+			stats.put(decoderStatisticGroup + item.getName(), checkForNullData(decoderData.getValueByDecoderMonitoringMetric(item)));
+		}
+		if (audioPairs != null) {
+			for (int i = 0; i < audioPairs.size(); i++) {
+				String audioPair = decoderStatisticGroup + DecoderConstant.AUDIO_PAIR + i + DecoderConstant.COLON;
+				for (AudioPairMetric item : AudioPairMetric.values()) {
+					stats.put(audioPair + item.getName(), checkForNullData(audioPairs.get(i).getValueByAudioPairMetric(item)));
+				}
+			}
+		}
+	}
+
+	/**
 	 * This method is used to retrieve decoder statistic by send GET request to http://{IP_Address}/apis/decoders/:id
 	 *
 	 * @param stats list statistics property
@@ -374,22 +432,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				DecoderData decoderData = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), DecoderData.class);
 				if (decoderData != null) {
-					DecoderStats decoderStats = decoderData.getDecoderStats();
-					List<AudioPair> audioPairs = decoderStats.getAudioPairs();
-
-					String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
-
-					for (DecoderMonitoringMetric item : DecoderMonitoringMetric.values()) {
-						stats.put(decoderStatisticGroup + item.getName(), checkForNullData(decoderData.getValueByDecoderMonitoringMetric(item)));
-					}
-					if (audioPairs != null) {
-						for (int i = 0; i < audioPairs.size(); i++) {
-							String audioPair = decoderStatisticGroup + DecoderConstant.AUDIO_PAIR + i + DecoderConstant.COLON;
-							for (AudioPairMetric item : AudioPairMetric.values()) {
-								stats.put(audioPair + item.getName(), checkForNullData(audioPairs.get(i).getValueByAudioPairMetric(item)));
-							}
-						}
-					}
+					this.decoderDataList.add(decoderID, decoderData);
+					populateDecoderStats(stats, decoderData, decoderID);
 				} else {
 					updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 				}
@@ -416,7 +460,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param stats list statistics property
 	 * @param stream pair of stream config and stats
 	 */
-	private void updateStreamStats(Map<String, String> stats, Stream stream) {
+	private void populateStreamStats(Map<String, String> stats, Stream stream) {
 		SRT srt = stream.getStreamStats().getSrt();
 		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + stream.getStreamInfo().getName() + DecoderConstant.HASH;
 
@@ -466,7 +510,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 						// Stream name filtering
 						if (this.streamName != null && streamNameSet.contains(streamInfo.getName())) {
-							updateStreamStats(stats, stream);
+							streamDataList.add(stream);
+							populateStreamStats(stats, stream);
 							continue;
 						}
 
@@ -483,7 +528,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 								continue;
 							}
 						}
-						updateStreamStats(stats, stream);
+						streamDataList.add(stream);
+						populateStreamStats(stats, stream);
 					}
 				} else {
 					updateStreamStatisticsFailedMonitor(failedMonitor);
@@ -547,6 +593,25 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * This method is used for populate all controlling properties:
+	 * <li>Decoder controlling</li>
+	 * <li>Stream controlling</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 */
+	private void populateControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties) {
+		String role = this.authenticationInfo.getAuthenticationRole().getRole();
+
+			// Decoder control
+			for (int decoderID = DecoderConstant.MIN_DECODER_ID; decoderID < DecoderConstant.MAX_DECODER_ID; decoderID++) {
+				populateDecoderControl(stats, advancedControllableProperties, decoderID);
+			}
+
+			// Stream control
+	}
+
+	/**
 	 * This method is used to handle  input from adapter properties and convert it to Set of String  for control
 	 *
 	 * @return Set<String> is the Set of String of filter element
@@ -604,4 +669,211 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		return false;
 	}
+
+//region Populate control properties
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+	/**
+	 * This method is used for populate all Decoder control properties:
+	 * Buffering Mode: Auto
+	 * <li>Stream ID</li>
+	 * <li>Still Image</li>
+	 * <li>Still Image Delay</li>
+	 * <li>Buffering Mode</li>
+	 * <li>Hdr Dynamic Range</li>
+	 * <li>Output 1</li>
+	 * <li>Output 2</li>
+	 * <li>Output 3</li>
+	 * <li>Output 4</li>
+	 * <li>Output Frame Rate</li>
+	 * <li>Quad Mode</li>
+	 *
+	 * Buffering Mode: Fixed
+	 * <li>Stream ID</li>
+	 * <li>Still Image</li>
+	 * <li>Still Image Delay</li>
+	 * <li>Buffering Mode</li>
+	 * <li>Buffering Delay</li>
+	 * <li>Hdr Dynamic Range</li>
+	 * <li>Output 1</li>
+	 * <li>Output 2</li>
+	 * <li>Output 3</li>
+	 * <li>Output 4</li>
+	 * <li>Output Frame Rate</li>
+	 * <li>Quad Mode</li>
+	 *
+	 * Buffering Mode: MultiSync
+	 * <li>Stream ID</li>
+	 * <li>Still Image</li>
+	 * <li>Still Image Delay</li>
+	 * <li>Buffering Mode</li>
+	 * <li>Multi Sync Buffering Delay</li>
+	 * <li>Hdr Dynamic Range</li>
+	 * <li>Output 1</li>
+	 * <li>Output 2</li>
+	 * <li>Output 3</li>
+	 * <li>Output 4</li>
+	 * <li>Output Frame Rate</li>
+	 * <li>Quad Mode</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 */
+	private void populateDecoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID) {
+		// Get controllable property current value
+		DecoderInfo decoderInfo = this.localDecoderDataList.get(decoderID).getDecoderInfo();
+		BufferingMode bufferingMode = decoderInfo.getBufferingMode();
+		HDR hdr = decoderInfo.getHdrDynamicRange();
+		OutputFrameRate outputFrameRate = decoderInfo.getOutputFrameRate();
+		QuadMode quadMode = decoderInfo.getQuadMode();
+		StillImage stillImage = decoderInfo.getStillImage();
+
+		// Get list values of controllable property (dropdown)
+		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
+		List<String> quadModeList = QuadMode.getQuadModeList();
+		List<String> stillImageList = StillImage.getStillImageList();
+		List<String> bufferingModeList = BufferingMode.getBufferingList();
+		List<String> hdrList = HDR.getHDRList();
+		List<String> streamIDList = new LinkedList<>();
+		if (this.localStreamDataList != null) {
+			for (Stream stream : this.localStreamDataList) {
+				streamIDList.add(stream.getStreamInfo().getId());
+			}
+		} else {
+			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
+		}
+
+		String decoderControllingGroup = DecoderControllingMetric.DECODER.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
+
+		// Populate stream id dropdown list control
+		String streamID = decoderInfo.getStreamId();
+		if (StringUtils.isNullOrEmpty(streamID)) {
+			streamID = DecoderConstant.DEFAULT_STREAM_ID;
+		}
+		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID));
+
+		// Populate HDR dropdown list control
+		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+
+		// Populate output frame rate dropdown list control
+		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
+
+		// Populate quad mode dropdown list control
+		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.QUAD_MODE.getName(), quadModeList, quadMode.getName()));
+
+		// Populate still image dropdown list control
+		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
+
+		// Populate still image delay text control
+		advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
+
+		// Populate output switch control
+		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput2(),
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput3(),
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput4(),
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+
+		// Populate Start/Stop switch control
+		advancedControllableProperties.add(createSwitch(decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
+				DecoderConstant.OFF, DecoderConstant.ON));
+
+		// Populate apply change bottom control
+		advancedControllableProperties.add(createButton(decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName(), DecoderConstant.APPLY));
+
+		switch (bufferingMode) {
+			case AUTO:
+				// Populate buffering mode dropdown list control
+				advancedControllableProperties.add(createDropdown( stats,decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+
+			case FIXED:
+				// Populate buffering mode dropdown list control
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+
+				// Populate fixed delay text control
+				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getBufferingDelay()));
+
+			case MULTI_SYNC:
+				// Populate buffering mode dropdown list control
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+
+				// Populate multi sync delay text control
+				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
+		}
+	}
+
+	//endregion
+
+	//region Create controllable property
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Instantiate Text controllable property
+	 *
+	 * @param name name of the property
+	 * @param label default button label
+	 * @return instance of AdvancedControllableProperty with AdvancedControllableProperty.Button as type
+	 */
+	private AdvancedControllableProperty createButton(String name, String label) {
+		AdvancedControllableProperty.Button button = new AdvancedControllableProperty.Button();
+		button.setLabel(label);
+		button.setLabelPressed("Running...");
+		button.setGracePeriod(100L);
+
+		return new AdvancedControllableProperty(name, new Date(), button, "");
+	}
+
+	/**
+	 * Create a switch controllable property
+	 *
+	 * @param name name of the switch
+	 * @param status initial switch state (0|1)
+	 * @return AdvancedControllableProperty button instance
+	 */
+	private AdvancedControllableProperty createSwitch(String name, boolean status, String labelOff, String labelOn) {
+		AdvancedControllableProperty.Switch toggle = new AdvancedControllableProperty.Switch();
+		toggle.setLabelOff(labelOff);
+		toggle.setLabelOn(labelOn);
+		int statusValue = 0;
+		if (status) {
+			statusValue = 1;
+		}
+		return new AdvancedControllableProperty(name, new Date(), toggle, statusValue);
+	}
+
+	/***
+	 * Create AdvancedControllableProperty preset instance
+	 * @param name name of the control
+	 * @param initialValue initial value of the control
+	 * @return AdvancedControllableProperty preset instance
+	 */
+	private AdvancedControllableProperty createDropdown(Map<String, String> stats, String name, List<String> values, String initialValue) {
+		stats.put(name, initialValue);
+		AdvancedControllableProperty.DropDown dropDown = new AdvancedControllableProperty.DropDown();
+		dropDown.setOptions(values.toArray(new String[0]));
+		dropDown.setLabels(values.toArray(new String[0]));
+
+		return new AdvancedControllableProperty(name, new Date(), dropDown, initialValue);
+	}
+
+	/**
+	 * Create a controllable property Text
+	 *
+	 * @param name the name of property
+	 * @param stringValue character string
+	 * @return AdvancedControllableProperty Text instance
+	 */
+	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
+		stats.put(name, DecoderConstant.EMPTY);
+		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
+		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	//endregion
 }

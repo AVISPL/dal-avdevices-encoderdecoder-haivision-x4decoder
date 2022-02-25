@@ -18,6 +18,7 @@ public class DecoderConstant {
 	public static final String COMMA = ",";
 	public static final String DASH = "-";
 	public static final String SPACE =  " ";
+	public static final String EMPTY = "";
 	public static final String HTTPS = "https://";
 	public static final String NONE = "None";
 	public static final String AUTHORIZED = "Authorized";
@@ -29,8 +30,8 @@ public class DecoderConstant {
 	public static final String PORT_NUMBER_ERROR = "invalid port number";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
-	//	public static final String OPERATOR_ROLE= "Operator";
-	//	public static final String ADMIN_ROLE= "Admin";
+	public static final String OPERATOR_ROLE = "Operator";
+	public static final String ADMIN_ROLE = "Admin";
 	public static final String SESSION_ID = "Set-Cookie";
 	public static final String COOKIE = "Cookie";
 	public static final String DAY = " day(s) ";
@@ -38,7 +39,12 @@ public class DecoderConstant {
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
 	public static final String AUDIO_PAIR = "Decoder Audio Pair";
+	public static final String DEFAULT_STREAM_ID = "-1";
+	public static final String ENABLE = "Enable";
+	public static final String DISABLE = "Disable";
+	public static final String ON = "On";
+	public static final String OFF = "Off";
+	public static final String APPLY = "Apply";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
-
 }
