@@ -150,9 +150,9 @@ public class DecoderInfo {
 	 * @return value of {@link #state}
 	 */
 	public State getState() {
-		if (StringUtils.isNullOrEmpty(this.state)) {
+		if (!StringUtils.isNullOrEmpty(this.state)) {
 			for (State state : State.values()) {
-				if (state.getCode().equals(this.state)) {
+				if (state.getCode().equals(Integer.parseInt(this.state))) {
 					return state;
 				}
 			}
@@ -193,10 +193,10 @@ public class DecoderInfo {
 	 * @return value of {@link #stillImage}
 	 */
 	public StillImage getStillImage() {
-		if (StringUtils.isNullOrEmpty(this.stillImage)) {
-			for (StillImage bufferingMode : StillImage.values()) {
-				if (bufferingMode.getCode().equals(this.stillImage)) {
-					return bufferingMode;
+		if (!StringUtils.isNullOrEmpty(this.stillImage)) {
+			for (StillImage stillImage : StillImage.values()) {
+				if (stillImage.getCode().equals(Integer.parseInt(this.stillImage))) {
+					return stillImage;
 				}
 			}
 		}
@@ -275,9 +275,9 @@ public class DecoderInfo {
 	 * @return value of {@link #bufferingMode}
 	 */
 	public BufferingMode getBufferingMode() {
-		if (StringUtils.isNullOrEmpty(this.bufferingMode)) {
+		if (!StringUtils.isNullOrEmpty(this.bufferingMode)) {
 			for (BufferingMode bufferingMode : BufferingMode.values()) {
-				if (bufferingMode.getCode().equals(this.bufferingMode)) {
+				if (bufferingMode.getCode().equals(Integer.parseInt(this.bufferingMode))) {
 					return bufferingMode;
 				}
 			}
@@ -336,9 +336,9 @@ public class DecoderInfo {
 	 * @return value of {@link #hdrDynamicRange}
 	 */
 	public HDR getHdrDynamicRange() {
-		if (StringUtils.isNullOrEmpty(this.hdrDynamicRange)) {
+		if (!StringUtils.isNullOrEmpty(this.hdrDynamicRange)) {
 			for (HDR hdr : HDR.values()) {
-				if (hdr.getCode().equals(this.hdrDynamicRange)) {
+				if (hdr.getCode().toString().equals(Integer.parseInt(this.hdrDynamicRange))) {
 					return hdr;
 				}
 			}
@@ -379,7 +379,7 @@ public class DecoderInfo {
 	 * @return value of {@link #output1}
 	 */
 	public boolean getOutput1() {
-		if (StringUtils.isNullOrEmpty(this.output1)){
+		if (!StringUtils.isNullOrEmpty(this.output1)){
 			return false;
 		}
 		return Boolean.parseBoolean(this.output1);
@@ -400,7 +400,7 @@ public class DecoderInfo {
 	 * @return value of {@link #output2}
 	 */
 	public boolean getOutput2() {
-		if (StringUtils.isNullOrEmpty(this.output2)){
+		if (!StringUtils.isNullOrEmpty(this.output2)){
 			return false;
 		}
 		return Boolean.parseBoolean(this.output2);
@@ -421,7 +421,7 @@ public class DecoderInfo {
 	 * @return value of {@link #output3}
 	 */
 	public boolean getOutput3() {
-		if (StringUtils.isNullOrEmpty(this.output3)){
+		if (!StringUtils.isNullOrEmpty(this.output3)){
 			return false;
 		}
 		return Boolean.parseBoolean(this.output3);
@@ -442,7 +442,7 @@ public class DecoderInfo {
 	 * @return value of {@link #output4}
 	 */
 	public boolean getOutput4() {
-		if (StringUtils.isNullOrEmpty(this.output4)){
+		if (!StringUtils.isNullOrEmpty(this.output4)){
 			return false;
 		}
 		return Boolean.parseBoolean(this.output4);
@@ -463,9 +463,9 @@ public class DecoderInfo {
 	 * @return value of {@link #outputFrameRate}
 	 */
 	public OutputFrameRate getOutputFrameRate() {
-		if (StringUtils.isNullOrEmpty(this.outputFrameRate)) {
+		if (!StringUtils.isNullOrEmpty(this.outputFrameRate)) {
 			for (OutputFrameRate outputFrameRate : OutputFrameRate.values()) {
-				if (outputFrameRate.getCode().equals(this.outputFrameRate)) {
+				if (outputFrameRate.getCode().equals(Integer.parseInt(this.outputFrameRate))) {
 					return outputFrameRate;
 				}
 			}
@@ -525,9 +525,9 @@ public class DecoderInfo {
 	 * @return value of {@link #quadMode}
 	 */
 	public QuadMode getQuadMode() {
-		if (StringUtils.isNullOrEmpty(this.quadMode)) {
+		if (!StringUtils.isNullOrEmpty(this.quadMode)) {
 			for (QuadMode quadMode : QuadMode.values()) {
-				if (quadMode.getCode().equals(this.quadMode)) {
+				if (quadMode.getCode().equals(Integer.parseInt(this.quadMode))) {
 					return quadMode;
 				}
 			}
