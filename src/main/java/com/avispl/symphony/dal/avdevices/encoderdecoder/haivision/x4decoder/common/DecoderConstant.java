@@ -28,6 +28,7 @@ public class DecoderConstant {
 	public static final String GETTING_SESSION_ID_ERR = "Username and Password are incorrect";
 	public static final String ROLE_BASED_ERR = "required admin or operator role-based";
 	public static final String PORT_NUMBER_ERROR = "invalid port number";
+	public static final String START_DECODER_ERR = "failed to start decoder";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";

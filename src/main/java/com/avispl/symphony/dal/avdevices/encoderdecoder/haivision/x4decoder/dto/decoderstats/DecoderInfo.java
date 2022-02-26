@@ -536,4 +536,31 @@ public class DecoderInfo {
 	public void setQuadMode(Integer quadMode) {
 		this.quadMode = quadMode;
 	}
+
+
+	/**
+	 * this method is used to create request body as Json
+	 * @return String json request body
+	 */
+	public String jsonRequest() {
+		return "{" +
+				"\"id=\"" + id + '\"' +
+				",\"streamId\"=" + streamId +
+				",\"altStreamId\"=" + altStreamId +
+				",\"state\"=" + state +
+				",\"latency\"='" + latency + '\'' +
+				",\"stillImage\"=" + stillImage +
+				",\"stillImageDelay\"=" + stillImageDelay +
+				",\"bufferingMode\"=" + bufferingMode +
+				",\"bufferingDelay\"=" + bufferingDelay +
+				",\"multisyncBufferingDelay\"=" + multisyncBufferingDelay +
+				",\"hdrDynamicRange\"=" + hdrDynamicRange +
+				",\"output1\"=" + output1 +
+				",\"output2\"=" + output2 +
+				",\"output3\"=" + output3 +
+				",\"output4\"=" + output4 +
+				",\"outputFrameRate\"=" + outputFrameRate +
+				",\"quadMode\"=" + quadMode +
+				'}';
+	}
 }
