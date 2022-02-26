@@ -90,11 +90,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
 	private Set<String> portNumberSet;
-	private boolean isEmergencyCall;
+	private boolean isEmergencyCall = false;
 
 	// Decoder and stream DTO
-	private List<DecoderData> decoderDataList;
-	private List<Stream> streamDataList;
+	private List<DecoderData> decoderDataDTOList;
+	private List<Stream> streamDataDTOList;
 	private List<DecoderData> localDecoderDataList;
 	private List<Stream> localStreamDataList;
 
@@ -219,19 +219,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
 		}
-		if (decoderDataList == null) {
-			decoderDataList = new ArrayList<>();
+		if (decoderDataDTOList == null) {
+			decoderDataDTOList = new ArrayList<>();
 		}
-		if (streamDataList == null) {
-			streamDataList = new ArrayList<>();
+		if (streamDataDTOList == null) {
+			streamDataDTOList = new ArrayList<>();
 		}
 
 		populateDecoderMonitoringMetrics(stats);
-		if (isEmergencyCall){
-			localDecoderDataList = decoderDataList;
-			localStreamDataList = streamDataList;
-			populateControllingMetrics(stats, advancedControllableProperties);
+
+		if (!isEmergencyCall){
+			localDecoderDataList = decoderDataDTOList;
+			localStreamDataList = streamDataDTOList;
 		}
+		populateControllingMetrics(stats, advancedControllableProperties);
 		extendedStatistics.setStatistics(stats);
 		extendedStatistics.setControllableProperties(advancedControllableProperties);
 
@@ -445,6 +446,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 			}
 		}
+		if(!isEmergencyCall){
+			this.decoderDataDTOList.add(decoderID, decoderData);
+		}
+		if(!this.decoderDataDTOList.get(decoderID).equals(decoderData)){
+			this.decoderDataDTOList.add(decoderID, decoderData);
+			this.isEmergencyCall = true;
+		}
 	}
 
 	/**
@@ -462,7 +470,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				DecoderData decoderData = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID), DecoderData.class);
 				if (decoderData != null) {
-					this.decoderDataList.add(decoderID, decoderData);
 					populateDecoderStats(stats, decoderData, decoderID);
 				} else {
 					updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
@@ -492,6 +499,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void populateStreamStats(Map<String, String> stats, Stream stream) {
 		SRT srt = stream.getStreamStats().getSrt();
+		Integer streamId = Integer.parseInt(stream.getStreamInfo().getId());
 		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + stream.getStreamInfo().getName() + DecoderConstant.HASH;
 
 		for (StreamMonitoringMetric item : StreamMonitoringMetric.values()) {
@@ -502,6 +510,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			for (SRTMetric item : SRTMetric.values()) {
 				stats.put(streamStatisticGroup + item.getName(), checkForNullData(srt.getValueBySRTMonitoringMetric(item)));
 			}
+		}
+
+		if(!isEmergencyCall){
+			this.streamDataDTOList.add(streamId,stream);
+		}
+		if(!stream.equals(this.streamDataDTOList.get(streamId))){
+			this.streamDataDTOList.add(streamId,stream);
+			this.isEmergencyCall = true;
 		}
 	}
 
@@ -540,7 +556,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 						// Stream name filtering
 						if (this.streamName != null && streamNameSet.contains(streamInfo.getName())) {
-							streamDataList.add(stream);
 							populateStreamStats(stats, stream);
 							continue;
 						}
@@ -558,7 +573,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 								continue;
 							}
 						}
-						streamDataList.add(stream);
 						populateStreamStats(stats, stream);
 					}
 				} else {
@@ -998,15 +1012,18 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					case STOPPED:
 						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER);
 						this.localDecoderDataList.removeAll(localDecoderDataList);
+						this.isEmergencyCall = false;
 						break;
 					case START:
 						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER);
 						this.localDecoderDataList.removeAll(localDecoderDataList);
+						this.isEmergencyCall = false;
 						break;
 				}
 			case APPLY_CHANGE:
 				performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.UPDATE_DECODER);
 				this.localDecoderDataList.removeAll(localDecoderDataList);
+				this.isEmergencyCall = false;
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + controllableProperty);
@@ -1024,9 +1041,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = localDecoderDataList.get(decoderID).getDecoderInfo().jsonRequest();
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
-				if (decoderData != null) {
-					this.localDecoderDataList = null;
-				} else {
+				if (decoderData == null) {
 					throw new ResourceNotReachableException(DecoderConstant.START_DECODER_ERR);
 				}
 			} else {
