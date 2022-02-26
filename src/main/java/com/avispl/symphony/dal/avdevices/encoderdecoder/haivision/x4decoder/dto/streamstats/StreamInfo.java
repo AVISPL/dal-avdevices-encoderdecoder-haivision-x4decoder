@@ -19,7 +19,7 @@ public class StreamInfo {
 	private String name;
 
 	@JsonAlias("id")
-	private String id;
+	private Integer id;
 
 	@JsonAlias("decoderId")
 	private String decoderId;
@@ -98,7 +98,7 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #id}
 	 */
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
 
@@ -107,7 +107,7 @@ public class StreamInfo {
 	 *
 	 * @param id the {@code java.lang.String} field
 	 */
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

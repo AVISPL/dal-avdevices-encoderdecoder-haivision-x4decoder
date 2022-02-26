@@ -93,10 +93,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private boolean isEmergencyCall = false;
 
 	// Decoder and stream DTO
-	private List<DecoderData> decoderDataDTOList;
-	private List<Stream> streamDataDTOList;
-	private List<DecoderData> localDecoderDataList;
-	private List<Stream> localStreamDataList;
+	private Map<String, DecoderData> decoderDataDTOList;
+	private Map<String, Stream> streamDataDTOList;
+	private Map<String, DecoderData> localDecoderDataList;
+	private Map<String, Stream> localStreamDataList;
 
 	//Adapter Properties
 	private String streamName;
@@ -179,8 +179,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		switch (controllingGroup) {
 			case DECODER:
-				int decoderID = Integer.parseInt(name);
-				decoderControl(decoderID, splitProperty[1], value);
+				decoderControl(name, splitProperty[1], value);
 				break;
 			case STREAM:
 				break;
@@ -220,10 +219,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			authenticationCookie = initAuthenticationCookie();
 		}
 		if (decoderDataDTOList == null) {
-			decoderDataDTOList = new ArrayList<>();
+			decoderDataDTOList = new HashMap<>();
 		}
 		if (streamDataDTOList == null) {
-			streamDataDTOList = new ArrayList<>();
+			streamDataDTOList = new HashMap<>();
 		}
 
 		populateDecoderMonitoringMetrics(stats);
@@ -446,11 +445,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 			}
 		}
-		if(!isEmergencyCall){
-			this.decoderDataDTOList.add(decoderID, decoderData);
+		if (!isEmergencyCall) {
+			this.decoderDataDTOList.put(decoderID.toString(), decoderData);
 		}
-		if(!this.decoderDataDTOList.get(decoderID).equals(decoderData)){
-			this.decoderDataDTOList.add(decoderID, decoderData);
+		if (!this.decoderDataDTOList.get(decoderID.toString()).equals(decoderData)) {
+			this.decoderDataDTOList.put(decoderID.toString(), decoderData);
 			this.isEmergencyCall = true;
 		}
 	}
@@ -499,7 +498,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void populateStreamStats(Map<String, String> stats, Stream stream) {
 		SRT srt = stream.getStreamStats().getSrt();
-		Integer streamId = Integer.parseInt(stream.getStreamInfo().getId());
+		Integer streamId = stream.getStreamInfo().getId();
 		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + stream.getStreamInfo().getName() + DecoderConstant.HASH;
 
 		for (StreamMonitoringMetric item : StreamMonitoringMetric.values()) {
@@ -512,11 +511,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 		}
 
-		if(!isEmergencyCall){
-			this.streamDataDTOList.add(streamId,stream);
+		if (!isEmergencyCall) {
+			this.streamDataDTOList.put(streamId.toString(), stream);
 		}
-		if(!stream.equals(this.streamDataDTOList.get(streamId))){
-			this.streamDataDTOList.add(streamId,stream);
+		if (!stream.equals(this.streamDataDTOList.get(streamId.toString()))) {
+			this.streamDataDTOList.put(streamId.toString(), stream);
 			this.isEmergencyCall = true;
 		}
 	}
@@ -764,7 +763,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void populateDecoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID) {
 		// Get controllable property current value
-		DecoderInfo decoderInfo = this.localDecoderDataList.get(decoderID).getDecoderInfo();
+		DecoderInfo decoderInfo = this.localDecoderDataList.get(decoderID.toString()).getDecoderInfo();
 		BufferingMode bufferingMode = decoderInfo.getBufferingMode();
 		HDR hdr = decoderInfo.getHdrDynamicRange();
 		OutputFrameRate outputFrameRate = decoderInfo.getOutputFrameRate();
@@ -778,10 +777,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		List<String> bufferingModeList = BufferingMode.getBufferingList();
 		List<String> hdrList = HDR.getHDRList();
 		List<String> streamIDList = new LinkedList<>();
+
 		if (this.localStreamDataList != null) {
-			for (Stream stream : this.localStreamDataList) {
-				streamIDList.add(stream.getStreamInfo().getId());
-			}
+			streamIDList.addAll(this.localStreamDataList.keySet());
 		} else {
 			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
 		}
@@ -942,7 +940,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param controllableProperty name of controllable property
 	 * @param value value of controllable property
 	 */
-	private void decoderControl(Integer decoderID, String controllableProperty, String value) {
+	private void decoderControl(String decoderID, String controllableProperty, String value) {
 		DecoderControllingMetric decoderControllingMetric = DecoderControllingMetric.getByName(controllableProperty);
 		DecoderData decoderData = localDecoderDataList.get(decoderID);
 		DecoderInfo decoderInfo = decoderData.getDecoderInfo();
@@ -951,78 +949,75 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case STREAM_ID:
 				decoderInfo.setStreamId(Integer.parseInt(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case STILL_IMAGE:
 				StillImage stillImage = StillImage.getByName(value);
 				decoderInfo.setStillImage(stillImage.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case STILL_IMAGE_DELAY:
 				decoderInfo.setStillImageDelay(Integer.parseInt(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case HDR_DYNAMIC_RANGE:
 				HDR hdr = HDR.getByName(value);
 				decoderInfo.setHdrDynamicRange(hdr.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case OUTPUT_1:
 				decoderInfo.setOutput1(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case OUTPUT_2:
 				decoderInfo.setOutput2(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case OUTPUT_3:
 				decoderInfo.setOutput3(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case OUTPUT_4:
 				decoderInfo.setOutput4(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case OUTPUT_FRAME_RATE:
 				OutputFrameRate outputFrameRate = OutputFrameRate.getByName(value);
 				decoderInfo.setOutputFrameRate(outputFrameRate.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case BUFFERING_MODE:
 				BufferingMode bufferingMode = BufferingMode.getByName(value);
 				decoderInfo.setBufferingMode(bufferingMode.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				isEmergencyCall = true;
 				break;
 			case STATE:
 				State state = State.getByCode(Integer.parseInt(value));
 				decoderInfo.setState(state.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
-				this.localDecoderDataList.set(decoderID, decoderData);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				switch (state) {
 					case STOPPED:
 						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER);
-						this.localDecoderDataList.removeAll(localDecoderDataList);
 						this.isEmergencyCall = false;
 						break;
 					case START:
 						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER);
-						this.localDecoderDataList.removeAll(localDecoderDataList);
 						this.isEmergencyCall = false;
 						break;
 				}
 			case APPLY_CHANGE:
 				performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.UPDATE_DECODER);
-				this.localDecoderDataList.removeAll(localDecoderDataList);
 				this.isEmergencyCall = false;
 				break;
 			default:
@@ -1036,10 +1031,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param localDecoderDataList list of decoder data
 	 * @param decoderID ID of decoder ID
 	 */
-	private void performDecoderControl( List<DecoderData> localDecoderDataList, Integer decoderID, String controlURL) {
+	private void performDecoderControl(Map<String, DecoderData> localDecoderDataList, String decoderID, String controlURL) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = localDecoderDataList.get(decoderID).getDecoderInfo().jsonRequest();
+				if (logger.isDebugEnabled()) {
+					logger.debug(request);
+				}
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
 				if (decoderData == null) {
 					throw new ResourceNotReachableException(DecoderConstant.START_DECODER_ERR);
