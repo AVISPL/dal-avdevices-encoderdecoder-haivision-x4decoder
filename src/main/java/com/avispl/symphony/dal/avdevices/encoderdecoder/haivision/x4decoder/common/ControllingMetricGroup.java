@@ -15,7 +15,8 @@ import java.util.Optional;
 public enum ControllingMetricGroup {
 
 	DECODER("Decoder"),
-	STREAM("Stream");
+	STREAM("Stream"),
+	CREATE_STREAM("CreateStream");
 
 	private final String name;
 

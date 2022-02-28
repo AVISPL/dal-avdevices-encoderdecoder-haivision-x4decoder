@@ -15,7 +15,14 @@ import java.util.Optional;
 public enum StreamControllingMetric {
 
 	NAME("Name"),
+	STREAM_NAME("StreamName"),
 	ENCAPSULATION("Protocol"),
+	MULTICAST_ADDRESS("MulticastAddress"),
+	SOURCE_ADDRESS("SourceAddress"),
+	DESTINATION_PORT("DestinationPort"),
+	REJECT_UNENCRYPTED_CALLERS("RejectUnencryptedCallers"),
+	TYPE("Type"),
+	SRT_TO_UDP_STREAM_CONVERSION("SrtToUdpStreamConversion"),
 	ADDRESS("Address"),
 	DECODER_ID("DecoderId"),
 	FEC_RTP("FecRtp"),
@@ -33,7 +40,11 @@ public enum StreamControllingMetric {
 	SRT_TO_UDP_TOS("SrtToUdp_tos"),
 	SRT_TO_UDP_TTL("SrtToUdp_ttl"),
 	STRICT_MODE("StrictMode"),
-	USER_DATA("UserData");
+	USER_DATA("UserData"),
+	ENCRYPTED("Encrypted"),
+	CREATE("Create"),
+	DELETE("Delete"),
+	UPDATE("Update");
 
 
 	private final String name;
