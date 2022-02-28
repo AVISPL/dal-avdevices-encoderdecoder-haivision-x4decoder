@@ -34,7 +34,7 @@ public enum OutputFrameRate {
 	/**
 	 *Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder output frame rate
 	 */
 	OutputFrameRate(String name, Integer code) {
@@ -93,7 +93,7 @@ public enum OutputFrameRate {
 	 */
 	public static OutputFrameRate getByName(String name) {
 		Optional<OutputFrameRate> outputFrameRate = Arrays.stream(OutputFrameRate.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return outputFrameRate.orElse(null);
+		return outputFrameRate.orElse(OutputFrameRate.AUTO);
 	}
 }
 

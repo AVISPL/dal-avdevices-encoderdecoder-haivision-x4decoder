@@ -216,11 +216,13 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #stillImageDelay}
 	 */
-	public String getStillImageDelay() {
-		if (this.stillImageDelay == null){
-			return DecoderConstant.EMPTY;
+	public Integer getStillImageDelay() {
+		if (stillImageDelay < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
+			return DecoderConstant.MIN_STILL_IMAGE_DELAY;
+		} else if (stillImageDelay > DecoderConstant.MAX_STILL_IMAGE_DELAY) {
+			return DecoderConstant.MAX_STILL_IMAGE_DELAY;
 		}
-		return stillImageDelay.toString();
+		return stillImageDelay;
 	}
 
 
@@ -300,6 +302,11 @@ public class DecoderInfo {
 	 * @return value of {@link #bufferingDelay}
 	 */
 	public Integer getBufferingDelay() {
+		if (bufferingDelay < DecoderConstant.MIN_BUFFERING_DELAY) {
+			return DecoderConstant.MIN_BUFFERING_DELAY;
+		} else if (bufferingDelay > DecoderConstant.MAX_BUFFERING_DELAY) {
+			return DecoderConstant.MAX_BUFFERING_DELAY;
+		}
 		return bufferingDelay;
 	}
 
@@ -318,6 +325,11 @@ public class DecoderInfo {
 	 * @return value of {@link #multisyncBufferingDelay}
 	 */
 	public Integer getMultisyncBufferingDelay() {
+		if (multisyncBufferingDelay < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
+			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY;
+		} else if (multisyncBufferingDelay > DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY) {
+			return DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY;
+		}
 		return multisyncBufferingDelay;
 	}
 
@@ -543,24 +555,23 @@ public class DecoderInfo {
 	 * @return String json request body
 	 */
 	public String jsonRequest() {
-		return "{" +
-				"\"id=\"" + id + '\"' +
-				",\"streamId\"=" + streamId +
-				",\"altStreamId\"=" + altStreamId +
-				",\"state\"=" + state +
-				",\"latency\"='" + latency + '\'' +
-				",\"stillImage\"=" + stillImage +
-				",\"stillImageDelay\"=" + stillImageDelay +
-				",\"bufferingMode\"=" + bufferingMode +
-				",\"bufferingDelay\"=" + bufferingDelay +
-				",\"multisyncBufferingDelay\"=" + multisyncBufferingDelay +
-				",\"hdrDynamicRange\"=" + hdrDynamicRange +
-				",\"output1\"=" + output1 +
-				",\"output2\"=" + output2 +
-				",\"output3\"=" + output3 +
-				",\"output4\"=" + output4 +
-				",\"outputFrameRate\"=" + outputFrameRate +
-				",\"quadMode\"=" + quadMode +
+		return '{' +
+				"\"id\":" + id +
+				",\"streamId\":" + streamId +
+				",\"state\":" + state +
+				",\"latency\":" + latency +
+				",\"stillImage\":" + stillImage +
+				",\"stillImageDelay\":" + stillImageDelay +
+				",\"bufferingMode\":" + bufferingMode +
+				",\"bufferingDelay\":" + bufferingDelay +
+				",\"multisyncBufferingDelay\":" + multisyncBufferingDelay +
+				",\"hdrDynamicRange\":" + hdrDynamicRange +
+				",\"output1\":" + output1 +
+				",\"output2\":" + output2 +
+				",\"output3\":" + output3 +
+				",\"output4\":" + output4 +
+				",\"outputFrameRate\":" + outputFrameRate +
+				",\"quadMode\":" + quadMode +
 				'}';
 	}
 }

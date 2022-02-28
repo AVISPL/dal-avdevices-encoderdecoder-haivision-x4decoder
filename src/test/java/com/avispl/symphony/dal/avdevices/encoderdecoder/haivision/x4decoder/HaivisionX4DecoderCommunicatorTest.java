@@ -15,12 +15,13 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
@@ -141,6 +142,26 @@ public class HaivisionX4DecoderCommunicatorTest {
 		Assertions.assertEquals("SRT - LAN Listen (55104)", stats.get(streamStatisticGroup2 + StreamMonitoringMetric.NAME.getName()));
 
 		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "test" + DecoderConstant.HASH;
-		Assertions.assertNull( stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
+		Assertions.assertNull(stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty fail
+	 * Expected throw exception when cannot control
+	 */
+	@Tag("Mock")
+	@Test
+	void testSetGainValueFail() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("Decoder 0" + "#Output2");
+		controllableProperty.setValue("1");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+
+		String expectedMessage = "failed to control decoder: Started";
+
 	}
 }

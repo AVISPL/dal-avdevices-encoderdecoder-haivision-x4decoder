@@ -27,7 +27,7 @@ public enum QuadMode {
 	/**
 	 *Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder quad mode
 	 */
 	QuadMode(String name, Integer code) {
@@ -86,7 +86,7 @@ public enum QuadMode {
 	 */
 	public static QuadMode getByName(String name) {
 		Optional<QuadMode> quadMode = Arrays.stream(QuadMode.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return quadMode.orElse(null);
+		return quadMode.orElse(QuadMode.NORMAL);
 	}
 }
 

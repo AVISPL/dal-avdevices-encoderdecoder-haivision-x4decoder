@@ -73,7 +73,7 @@ public class DecoderData {
 			case DECODER_ID:
 				return decoderStats.getDecoderID().toString();
 			case STATE:
-				return decoderStats.getState();
+				return decoderStats.getState().getName();
 			case UPTIME:
 				return nomalizeData.formatTimeData(decoderStats.getUptime());
 			case OVERSUBSCRIBED_FRAMES:

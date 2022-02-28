@@ -64,6 +64,7 @@ public class Stream {
 	 * @return String value of Stream monitoring properties by metric
 	 */
 	public String getValueByStreamMonitoringMetric(StreamMonitoringMetric streamMonitoringMetric) {
+
 		switch (streamMonitoringMetric) {
 			case ID:
 				return streamInfo.getId().toString();
@@ -72,7 +73,7 @@ public class Stream {
 			case DECODER_ID:
 				return streamInfo.getDecoderId();
 			case ENCAPSULATION:
-				return streamInfo.getEncapsulation();
+				return streamInfo.getEncapsulation().getName();
 			case STATE:
 				return streamStats.getState();
 			case SOURCE_ADDRESS:

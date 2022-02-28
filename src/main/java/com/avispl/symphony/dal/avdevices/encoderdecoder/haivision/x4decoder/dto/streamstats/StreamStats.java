@@ -3,8 +3,12 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Stream statistics
@@ -81,6 +85,10 @@ public class StreamStats {
 	@JsonAlias("srt")
 	private SRT srt;
 
+	@JsonAlias("sources")
+	private List<Source> sources;
+
+
 	/**
 	 * Retrieves {@code {@link #name}}
 	 *
@@ -141,6 +149,9 @@ public class StreamStats {
 	 * @return value of {@link #state}
 	 */
 	public String getState() {
+		if (state == null) {
+			return DecoderConstant.EMPTY;
+		}
 		switch (state) {
 			case 0:
 				return "UNKNOWN";
@@ -165,7 +176,7 @@ public class StreamStats {
 			case -3:
 				return "UNLICENSED";
 			default:
-				return "";
+				return DecoderConstant.NONE;
 		}
 	}
 
@@ -500,5 +511,23 @@ public class StreamStats {
 	 */
 	public void setSrt(SRT srt) {
 		this.srt = srt;
+	}
+
+	/**
+	 * Retrieves {@code {@link #sources}}
+	 *
+	 * @return value of {@link #sources}
+	 */
+	public List<Source> getSources() {
+		return sources;
+	}
+
+	/**
+	 * Sets {@code sources}
+	 *
+	 * @param sources the {@code java.util.List<com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source>} field
+	 */
+	public void setSources(List<Source> sources) {
+		this.sources = sources;
 	}
 }
