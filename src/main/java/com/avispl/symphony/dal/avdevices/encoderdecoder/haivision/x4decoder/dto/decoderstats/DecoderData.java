@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NomalizeData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 
 /**
@@ -25,7 +25,7 @@ public class DecoderData {
 	@JsonAlias("info")
 	private DecoderInfo decoderInfo;
 
-	private NomalizeData nomalizeData = new NomalizeData();
+	private NormalizeData nomalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #decoderStats }}
