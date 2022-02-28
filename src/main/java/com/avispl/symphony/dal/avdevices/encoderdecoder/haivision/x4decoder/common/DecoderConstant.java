@@ -28,7 +28,7 @@ public class DecoderConstant {
 	public static final String GETTING_SESSION_ID_ERR = "Username and Password are incorrect";
 	public static final String ROLE_BASED_ERR = "required admin or operator role-based";
 	public static final String PORT_NUMBER_ERROR = "invalid port number";
-	public static final String START_DECODER_ERR = "failed to start decoder";
+	public static final String DECODER_CONTROL_ERR = "failed to control decoder: ";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";
@@ -40,6 +40,7 @@ public class DecoderConstant {
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
 	public static final String AUDIO_PAIR = "Decoder Audio Pair";
+	public static final String SOURCE = "Source";
 	public static final String DEFAULT_STREAM_ID = "-1";
 	public static final String ENABLE = "Enable";
 	public static final String DISABLE = "Disable";
@@ -48,4 +49,11 @@ public class DecoderConstant {
 	public static final String APPLY = "Apply";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
+
+	public static final Integer MIN_STILL_IMAGE_DELAY = 0;
+	public static final Integer MAX_STILL_IMAGE_DELAY = 1000;
+	public static final Integer MIN_BUFFERING_DELAY = 0;
+	public static final Integer MAX_BUFFERING_DELAY = 3000;
+	public static final Integer MIN_MULTI_SYNC_BUFFERING_DELAY = 0;
+	public static final Integer MAX_MULTI_SYNC_BUFFERING_DELAY = 10000;
 }

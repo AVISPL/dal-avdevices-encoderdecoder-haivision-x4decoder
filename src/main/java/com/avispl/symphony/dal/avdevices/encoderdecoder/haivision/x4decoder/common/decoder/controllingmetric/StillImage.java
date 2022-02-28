@@ -30,7 +30,7 @@ public enum StillImage {
 	/**
 	 *Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder still image
 	 */
 	StillImage(String name, Integer code) {
@@ -89,7 +89,7 @@ public enum StillImage {
 	 */
 	public static StillImage getByName(String name) {
 		Optional<StillImage> stillImage = Arrays.stream(StillImage.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return stillImage.orElse(null);
+		return stillImage.orElse(StillImage.FREEZE);
 	}
 }
 

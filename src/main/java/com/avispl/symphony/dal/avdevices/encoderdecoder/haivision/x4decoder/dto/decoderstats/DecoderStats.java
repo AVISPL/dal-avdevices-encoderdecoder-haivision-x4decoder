@@ -9,6 +9,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.State;
+
 /**
  * Decoder statistics
  *
@@ -176,19 +178,8 @@ public class DecoderStats {
 	 *
 	 * @return value of {@link #state}
 	 */
-	public String getState() {
-		switch (state) {
-			case 0:
-				return "Stopped";
-			case 1:
-				return "Started";
-			case 2:
-				return "Active";
-			case -1:
-				return "Not Decoding";
-			default:
-				return "";
-		}
+	public State getState() {
+		return State.getByCode(state);
 	}
 
 	/**

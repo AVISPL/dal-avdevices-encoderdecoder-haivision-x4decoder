@@ -28,7 +28,7 @@ public enum BufferingMode {
 	/**
 	 *Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder buffering mode
 	 */
 	BufferingMode(String name, Integer code) {
@@ -83,11 +83,11 @@ public enum BufferingMode {
 	 * This method is used to get buffering mode by name
 	 *
 	 * @param name is the name of buffering mode that want to get
-	 * @return BufferingMode is the command that want to get
+	 * @return BufferingMode is the buffering mode that want to get
 	 */
 	public static BufferingMode getByName(String name) {
 		Optional<BufferingMode> bufferingMode = Arrays.stream(BufferingMode.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return bufferingMode.orElse(null);
+		return bufferingMode.orElse(BufferingMode.AUTO);
 	}
 }
 

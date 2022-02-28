@@ -29,7 +29,7 @@ public enum State {
 
 	/**
 	 *Parameterized constructor
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 * @param code Code of decoder status
 	 * @param isRunning status of decoder
 	 */
@@ -99,7 +99,7 @@ public enum State {
 	 */
 	public static State getByCode(Integer name) {
 		Optional<State> state = Arrays.stream(State.values()).filter(com -> com.getCode().equals(name)).findFirst();
-		return state.orElse(null);
+		return state.orElse(State.STOPPED);
 	}
 }
 

@@ -50,6 +50,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.AudioPairMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SRTMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SourceMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationInfo;
@@ -59,6 +60,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderStats;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.DeviceInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.SRT;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Stream;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamInfo;
@@ -173,7 +175,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		// Decoder control
 		String[] splitProperty = property.split(String.valueOf(DecoderConstant.HASH));
-		String[] splitName = splitProperty[0].split(DecoderConstant.SPACE);
+		String[] splitName = splitProperty[0].split(DecoderConstant.SPACE, 2);
 		ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitName[0]);
 		String name = splitName[1];
 
@@ -227,13 +229,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		populateDecoderMonitoringMetrics(stats);
 
-		if (!isEmergencyCall){
-			localDecoderDataList = decoderDataDTOList;
-			localStreamDataList = streamDataDTOList;
+		if (isEmergencyCall || localDecoderDataList == null || localStreamDataList == null) {
+			if (localDecoderDataList == null) {
+				localDecoderDataList = new HashMap<>();
+				localDecoderDataList.putAll(decoderDataDTOList);
+			}
+			if (localStreamDataList == null) {
+				localStreamDataList = new HashMap<>();
+				localStreamDataList.putAll(streamDataDTOList);
+			}
 		}
-		populateControllingMetrics(stats, advancedControllableProperties);
+
+		// check Role is Admin or Operator
+		String role = authenticationInfo.getAuthenticationRole().getRole();
+		if (role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) {
+			populateControllingMetrics(stats, advancedControllableProperties);
+			extendedStatistics.setControllableProperties(advancedControllableProperties);
+		}
 		extendedStatistics.setStatistics(stats);
-		extendedStatistics.setControllableProperties(advancedControllableProperties);
 
 		return Collections.singletonList(extendedStatistics);
 	}
@@ -498,6 +511,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void populateStreamStats(Map<String, String> stats, Stream stream) {
 		SRT srt = stream.getStreamStats().getSrt();
+		List<Source> sources = stream.getStreamStats().getSources();
 		Integer streamId = stream.getStreamInfo().getId();
 		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + stream.getStreamInfo().getName() + DecoderConstant.HASH;
 
@@ -508,6 +522,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (stream.getStreamStats().getSrt() != null) {
 			for (SRTMetric item : SRTMetric.values()) {
 				stats.put(streamStatisticGroup + item.getName(), checkForNullData(srt.getValueBySRTMonitoringMetric(item)));
+			}
+		}
+
+		if (sources != null) {
+			for (Source source : sources) {
+				for (SourceMetric item : SourceMetric.values()) {
+					stats.put(streamStatisticGroup + source.getName() + DecoderConstant.SPACE + item.getName(), checkForNullData(source.getValueBySourceMetric(item)));
+				}
 			}
 		}
 
@@ -566,7 +588,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 						// Port number filtering
 						if (this.portNumber != null) {
-							Integer port = Integer.parseInt(streamInfo.getPort());
+							Integer port = streamInfo.getPort();
 							boolean isValidPort = handleAdapterPortRangeFromUser(port);
 							if (!isValidPort) {
 								continue;
@@ -806,7 +828,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 
 		// Populate still image delay text control
-		advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
+		advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
 
 		// Populate output switch control
 		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
@@ -916,7 +938,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return AdvancedControllableProperty Text instance
 	 */
 	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
-		stats.put(name, DecoderConstant.EMPTY);
+		stats.put(name, stringValue);
 		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
 		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
 	}
@@ -947,7 +969,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		switch (decoderControllingMetric) {
 			case STREAM_ID:
-				decoderInfo.setStreamId(Integer.parseInt(value));
+				Integer streamID = this.localStreamDataList.get(value).getStreamInfo().getId();
+				if (streamID == null) {
+					streamID = -1;
+				}
+				decoderInfo.setStreamId(streamID);
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
@@ -999,7 +1025,22 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				decoderInfo.setBufferingMode(bufferingMode.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
-				isEmergencyCall = true;
+				break;
+			case BUFFERING_DELAY:
+				decoderInfo.setBufferingDelay(Integer.parseInt(value));
+				decoderData.setDecoderInfo(decoderInfo);
+				this.localDecoderDataList.put(decoderID, decoderData);
+				break;
+			case MULTI_SYNC_BUFFERING_DELAY:
+				decoderInfo.setMultisyncBufferingDelay(Integer.parseInt(value));
+				decoderData.setDecoderInfo(decoderInfo);
+				this.localDecoderDataList.put(decoderID, decoderData);
+				break;
+			case QUAD_MODE:
+				QuadMode quadMode = QuadMode.getByName(value);
+				decoderInfo.setQuadMode(quadMode.getCode());
+				decoderData.setDecoderInfo(decoderInfo);
+				this.localDecoderDataList.put(decoderID, decoderData);
 				break;
 			case STATE:
 				State state = State.getByCode(Integer.parseInt(value));
@@ -1008,17 +1049,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				this.localDecoderDataList.put(decoderID, decoderData);
 				switch (state) {
 					case STOPPED:
-						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER);
-						this.isEmergencyCall = false;
+						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER, state.getName());
 						break;
 					case START:
-						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER);
-						this.isEmergencyCall = false;
+						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER, state.getName());
 						break;
 				}
 			case APPLY_CHANGE:
-				performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.UPDATE_DECODER);
-				this.isEmergencyCall = false;
+				performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.UPDATE_DECODER, decoderControllingMetric.getName());
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + controllableProperty);
@@ -1031,7 +1069,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param localDecoderDataList list of decoder data
 	 * @param decoderID ID of decoder ID
 	 */
-	private void performDecoderControl(Map<String, DecoderData> localDecoderDataList, String decoderID, String controlURL) {
+	private void performDecoderControl(Map<String, DecoderData> localDecoderDataList, String decoderID, String controlURL, String controlMethod) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = localDecoderDataList.get(decoderID).getDecoderInfo().jsonRequest();
@@ -1040,13 +1078,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
 				if (decoderData == null) {
-					throw new ResourceNotReachableException(DecoderConstant.START_DECODER_ERR);
+					throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 				}
 			} else {
-				throw new ResourceNotReachableException(DecoderConstant.START_DECODER_ERR);
+				throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.START_DECODER_ERR);
+			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 		}
 	}
 
@@ -1057,7 +1095,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return boolean value of switch control true/false
 	 */
 	public boolean mapSwitchControlValue(String value) {
-		return value.equals("0");
+		return value.equals("1");
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------

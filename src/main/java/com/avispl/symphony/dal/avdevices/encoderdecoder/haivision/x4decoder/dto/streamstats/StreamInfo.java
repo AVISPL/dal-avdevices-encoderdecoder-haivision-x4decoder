@@ -6,6 +6,10 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
+
 /**
  * Stream information
  *
@@ -34,7 +38,7 @@ public class StreamInfo {
 	private String address;
 
 	@JsonAlias("port")
-	private String port;
+	private Integer port;
 
 	@JsonAlias("sourceIp")
 	private String sourceIp;
@@ -134,8 +138,15 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #encapsulation}
 	 */
-	public String getEncapsulation() {
-		return encapsulation;
+	public Encapsulation getEncapsulation() {
+		if (this.encapsulation != null) {
+			for (Encapsulation encapsulation : Encapsulation.values()) {
+				if (encapsulation.getCode().equals(this.encapsulation)) {
+					return encapsulation;
+				}
+			}
+		}
+		return Encapsulation.TS_OVER_UDP;
 	}
 
 	/**
@@ -188,7 +199,7 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #port}
 	 */
-	public String getPort() {
+	public Integer getPort() {
 		return port;
 	}
 
@@ -197,7 +208,7 @@ public class StreamInfo {
 	 *
 	 * @param port the {@code java.lang.String} field
 	 */
-	public void setPort(String port) {
+	public void setPort(Integer port) {
 		this.port = port;
 	}
 
@@ -242,8 +253,15 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtMode}
 	 */
-	public String getSrtMode() {
-		return srtMode;
+	public SRTMode getSrtMode() {
+		if (this.srtMode != null) {
+			for (SRTMode srtMode : SRTMode.values()) {
+				if (srtMode.getCode().equals(this.srtMode)) {
+					return srtMode;
+				}
+			}
+		}
+		return SRTMode.LISTENER;
 	}
 
 	/**
@@ -422,8 +440,15 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #fecRtp}
 	 */
-	public String getFecRtp() {
-		return fecRtp;
+	public FecRTP getFecRtp() {
+		if (this.fecRtp != null) {
+			for (FecRTP fecRTP : FecRTP.values()) {
+				if (fecRTP.getCode().equals(this.encapsulation)) {
+					return fecRTP;
+				}
+			}
+		}
+		return FecRTP.DISABLE;
 	}
 
 	/**

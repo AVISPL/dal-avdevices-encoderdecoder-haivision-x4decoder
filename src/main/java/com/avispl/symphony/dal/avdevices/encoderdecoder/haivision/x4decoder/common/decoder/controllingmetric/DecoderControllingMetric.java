@@ -42,7 +42,7 @@ public enum DecoderControllingMetric {
 	/**
 	 *Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder monitoring metric
 	 */
 	DecoderControllingMetric(String name) {
 		this.name = name;
