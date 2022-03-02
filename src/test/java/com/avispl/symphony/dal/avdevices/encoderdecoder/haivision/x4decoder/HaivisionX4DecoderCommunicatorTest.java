@@ -62,8 +62,8 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.SPACE + DecoderConstant.HASH;
-		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + 1 + DecoderConstant.HASH;
+		String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.HASH;
+		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + 1 + DecoderConstant.HASH;
 
 		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.SERIAL_NUMBER.getName()));
 		Assertions.assertEquals(MonitoringData.HARDWARE_REVISION.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.HARDWARE_REVISION.getName()));
@@ -135,13 +135,13 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "SRT - WAN Listen (6515)" + DecoderConstant.HASH;
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "SRT - WAN Listen (6515)" + DecoderConstant.HASH;
 		Assertions.assertEquals("SRT - WAN Listen (6515)", stats.get(streamStatisticGroup + StreamMonitoringMetric.NAME.getName()));
 
-		String streamStatisticGroup2 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "SRT - LAN Listen (55104)" + DecoderConstant.HASH;
+		String streamStatisticGroup2 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "SRT - LAN Listen (55104)" + DecoderConstant.HASH;
 		Assertions.assertEquals("SRT - LAN Listen (55104)", stats.get(streamStatisticGroup2 + StreamMonitoringMetric.NAME.getName()));
 
-		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + "test" + DecoderConstant.HASH;
+		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "test" + DecoderConstant.HASH;
 		Assertions.assertNull(stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
 	}
 

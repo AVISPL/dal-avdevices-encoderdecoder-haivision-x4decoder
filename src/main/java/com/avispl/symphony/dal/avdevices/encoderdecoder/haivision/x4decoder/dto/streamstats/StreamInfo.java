@@ -11,7 +11,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
 
 /**
- * Stream information
+ * Set of stream configuration properties
  *
  * @author Harry
  * @since 1.0
@@ -29,7 +29,7 @@ public class StreamInfo {
 	private String decoderId;
 
 	@JsonAlias("encapsulation")
-	private String encapsulation;
+	private Integer encapsulation;
 
 	@JsonAlias("userData")
 	private String userData;
@@ -154,7 +154,7 @@ public class StreamInfo {
 	 *
 	 * @param encapsulation the {@code java.lang.String} field
 	 */
-	public void setEncapsulation(String encapsulation) {
+	public void setEncapsulation(Integer encapsulation) {
 		this.encapsulation = encapsulation;
 	}
 

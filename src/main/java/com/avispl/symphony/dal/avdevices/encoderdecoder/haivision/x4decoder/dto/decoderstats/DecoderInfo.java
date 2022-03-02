@@ -15,7 +15,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
 
 /**
- * Decoder information
+ * Set of decoder configuration properties
  *
  * @author Harry
  * @since 1.0

@@ -66,8 +66,8 @@ public enum OutputFrameRate {
 	 */
 	public static List<String> getOutputFrameRateList() {
 		List<String> list = new LinkedList<>();
-		for (OutputFrameRate outputFramRate : OutputFrameRate.values()) {
-			list.add(outputFramRate.getName());
+		for (OutputFrameRate outputFrameRate : OutputFrameRate.values()) {
+			list.add(outputFrameRate.getName());
 		}
 		return list;
 	}

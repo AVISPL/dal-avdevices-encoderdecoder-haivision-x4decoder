@@ -18,7 +18,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AudioPair {
 
-	@JsonAlias("audioPairMode")
+	@JsonAlias("mode")
 	private String audioPairMode;
 
 	@JsonAlias("compression")

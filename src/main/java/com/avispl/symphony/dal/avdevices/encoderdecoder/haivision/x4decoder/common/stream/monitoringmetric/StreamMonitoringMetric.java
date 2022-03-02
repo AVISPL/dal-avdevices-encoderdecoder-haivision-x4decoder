@@ -33,9 +33,7 @@ public enum StreamMonitoringMetric {
 	STREAM_SUMMARY("SRTStreamSummary"),
 	DROPPED_PACKETS("SRTDroppedPackets"),
 	CORRUPTED_FRAMES("SRTCorruptedFrames"),
-	RESTARTS("SRTRestarts"),
-	LOCAL_PORT("SRTLocalPort"),
-	REMOTE_PORT("SRTRemotePort");
+	RESTARTS("SRTRestarts");
 
 	private final String name;
 

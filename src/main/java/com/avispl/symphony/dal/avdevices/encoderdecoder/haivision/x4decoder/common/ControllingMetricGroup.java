@@ -46,7 +46,7 @@ public enum ControllingMetricGroup {
 	 * @return ControllingMetric is the controlling metric group that want to get
 	 */
 	public static ControllingMetricGroup getByName(String name) {
-		Optional<ControllingMetricGroup> controllingMetricGroup = Arrays.stream(ControllingMetricGroup.values()).filter(com -> com.getName().equals(name)).findFirst();
+		Optional<ControllingMetricGroup> controllingMetricGroup = Arrays.stream(ControllingMetricGroup.values()).filter(com -> name.contains(com.getName())).findFirst();
 		return controllingMetricGroup.orElse(null);
 	}
 

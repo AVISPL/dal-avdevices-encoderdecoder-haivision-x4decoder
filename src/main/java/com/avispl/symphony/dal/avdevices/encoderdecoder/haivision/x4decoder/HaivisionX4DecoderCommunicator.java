@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.StreamControllingMetric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.CollectionUtils;
@@ -95,14 +94,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private Set<String> portNumberSet;
 	private boolean isEmergencyCall = false;
 
-	//
-	private boolean isGetMultipleAfterControl = false;
+	private boolean isEmergencyDelivery = false;
 	private ExtendedStatistics localExtendedStatistics;
-	/**
-	 * Store local extended statistics of create stream
-	 */
-	private ExtendedStatistics localCreateStreamExtendedStatistics;
-	//
+
 	// Decoder and stream DTO
 	private Map<String, DecoderData> decoderDataDTOList;
 	private Map<String, Stream> streamDataDTOList;
@@ -177,6 +171,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	public void controlProperty(ControllableProperty controllableProperty) {
 		String property = controllableProperty.getProperty();
 		String value = String.valueOf(controllableProperty.getValue());
+		Map<String, String> stats = this.localExtendedStatistics.getStatistics();
+		List<AdvancedControllableProperty> advancedControllableProperties = this.localExtendedStatistics.getControllableProperties();
 
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("controlProperty property " + property);
@@ -184,25 +180,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		// Decoder control
 		String[] splitProperty = property.split(String.valueOf(DecoderConstant.HASH));
-		String[] splitName = splitProperty[0].split(DecoderConstant.SPACE, 2);
-		ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitName[0]);
+		ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitProperty[0]);
 
 		switch (controllingGroup) {
 			case DECODER:
-				String name = splitName[1];
-				decoderControl(name, splitProperty[1], value);
+				String name = splitProperty[0].substring(8);
+				decoderControl(stats, advancedControllableProperties, name, splitProperty[1], value);
 				break;
 			case STREAM:
 //				handleStreamingControl(property, value, splitProperty[1], splitProperty[0]);
 				break;
 			case CREATE_STREAM:
-				if (localCreateStreamExtendedStatistics != null) {
-					Map<String, String> localCreateStreamStats = localCreateStreamExtendedStatistics.getStatistics();
-					List<AdvancedControllableProperty> localCreateStreamControls = localCreateStreamExtendedStatistics.getControllableProperties();
-					handleStreamingControl(property, value, splitProperty[1],localCreateStreamStats, localCreateStreamControls, controllingGroup.getName());
-					localCreateStreamExtendedStatistics.setStatistics(localCreateStreamStats);
-					localCreateStreamExtendedStatistics.setControllableProperties(localCreateStreamControls);
-				}
+//				if (localCreateStreamExtendedStatistics != null) {
+//					Map<String, String> localCreateStreamStats = localCreateStreamExtendedStatistics.getStatistics();
+//					List<AdvancedControllableProperty> localCreateStreamControls = localCreateStreamExtendedStatistics.getControllableProperties();
+//					handleStreamingControl(property, value, splitProperty[1],localCreateStreamStats, localCreateStreamControls, controllingGroup.getName());
+//					localCreateStreamExtendedStatistics.setStatistics(localCreateStreamStats);
+//					localCreateStreamExtendedStatistics.setControllableProperties(localCreateStreamControls);
+//				}
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + controllingGroup);
@@ -234,33 +229,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Getting statistics from the device X4 decoder at host %s with port %s", this.host, this.getPort()));
 		}
-		//
-		if (localExtendedStatistics != null && isGetMultipleAfterControl) {
-			// Remove old create stream stats/controls
-			List<String> listKeyToBeRemove = new ArrayList<>();
-			Map<String, String> localStats = localExtendedStatistics.getStatistics();
-			List<AdvancedControllableProperty> localControls = localExtendedStatistics.getControllableProperties();
-			for (StreamControllingMetric streamControllingMetric: StreamControllingMetric.values()) {
-				listKeyToBeRemove.add(String.format("%s#%s","CreateStream",streamControllingMetric.getName()));
-			}
-			removeUnusedStatsAndControls(localStats, localControls, listKeyToBeRemove);
-			if (localCreateStreamExtendedStatistics != null) {
-				Map<String, String> createStreamStats = localCreateStreamExtendedStatistics.getStatistics();
-				localStats.putAll(createStreamStats);
-				List<AdvancedControllableProperty> createStreamControls = localCreateStreamExtendedStatistics.getControllableProperties();
-				localControls.addAll(createStreamControls);
-			}
-			localExtendedStatistics.setStatistics(localStats);
-			localExtendedStatistics.setControllableProperties(localControls);
-			isGetMultipleAfterControl = false;
-			return Collections.singletonList(localExtendedStatistics);
-		}
-		//
 		final ExtendedStatistics extendedStatistics = new ExtendedStatistics();
 		final Map<String, String> stats = new HashMap<>();
 		final List<AdvancedControllableProperty> advancedControllableProperties = new ArrayList<>();
 		failedMonitor = new HashMap<>();
 
+		if (localExtendedStatistics == null) {
+			localExtendedStatistics = new ExtendedStatistics();
+		}
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
 		}
@@ -271,42 +247,29 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			streamDataDTOList = new HashMap<>();
 		}
 
-		populateDecoderMonitoringMetrics(stats);
-		//
-		if (localCreateStreamExtendedStatistics == null) {
-			// Populate default stats/controls for CreateStream group.
-			populateCreateStream();
-		}
-		//
-		if (isEmergencyCall || localDecoderDataList == null || localStreamDataList == null) {
-			if (localDecoderDataList == null) {
+		if (!isEmergencyDelivery) {
+			populateDecoderMonitoringMetrics(stats);
+			if (isEmergencyCall || localDecoderDataList == null) {
 				localDecoderDataList = new HashMap<>();
 				localDecoderDataList.putAll(decoderDataDTOList);
+
+				if (isEmergencyCall || localStreamDataList == null) {
+					localStreamDataList = new HashMap<>();
+					localStreamDataList.putAll(streamDataDTOList);
+				}
+				isEmergencyCall = false;
 			}
-			if (localStreamDataList == null) {
-				localStreamDataList = new HashMap<>();
-				localStreamDataList.putAll(streamDataDTOList);
+			// check Role is Admin or Operator
+			String role = authenticationInfo.getAuthenticationRole().getRole();
+			if (role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) {
+				populateControllingMetrics(stats, advancedControllableProperties);
+				extendedStatistics.setControllableProperties(advancedControllableProperties);
 			}
+			extendedStatistics.setStatistics(stats);
+			localExtendedStatistics = extendedStatistics;
+			isEmergencyDelivery = false;
 		}
-		//
-		if (localCreateStreamExtendedStatistics != null) {
-			Map<String, String> createStreamStats = localCreateStreamExtendedStatistics.getStatistics();
-			stats.putAll(createStreamStats);
-			List<AdvancedControllableProperty> createStreamControls = localCreateStreamExtendedStatistics.getControllableProperties();
-			advancedControllableProperties.addAll(createStreamControls);
-		}
-		//
-		// check Role is Admin or Operator
-		String role = authenticationInfo.getAuthenticationRole().getRole();
-		if (role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) {
-			populateControllingMetrics(stats, advancedControllableProperties);
-			extendedStatistics.setControllableProperties(advancedControllableProperties);
-		}
-		extendedStatistics.setStatistics(stats);
-		//
-		localExtendedStatistics = extendedStatistics;
-		//
-		return Collections.singletonList(extendedStatistics);
+		return Collections.singletonList(localExtendedStatistics);
 	}
 
 	@Override
@@ -454,7 +417,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				DeviceInfo deviceInfo = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DEVICE_INFO), DeviceInfo.class);
 				if (deviceInfo != null) {
-					String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.SPACE + DecoderConstant.HASH;
+					String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.HASH;
 
 					stats.put(deviceInfoGroup + DeviceInfoMetric.SERIAL_NUMBER.getName(), checkForNullData(deviceInfo.getSerialNumber()));
 					stats.put(deviceInfoGroup + DeviceInfoMetric.CARD_STATUS.getName(), checkForNullData(deviceInfo.getCardStatus()));
@@ -503,7 +466,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		DecoderStats decoderStats = decoderData.getDecoderStats();
 		List<AudioPair> audioPairs = decoderStats.getAudioPairs();
 
-		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
+		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + decoderID + DecoderConstant.HASH;
 
 		for (DecoderMonitoringMetric item : DecoderMonitoringMetric.values()) {
 			stats.put(decoderStatisticGroup + item.getName(), checkForNullData(decoderData.getValueByDecoderMonitoringMetric(item)));
@@ -571,7 +534,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		SRT srt = stream.getStreamStats().getSrt();
 		List<Source> sources = stream.getStreamStats().getSources();
 		Integer streamId = stream.getStreamInfo().getId();
-		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + DecoderConstant.SPACE + stream.getStreamInfo().getName() + DecoderConstant.HASH;
+		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + stream.getStreamInfo().getName() + DecoderConstant.HASH;
 
 		for (StreamMonitoringMetric item : StreamMonitoringMetric.values()) {
 			stats.put(streamStatisticGroup + item.getName(), checkForNullData(stream.getValueByStreamMonitoringMetric(item)));
@@ -586,7 +549,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (sources != null) {
 			for (Source source : sources) {
 				for (SourceMetric item : SourceMetric.values()) {
-					stats.put(streamStatisticGroup + source.getName() + DecoderConstant.SPACE + item.getName(), checkForNullData(source.getValueBySourceMetric(item)));
+					stats.put(streamStatisticGroup + source.getName() + item.getName(), checkForNullData(source.getValueBySourceMetric(item)));
 				}
 			}
 		}
@@ -840,44 +803,43 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param decoderID ID of decoder
 	 */
 	private void populateDecoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID) {
 		// Get controllable property current value
 		DecoderInfo decoderInfo = this.localDecoderDataList.get(decoderID.toString()).getDecoderInfo();
-		BufferingMode bufferingMode = decoderInfo.getBufferingMode();
 		HDR hdr = decoderInfo.getHdrDynamicRange();
 		OutputFrameRate outputFrameRate = decoderInfo.getOutputFrameRate();
 		QuadMode quadMode = decoderInfo.getQuadMode();
 		StillImage stillImage = decoderInfo.getStillImage();
-
-		// Get list values of controllable property (dropdown)
-		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
-		List<String> quadModeList = QuadMode.getQuadModeList();
-		List<String> stillImageList = StillImage.getStillImageList();
-		List<String> bufferingModeList = BufferingMode.getBufferingList();
-		List<String> hdrList = HDR.getHDRList();
-		List<String> streamIDList = new LinkedList<>();
-
-		if (this.localStreamDataList != null) {
-			streamIDList.addAll(this.localStreamDataList.keySet());
-		} else {
-			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
-		}
-
-		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + DecoderConstant.SPACE + decoderID + DecoderConstant.HASH;
-
-		// Populate stream id dropdown list control
 		String streamID = decoderInfo.getStreamId().toString();
 		if (StringUtils.isNullOrEmpty(streamID)) {
 			streamID = DecoderConstant.DEFAULT_STREAM_ID;
 		}
+		// Get list values of controllable property (dropdown)
+		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
+		List<String> quadModeList = QuadMode.getQuadModeList();
+		List<String> stillImageList = StillImage.getStillImageList();
+		List<String> hdrList = HDR.getHDRList();
+		List<String> streamIDList = new LinkedList<>();
+
+		if (this.streamDataDTOList != null) {
+			streamIDList.addAll(this.streamDataDTOList.keySet());
+		} else {
+			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
+		}
+
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
+
+		// Populate stream id dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID));
 
 		// Populate HDR dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
 
 		// Populate output frame rate dropdown list control
-		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
+		advancedControllableProperties.add(
+				createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
 
 		// Populate quad mode dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.QUAD_MODE.getName(), quadModeList, quadMode.getName()));
@@ -902,26 +864,48 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 				DecoderConstant.OFF, DecoderConstant.ON));
 
-		// Populate apply change bottom control
-		if (!decoderInfo.getState().isRunning()) {
-			advancedControllableProperties.add(createButton(stats, decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName(), DecoderConstant.APPLY));
-		}
+		populateDecoderControlBufferingMode(stats, advancedControllableProperties, decoderInfo);
+		populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+	}
 
+	/**
+	 * This method is used for populate all buffering mode of decoder control:
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param decoderInfo set of decoder configuration
+	 */
+	private void populateDecoderControlBufferingMode(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, DecoderInfo decoderInfo) {
+		// Get controllable property current value
+		BufferingMode bufferingMode = decoderInfo.getBufferingMode();
+		String decoderID = decoderInfo.getId();
+
+		// Get list values of controllable property (dropdown)
+		List<String> bufferingModeList = BufferingMode.getBufferingList();
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
+
+		// remove unused keys
+		stats.remove(decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName());
+		stats.remove(decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName());
+		stats.remove(decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName());
 		switch (bufferingMode) {
 			case AUTO:
 				// Populate buffering mode dropdown list control
-				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+				advancedControllableProperties.add(
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 				break;
 			case FIXED:
 				// Populate buffering mode dropdown list control
-				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+				advancedControllableProperties.add(
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate fixed delay text control
 				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
 				break;
 			case MULTI_SYNC:
 				// Populate buffering mode dropdown list control
-				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+				advancedControllableProperties.add(
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate multi sync delay text control
 				advancedControllableProperties.add(
@@ -930,458 +914,27 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 	}
 
-	//endregion
-
-	//region Populate stream control properties
-	//--------------------------------------------------------------------------------------------------------------------------------
 	/**
-	 * Handle control operation for create/update/delete stream
+	 * This method is used for populate apply change button and cancel button of decoder control:
 	 *
-	 * @param property Property value
-	 * @param value new value to be set
-	 * @param splitProperty statistic's key
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 * @param groupName group name of the statistic
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param decoderID ID of decoder
 	 */
-	private void handleStreamingControl(String property, String value, String splitProperty, Map<String, String> localStats, List<AdvancedControllableProperty> localControls, String groupName) {
-		StreamControllingMetric controllingGroup = StreamControllingMetric.getByName(splitProperty);
-		switch (controllingGroup) {
-			case STREAM_NAME:
-			case PORT:
-			case MULTICAST_ADDRESS:
-			case SOURCE_ADDRESS:
-			case FEC_RTP:
-			case LATENCY:
-			case ADDRESS:
-			case SOURCE_PORT:
-			case DESTINATION_PORT:
-			case PASSPHRASE:
-			case REJECT_UNENCRYPTED_CALLERS:
-			case SRT_TO_UDP_ADDRESS:
-			case SRT_TO_UDP_PORT:
-			case SRT_TO_UDP_TOS:
-			case SRT_TO_UDP_TTL:
-				isGetMultipleAfterControl = true;
-				controlStreamDefaultCase(property, value, localStats, localControls);
-				break;
-			case ENCAPSULATION:
-				isGetMultipleAfterControl = true;
-				controlStreamCaseProtocol(value, groupName, localStats, localControls);
-				break;
-			case TYPE:
-				isGetMultipleAfterControl = true;
-				// This dropdown only appears when Protocol is in "TS over UDP"/"TS over RTP" mode.
-				controlStreamCaseType(value, groupName, localStats, localControls);
-				break;
-			case SRT_MODE:
-				isGetMultipleAfterControl = true;
-				// This dropdown only appears when Protocol is in "TS over SRT" mode.
-				controlStreamCaseSrtMode(value, groupName, localStats, localControls);
-				break;
-			case ENCRYPTED:
-				isGetMultipleAfterControl = true;
-				controlStreamCaseEncrypted(value, groupName, localStats, localControls);
-				break;
-			case SRT_TO_UDP_STREAM_CONVERSION:
-				isGetMultipleAfterControl = true;
-				controlStreamCaseStreamConversion(value, groupName, localStats, localControls);
-				break;
-			case CREATE:
-				isGetMultipleAfterControl = true;
-				controlStreamCasePressCreate(value, localStats, localControls);
-				break;
-			case DELETE:
-				isGetMultipleAfterControl = true;
-				controlStreamCasePressDelete(value, localStats, localControls);
-				break;
-			case UPDATE:
-				isGetMultipleAfterControl = true;
-				controlStreamCasePressUpdate(value, localStats, localControls);
-				break;
-		}
-	}
+	private void populateApplyChangeAndCancelButtonForDecoder(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID) {
+		DecoderInfo decoderInfo = this.localDecoderDataList.get(decoderID.toString()).getDecoderInfo();
 
-	/**
-	 * Populate default value for CreateStream group.
-	 */
-	private void populateCreateStream() {
-		localCreateStreamExtendedStatistics = new ExtendedStatistics();
-		Map<String, String> stats = new HashMap<>();
-		List<AdvancedControllableProperty> controls = new ArrayList<>();
-		controls.add(createText(stats, String.format("CreateStream#%s", StreamControllingMetric.STREAM_NAME.getName()), "General"));
-		List<String> values = new ArrayList<>();
-		values.add("TS over UDP");
-		values.add("TS over RTP");
-		values.add("TS over SRT");
-		// Populate default case:
-		populateMissingCreateStreamProperties(stats, controls, "TS over UDP", "TS over UDP", "CreateStream");
-		controls.add(createDropdown(stats,  String.format("CreateStream#%s", StreamControllingMetric.ENCAPSULATION.getName()), values, "TS over UDP"));
-		controls.add(createButton(stats,  String.format("CreateStream#%s", StreamControllingMetric.CREATE.getName()), StreamControllingMetric.CREATE.getName()));
-		localCreateStreamExtendedStatistics.setStatistics(stats);
-		localCreateStreamExtendedStatistics.setControllableProperties(controls);
-	}
-
-	/**
-	 * Stream control: populate required properties
-	 *
-	 * @param stats Map of statistics
-	 * @param controls List of AdvancedControllableProperty
-	 * @param protocolName name of the protocol
-	 * @param previousProtocolName previous name of the protocol
-	 * @param groupName group name
-	 */
-	private void populateMissingCreateStreamProperties(Map<String, String> stats, List<AdvancedControllableProperty> controls, String protocolName, String previousProtocolName, String groupName) {
-		List<String> listKeyToBeRemove = new ArrayList<>();
-		switch (previousProtocolName) {
-			case "TS over UDP":
-				listKeyToBeRemove.add(String.format("%s#%s",groupName, StreamControllingMetric.TYPE.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.MULTICAST_ADDRESS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SOURCE_ADDRESS.getName()));
-				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
-				break;
-			case "TS over RTP":
-				listKeyToBeRemove.add(String.format("%s#%s",groupName, StreamControllingMetric.TYPE.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.FEC_RTP.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.MULTICAST_ADDRESS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SOURCE_ADDRESS.getName()));
-				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
-				break;
-			case "TS over SRT":
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_MODE.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.LATENCY.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_PORT.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TOS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TTL.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.ENCRYPTED.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.PASSPHRASE.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.ADDRESS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SOURCE_PORT.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.DESTINATION_PORT.getName()));
-				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
-				break;
-		}
-		// Populate the default statistics and controls.
-		switch (protocolName) {
-			case "TS over UDP":
-				// Default case of TS over UDP with Type = Unicast
-				List<String> TsOverUdpTypeValue = new ArrayList<>();
-				TsOverUdpTypeValue.add("Unicast");
-				TsOverUdpTypeValue.add("Multicast");
-				controls.add(createDropdown(stats, String.format("%s#%s",groupName,StreamControllingMetric.TYPE.getName()), TsOverUdpTypeValue, "Unicast"));
-				controls.add(createText(stats, String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()), "1710"));
-				break;
-			case "TS over RTP":
-				// Default case of TS over RTP with Type = Unicast
-				List<String> TsOverRtpTypeValue = new ArrayList<>();
-				TsOverRtpTypeValue.add("Unicast");
-				TsOverRtpTypeValue.add("Multicast");
-				controls.add(createDropdown(stats, String.format("%s#%s",groupName,StreamControllingMetric.TYPE.getName()), TsOverRtpTypeValue, "Unicast"));
-				controls.add(createText(stats, String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()), "1710"));
-				List<String> TsOverRtcRtpValue = new ArrayList<>();
-				TsOverRtcRtpValue.add("Disabled");
-				TsOverRtcRtpValue.add("MPEG PRO FEC");
-				controls.add(createDropdown(stats, String.format("%s#%s",groupName,StreamControllingMetric.FEC_RTP.getName()), TsOverRtcRtpValue, "Disabled"));
-				break;
-			case "TS over SRT":
-				// Default case of TS over SRT with SrtMode = Listener
-				List<String> TsOverRtcSrtModeValue = new ArrayList<>();
-				TsOverRtcSrtModeValue.add("Caller");
-				TsOverRtcSrtModeValue.add("Listener");
-				TsOverRtcSrtModeValue.add("Rendezvous");
-				controls.add(createDropdown(stats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_MODE.getName()), TsOverRtcSrtModeValue, "Listener"));
-				controls.add(createText(stats, String.format("%s#%s",groupName,StreamControllingMetric.PORT.getName()), "1710"));
-				controls.add(createText(stats, String.format("%s#%s",groupName,StreamControllingMetric.LATENCY.getName()), "125"));
-				controls.add(createSwitch(stats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()), false,
-						"Disable", "Enable"));
-				controls.add(createSwitch(stats, String.format("%s#%s",groupName,StreamControllingMetric.ENCRYPTED.getName()), false,
-						"Disable", "Enable"));
-				break;
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
+		Set<String> keyToBeRemove = new HashSet<>();
+		keyToBeRemove.add(decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName());
+		keyToBeRemove.add(decoderControllingGroup + DecoderControllingMetric.CANCEL.getName());
+		if (!decoderInfo.getState().isRunning() && !this.localDecoderDataList.equals(this.decoderDataDTOList)) {
+			advancedControllableProperties.add(createButton(stats, decoderControllingGroup + DecoderControllingMetric.APPLY_CHANGE.getName(), DecoderConstant.APPLY));
+			advancedControllableProperties.add(createButton(stats, decoderControllingGroup + DecoderControllingMetric.CANCEL.getName(), DecoderConstant.CANCEL));
+		} else {
+			stats.remove(keyToBeRemove);
 		}
 	}
-
-	/**
-	 * Stream control: remove unused statistics/AdvancedControllableProperty from {@link HaivisionX4DecoderCommunicator#localExtendedStatistics}
-	 *
-	 * @param stats Map of statistics that contains statistics to be removed
-	 * @param controls List of controls that contains AdvancedControllableProperty to be removed
-	 * @param listKeys list key of statistics to be removed
-	 */
-	private void removeUnusedStatsAndControls(Map<String, String> stats, List<AdvancedControllableProperty> controls, List<String> listKeys) {
-		for (String key : listKeys) {
-			stats.remove(key);
-			controls.removeIf(advancedControllableProperty -> advancedControllableProperty.getName().equals(key));
-		}
-	}
-
-	/**
-	 * Stream control: update protocol dropdowns initial value and populate required properties that matches that protocol
-	 *
-	 * @param stats Map of statistics
-	 * @param controls List of AdvancedControllableProperty
-	 * @param protocolName current protocol name
-	 * @param groupName group name
-	 */
-	private void handleCreateStreamWhenProtocolIsSet(Map<String, String> stats, List<AdvancedControllableProperty> controls, String protocolName, String groupName) {
-		String lastProtocolName = stats.get(String.format("%s#%s", groupName,StreamControllingMetric.ENCAPSULATION.getName()));
-		stats.put(String.format("%s#%s", groupName,StreamControllingMetric.ENCAPSULATION.getName()), protocolName);
-		for (AdvancedControllableProperty advancedControllableProperty : controls) {
-			if (advancedControllableProperty.getName().equals(String.format("%s#%s", groupName,StreamControllingMetric.ENCAPSULATION.getName()))) {
-				advancedControllableProperty.setValue(protocolName);
-				break;
-			}
-		}
-		populateMissingCreateStreamProperties(stats, controls, protocolName, lastProtocolName,groupName);
-	}
-
-	/**
-	 * Stream control: update group's properties when protocol dropdown is changed
-	 *
-	 * @param value new value of the switch
-	 * @param groupName group name
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCaseProtocol(String value, String groupName,Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		switch (value) {
-			case "TS over UDP":
-				handleCreateStreamWhenProtocolIsSet(localStats, localControls, "TS over UDP", groupName);
-				break;
-			case "TS over RTP":
-				handleCreateStreamWhenProtocolIsSet(localStats, localControls, "TS over RTP", groupName);
-				break;
-			case "TS over SRT":
-				handleCreateStreamWhenProtocolIsSet(localStats, localControls, "TS over SRT", groupName);
-				break;
-			default:
-				throw new IllegalStateException("Unexpected value: " + value);
-		}
-	}
-
-	/**
-	 * Stream control: update group's properties when type dropdown is changed
-	 *
-	 * @param value new value of the switch
-	 * @param groupName group name
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCaseType(String value, String groupName,Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		localStats.put(String.format("%s#%s", groupName,StreamControllingMetric.TYPE.getName()), value);
-		for (AdvancedControllableProperty advancedControllableProperty : localControls) {
-			if (advancedControllableProperty.getName().equals(String.format("%s#%s", groupName,StreamControllingMetric.TYPE.getName()))) {
-				advancedControllableProperty.setValue(value);
-				break;
-			}
-		}
-		String currentProtocolName = localStats.get(String.format("%s#%s", groupName,StreamControllingMetric.ENCAPSULATION.getName()));
-		if (currentProtocolName.equals("TS over UDP") || currentProtocolName.equals("TS over RTP")) {
-			if (value.equals("Unicast")) {
-				List<String> listKeyToBeRemove = new ArrayList<>();
-				listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.MULTICAST_ADDRESS.getName()));
-				listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SOURCE_ADDRESS.getName()));
-				removeUnusedStatsAndControls(localStats, localControls, listKeyToBeRemove);
-			} else {
-				if (!localStats.containsKey(String.format("%s#%s", groupName,StreamControllingMetric.MULTICAST_ADDRESS.getName()))) {
-					localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.MULTICAST_ADDRESS.getName()), "192.168.5"));
-				}
-				if (!localStats.containsKey(String.format("%s#%s", groupName,StreamControllingMetric.SOURCE_ADDRESS.getName()))) {
-					localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.SOURCE_ADDRESS.getName()), "192.168.5"));
-				}
-			}
-			// Make sure this field always present
-			if (!localStats.containsKey(String.format("%s#%s", groupName,StreamControllingMetric.PORT.getName()))) {
-				localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.PORT.getName()), "1710"));
-			}
-			if (currentProtocolName.equals("TS over RTP") && !localStats.containsKey(String.format("%s#%s", groupName,StreamControllingMetric.FEC_RTP.getName()))) {
-				List<String> TsOverRtcRtpValue = new ArrayList<>();
-				TsOverRtcRtpValue.add("Disabled");
-				TsOverRtcRtpValue.add("MPEG PRO FEC");
-				localControls.add(createDropdown(localStats, String.format("%s#%s", groupName,StreamControllingMetric.FEC_RTP.getName()), TsOverRtcRtpValue, "Disabled"));
-			}
-		}
-	}
-	/**
-	 * Stream control: update group's properties when srt mode dropdown is changed
-	 *
-	 * @param value new value of the switch
-	 * @param groupName group name
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCaseSrtMode(String value, String groupName,Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		localStats.put(String.format("%s#%s", groupName,StreamControllingMetric.SRT_MODE.getName()), value);
-		for (AdvancedControllableProperty advancedControllableProperty : localControls) {
-			if (advancedControllableProperty.getName().equals(String.format("%s#%s", groupName,StreamControllingMetric.SRT_MODE.getName()))) {
-				advancedControllableProperty.setValue(value);
-				break;
-			}
-		}
-		List<String> listKeyToBeRemove = new ArrayList<>();
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.PORT.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.LATENCY.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_PORT.getName()));
-		listKeyToBeRemove.add(String.format("%s#%S", groupName,StreamControllingMetric.SRT_TO_UDP_TOS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_TTL.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.ENCRYPTED.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.PASSPHRASE.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.ADDRESS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.SOURCE_PORT.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s", groupName,StreamControllingMetric.DESTINATION_PORT.getName()));
-		removeUnusedStatsAndControls(localStats, localControls, listKeyToBeRemove);
-		if (value.equals("Listener")) {
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.PORT.getName()), "1710"));
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.LATENCY.getName()), "125"));
-			localControls.add(createSwitch(localStats, String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()), false,
-					"Disable", "Enable"));
-			localControls.add(createSwitch(localStats, String.format("%s#%s", groupName,StreamControllingMetric.ENCRYPTED.getName()), false,
-					"Disable", "Enable"));
-		} else if (value.equals("Caller") || value.equals("Rendezvous")) {
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.ADDRESS.getName()), "192.168.5"));
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.SOURCE_PORT.getName()), "1725"));
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.DESTINATION_PORT.getName()), "1705"));
-			localControls.add(createText(localStats, String.format("%s#%s", groupName,StreamControllingMetric.LATENCY.getName()), "125"));
-			localControls.add(createSwitch(localStats, String.format("%s#%s", groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()), false,
-					"Disable", "Enable"));
-			localControls.add(createSwitch(localStats, String.format("%s#%s", groupName,StreamControllingMetric.ENCRYPTED.getName()), false,
-					"Disable", "Enable"));
-		}
-	}
-
-	/**
-	 * Stream control: update group's properties when encrypted is activated
-	 *
-	 * @param value new value of the switch
-	 * @param groupName group name
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCaseEncrypted(String value, String groupName, Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		localStats.put(String.format("%s#%s",groupName,StreamControllingMetric.ENCRYPTED.getName()), value);
-		for (AdvancedControllableProperty advancedControllableProperty : localControls) {
-			if (advancedControllableProperty.getName().equals(String.format("%s#%s",groupName,StreamControllingMetric.ENCRYPTED.getName()))) {
-				advancedControllableProperty.setValue(value);
-				break;
-			}
-		}
-		String currentModeName = localStats.get(String.format("%s#%s",groupName,StreamControllingMetric.SRT_MODE.getName()));
-		List<String> listKeyToBeRemove = new ArrayList<>();
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.PASSPHRASE.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()));
-		removeUnusedStatsAndControls(localStats, localControls, listKeyToBeRemove);
-		if (value.equals("1")) {
-			if (currentModeName.equals("Listener")) {
-				localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.PASSPHRASE.getName()), "passphrase"));
-				localControls.add(createSwitch(localStats, String.format("%s#%s",groupName,StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()), false,
-						"Disable", "Enable"));
-			} else if (currentModeName.equals("Caller") || currentModeName.equals("Rendezvous")) {
-				localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.PASSPHRASE.getName()), "1725"));
-			}
-		}
-	}
-
-	/**
-	 * Stream control: update group's properties when stream conversion is activated
-	 *
-	 * @param value new value of the switch
-	 * @param groupName group name
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCaseStreamConversion(String value, String groupName, Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		localStats.put(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()), value);
-		for (AdvancedControllableProperty advancedControllableProperty : localControls) {
-			if (advancedControllableProperty.getName().equals(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()))) {
-				advancedControllableProperty.setValue(value);
-				break;
-			}
-		}
-		List<String> listKeyToBeRemove = new ArrayList<>();
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_PORT.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TOS.getName()));
-		listKeyToBeRemove.add(String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TTL.getName()));
-		removeUnusedStatsAndControls(localStats, localControls, listKeyToBeRemove);
-		localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()), "192.168.5"));
-		localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_PORT.getName()), "1725"));
-		localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TOS.getName()), "184 or 0xBB"));
-		localControls.add(createText(localStats, String.format("%s#%s",groupName,StreamControllingMetric.SRT_TO_UDP_TTL.getName()), "64"));
-	}
-
-	/**
-	 * Stream control: handle stream when clicking create
-	 *
-	 * @param value value of the button
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCasePressCreate(String value,Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		String currentProtocol = localStats.get("CreateStream#Protocol");
-		switch (currentProtocol) {
-			case "TS over UDP":
-				// TODO: put suitable information to DTO
-				break;
-			case "TS over RTP":
-				// TODO: put suitable information to DTO
-				break;
-			case "TS over SRT":
-				// TODO: put suitable information to DTO
-				break;
-		}
-		// TODO send request to device
-	}
-	/**
-	 * Stream control: handle stream when clicking delete
-	 *
-	 * @param value value of the button
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCasePressDelete(String value, Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		// TODO
-	}
-
-	/**
-	 * Stream control: handle stream when clicking update
-	 *
-	 * @param value value of the button
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamCasePressUpdate(String value, Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		// TODO
-	}
-
-	/**
-	 * Stream control: default case, where no group won't be expanded, only update the latest value for statistics
-	 *
-	 * @param property property name
-	 * @param value value of new property
-	 * @param localStats local map of statistics
-	 * @param localControls local list of AdvancedControllableProperty
-	 */
-	private void controlStreamDefaultCase(String property, String value, Map<String, String> localStats, List<AdvancedControllableProperty> localControls) {
-		localStats.put(property, value);
-		for (AdvancedControllableProperty control: localControls) {
-			if (control.getName().equals(property)) {
-				control.setValue(value);
-			}
-		}
-	}
-	//--------------------------------------------------------------------------------------------------------------------------------
-	//endregion
-
-	//region Create controllable property
-	//--------------------------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Instantiate Text controllable property
@@ -1450,23 +1003,45 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	//region Perform decoder control
 	//--------------------------------------------------------------------------------------------------------------------------------
 
-
 	/**
 	 * This method is used for calling control all Decoder control properties in case:
-	 * Buffering Mode: Auto
-	 *
-	 * Buffering Mode: Fixed
-	 *
-	 * Buffering Mode: MultiSync
+	 * <li>Stream ID</li>
+	 * <li>Still Image</li>
+	 * <li>Still Image Delay</li>
+	 * <li>Buffering Mode</li>
+	 * <li>Buffering Delay</li>
+	 * <li>Multi Sync Buffering Delay</li>
+	 * <li>Hdr Dynamic Range</li>
+	 * <li>Output 1</li>
+	 * <li>Output 2</li>
+	 * <li>Output 3</li>
+	 * <li>Output 4</li>
+	 * <li>Output Frame Rate</li>
+	 * <li>Quad Mode</li>
 	 *
 	 * @param decoderID ID of decoder
 	 * @param controllableProperty name of controllable property
+	 * @param decoderID ID of decoder
+	 * @param controllableProperty controllable property
 	 * @param value value of controllable property
 	 */
-	private void decoderControl(String decoderID, String controllableProperty, String value) {
+	private void decoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, String decoderID, String controllableProperty, String value) {
 		DecoderControllingMetric decoderControllingMetric = DecoderControllingMetric.getByName(controllableProperty);
-		DecoderData decoderData = localDecoderDataList.get(decoderID);
+		DecoderData decoderData = this.localDecoderDataList.get(decoderID);
 		DecoderInfo decoderInfo = decoderData.getDecoderInfo();
+
+		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
+		List<String> quadModeList = QuadMode.getQuadModeList();
+		List<String> stillImageList = StillImage.getStillImageList();
+		List<String> hdrList = HDR.getHDRList();
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
+		List<String> streamIDList = new LinkedList<>();
+
+		if (this.streamDataDTOList != null) {
+			streamIDList.addAll(this.streamDataDTOList.keySet());
+		} else {
+			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
+		}
 
 		switch (decoderControllingMetric) {
 			case STREAM_ID:
@@ -1477,88 +1052,125 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				decoderInfo.setStreamId(streamID);
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID.toString()));
+				isEmergencyDelivery = true;
 				break;
 			case STILL_IMAGE:
 				StillImage stillImage = StillImage.getByName(value);
 				decoderInfo.setStillImage(stillImage.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
+				isEmergencyDelivery = true;
 				break;
 			case STILL_IMAGE_DELAY:
 				decoderInfo.setStillImageDelay(Integer.parseInt(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+				isEmergencyDelivery = true;
 				break;
 			case HDR_DYNAMIC_RANGE:
 				HDR hdr = HDR.getByName(value);
 				decoderInfo.setHdrDynamicRange(hdr.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+				isEmergencyDelivery = true;
 				break;
 			case OUTPUT_1:
 				decoderInfo.setOutput1(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
+						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				isEmergencyDelivery = true;
 				break;
 			case OUTPUT_2:
 				decoderInfo.setOutput2(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput1(),
+						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				isEmergencyDelivery = true;
 				break;
 			case OUTPUT_3:
 				decoderInfo.setOutput3(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput1(),
+						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				isEmergencyDelivery = true;
 				break;
 			case OUTPUT_4:
 				decoderInfo.setOutput4(mapSwitchControlValue(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput1(),
+						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				isEmergencyDelivery = true;
 				break;
 			case OUTPUT_FRAME_RATE:
 				OutputFrameRate outputFrameRate = OutputFrameRate.getByName(value);
 				decoderInfo.setOutputFrameRate(outputFrameRate.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
+				isEmergencyDelivery = true;
 				break;
 			case BUFFERING_MODE:
 				BufferingMode bufferingMode = BufferingMode.getByName(value);
 				decoderInfo.setBufferingMode(bufferingMode.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				isEmergencyDelivery = true;
 				break;
 			case BUFFERING_DELAY:
 				decoderInfo.setBufferingDelay(Integer.parseInt(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				isEmergencyDelivery = true;
 				break;
 			case MULTI_SYNC_BUFFERING_DELAY:
 				decoderInfo.setMultisyncBufferingDelay(Integer.parseInt(value));
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				isEmergencyDelivery = true;
 				break;
 			case QUAD_MODE:
 				QuadMode quadMode = QuadMode.getByName(value);
 				decoderInfo.setQuadMode(quadMode.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.QUAD_MODE.getName(), quadModeList, quadMode.getName()));
+				isEmergencyDelivery = true;
 				break;
 			case STATE:
 				State state = State.getByCode(Integer.parseInt(value));
 				decoderInfo.setState(state.getCode());
 				decoderData.setDecoderInfo(decoderInfo);
 				this.localDecoderDataList.put(decoderID, decoderData);
+				boolean controlResult;
 				switch (state) {
 					case STOPPED:
-						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER, state.getName());
+						controlResult = performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.STOP_DECODER, state.getName());
 						break;
 					case START:
-						performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER, state.getName());
+						controlResult = performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.START_DECODER, state.getName());
 						break;
+					default:
+						throw new IllegalStateException("Unexpected value: " + state);
+				}
+				if (controlResult) {
+					advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
+							DecoderConstant.OFF, DecoderConstant.ON));
 				}
 			case APPLY_CHANGE:
 				performDecoderControl(this.localDecoderDataList, decoderID, DecoderURL.UPDATE_DECODER, decoderControllingMetric.getName());
 				break;
+			case CANCEL:
+				this.localDecoderDataList.putAll(this.decoderDataDTOList);
 			default:
 				throw new IllegalStateException("Unexpected value: " + controllableProperty);
 		}
@@ -1570,7 +1182,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param localDecoderDataList list of decoder data
 	 * @param decoderID ID of decoder ID
 	 */
-	private void performDecoderControl(Map<String, DecoderData> localDecoderDataList, String decoderID, String controlURL, String controlMethod) {
+	private boolean performDecoderControl(Map<String, DecoderData> localDecoderDataList, String decoderID, String controlURL, String controlMethod) {
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = localDecoderDataList.get(decoderID).getDecoderInfo().jsonRequest();
@@ -1587,6 +1199,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		} catch (Exception e) {
 			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 		}
+		return true;
 	}
 
 	/**

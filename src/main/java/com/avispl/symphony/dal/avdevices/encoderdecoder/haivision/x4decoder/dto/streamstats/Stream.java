@@ -102,10 +102,12 @@ public class Stream {
 				return streamStats.getCorruptedFrames();
 			case RESTARTS:
 				return streamStats.getRestarts();
-			case LOCAL_PORT:
-				return streamStats.getLocalPort();
-			case REMOTE_PORT:
-				return streamStats.getRemotePort();
+			case OUTPUT_BYTES:
+				return streamStats.getOutputBytes();
+			case LAST_RECEIVED:
+				return streamStats.getLastReceived();
+			case STREAM_SUMMARY:
+				return streamStats.getStreamSummary();
 			default:
 				return DecoderConstant.NONE;
 		}

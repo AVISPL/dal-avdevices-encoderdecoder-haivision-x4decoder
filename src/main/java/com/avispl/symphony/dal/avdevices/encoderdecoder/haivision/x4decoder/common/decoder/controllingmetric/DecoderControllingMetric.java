@@ -35,7 +35,8 @@ public enum DecoderControllingMetric {
 	STATE("Active"),
 	STILL_IMAGE("StillImage"),
 	STILL_IMAGE_DELAY("StillImageDelay"),
-	APPLY_CHANGE("ApplyChange");
+	APPLY_CHANGE("ApplyChange"),
+	CANCEL("Cancel");
 
 	private final String name;
 
