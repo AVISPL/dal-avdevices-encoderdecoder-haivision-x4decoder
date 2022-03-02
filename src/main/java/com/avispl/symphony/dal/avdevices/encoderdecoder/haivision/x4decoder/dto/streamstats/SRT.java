@@ -39,14 +39,11 @@ public class SRT {
 	@JsonAlias("latency")
 	private String latency;
 
-	@JsonAlias("encryption")
-	private String encryption;
+	@JsonAlias("reconnections")
+	private String reconnections;
 
-	@JsonAlias("keyLength")
-	private String keyLength;
-
-	@JsonAlias("decryptState")
-	private String decryptState;
+	@JsonAlias("droppedPackets")
+	private String droppedPackets;
 
 	/**
 	 * Retrieves {@code {@link #lostPackets}}
@@ -175,57 +172,39 @@ public class SRT {
 	}
 
 	/**
-	 * Retrieves {@code {@link #encryption}}
+	 * Retrieves {@code {@link #reconnections}}
 	 *
-	 * @return value of {@link #encryption}
+	 * @return value of {@link #reconnections}
 	 */
-	public String getEncryption() {
-		return encryption;
+	public String getReconnections() {
+		return reconnections;
 	}
 
 	/**
-	 * Sets {@code encryption}
+	 * Sets {@code reconnections}
 	 *
-	 * @param encryption the {@code java.lang.String} field
+	 * @param reconnections the {@code java.lang.String} field
 	 */
-	public void setEncryption(String encryption) {
-		this.encryption = encryption;
+	public void setReconnections(String reconnections) {
+		this.reconnections = reconnections;
 	}
 
 	/**
-	 * Retrieves {@code {@link #keyLength}}
+	 * Retrieves {@code {@link #droppedPackets}}
 	 *
-	 * @return value of {@link #keyLength}
+	 * @return value of {@link #droppedPackets}
 	 */
-	public String getKeyLength() {
-		return keyLength;
+	public String getDroppedPackets() {
+		return droppedPackets;
 	}
 
 	/**
-	 * Sets {@code keyLength}
+	 * Sets {@code droppedPackets}
 	 *
-	 * @param keyLength the {@code java.lang.String} field
+	 * @param droppedPackets the {@code java.lang.String} field
 	 */
-	public void setKeyLength(String keyLength) {
-		this.keyLength = keyLength;
-	}
-
-	/**
-	 * Retrieves {@code {@link #decryptState}}
-	 *
-	 * @return value of {@link #decryptState}
-	 */
-	public String getDecryptState() {
-		return decryptState;
-	}
-
-	/**
-	 * Sets {@code decryptState}
-	 *
-	 * @param decryptState the {@code java.lang.String} field
-	 */
-	public void setDecryptState(String decryptState) {
-		this.decryptState = decryptState;
+	public void setDroppedPackets(String droppedPackets) {
+		this.droppedPackets = droppedPackets;
 	}
 
 	/**
@@ -233,12 +212,6 @@ public class SRT {
 	 */
 	public String getValueBySRTMonitoringMetric(SRTMetric srtMetric) {
 		switch (srtMetric) {
-			case ENCRYPTION:
-				return getEncryption();
-			case KEY_LENGTH:
-				return getKeyLength();
-			case DECRYPT_STATE:
-				return getDecryptState();
 			case LOST_PACKETS:
 				return getLostPackets();
 			case SENT_ACKS:
@@ -253,6 +226,10 @@ public class SRT {
 				return getBuffer();
 			case SRT_LATENCY:
 				return getLatency();
+			case RECONNECTIONS:
+				return getReconnections();
+			case DROPPED_PACKET:
+				return getDroppedPackets();
 			default:
 				return DecoderConstant.NONE;
 		}

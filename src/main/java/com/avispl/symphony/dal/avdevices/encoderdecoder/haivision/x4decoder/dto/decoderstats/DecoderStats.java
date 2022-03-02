@@ -83,8 +83,8 @@ public class DecoderStats {
 	@JsonAlias("preprocessorState")
 	private String preprocessorState;
 
-	@JsonAlias("troubleCode")
-	private Integer troubleCode;
+	@JsonAlias("restarts")
+	private String resumedStreamFlags;
 
 	@JsonAlias("displayedOutputFrames")
 	private String displayedOutputFrames;
@@ -154,6 +154,48 @@ public class DecoderStats {
 
 	@JsonAlias("tcFreedPackets")
 	private String tcFreedPackets;
+
+	@JsonAlias("corruptedFrames")
+	private String corruptedFrames;
+
+	@JsonAlias("droppedPackets")
+	private String droppedPackets;
+
+	@JsonAlias("multisyncDelayRangeMinMs")
+	private String multisyncDelayRangeMinMs;
+
+	@JsonAlias("multisyncDelayRangeMaxMs")
+	private String multisyncDelayRangeMaxMs;
+
+	@JsonAlias("multisyncStatus")
+	private String multisyncStatus;
+
+	@JsonAlias("multisyncStatusCode")
+	private String multisyncStatusCode;
+
+	@JsonAlias("multisyncDelayActual")
+	private String multisyncDelayActual;
+
+	@JsonAlias("multisyncDelayRange")
+	private String multisyncDelayRange;
+
+	@JsonAlias("multisyncDelaySet")
+	private String multisyncDelaySet;
+
+	@JsonAlias("multisyncSystemTime")
+	private String multisyncSystemTime;
+
+	@JsonAlias("multisyncTimecode")
+	private String multisyncTimecode;
+
+	@JsonAlias("multisyncTimecodePackets")
+	private String multisyncTimecodePackets;
+
+	@JsonAlias("multisyncTimeDiff")
+	private String multisyncTimeDiff;
+
+	@JsonAlias("multisyncTransmissionTime")
+	private String multisyncTransmissionTime;
 
 	/**
 	 * Retrieves {@code {@link #decoderID}}
@@ -534,21 +576,21 @@ public class DecoderStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #troubleCode}}
+	 * Retrieves {@code {@link #resumedStreamFlags}}
 	 *
-	 * @return value of {@link #troubleCode}
+	 * @return value of {@link #resumedStreamFlags}
 	 */
-	public Integer getTroubleCode() {
-		return troubleCode;
+	public String getResumedStreamFlags() {
+		return resumedStreamFlags;
 	}
 
 	/**
 	 * Sets {@code troubleCode}
 	 *
-	 * @param troubleCode the {@code java.lang.Integer} field
+	 * @param resumedStreamFlags the {@code java.lang.Integer} field
 	 */
-	public void setTroubleCode(Integer troubleCode) {
-		this.troubleCode = troubleCode;
+	public void setResumedStreamFlags(String resumedStreamFlags) {
+		this.resumedStreamFlags = resumedStreamFlags;
 	}
 
 	/**
@@ -963,5 +1005,257 @@ public class DecoderStats {
 	 */
 	public void setTcFreedPackets(String tcFreedPackets) {
 		this.tcFreedPackets = tcFreedPackets;
+	}
+
+	/**
+	 * Retrieves {@code {@link #corruptedFrames}}
+	 *
+	 * @return value of {@link #corruptedFrames}
+	 */
+	public String getCorruptedFrames() {
+		return corruptedFrames;
+	}
+
+	/**
+	 * Sets {@code corruptedFrames}
+	 *
+	 * @param corruptedFrames the {@code java.lang.String} field
+	 */
+	public void setCorruptedFrames(String corruptedFrames) {
+		this.corruptedFrames = corruptedFrames;
+	}
+
+	/**
+	 * Retrieves {@code {@link #droppedPackets}}
+	 *
+	 * @return value of {@link #droppedPackets}
+	 */
+	public String getDroppedPackets() {
+		return droppedPackets;
+	}
+
+	/**
+	 * Sets {@code droppedPackets}
+	 *
+	 * @param droppedPackets the {@code java.lang.String} field
+	 */
+	public void setDroppedPackets(String droppedPackets) {
+		this.droppedPackets = droppedPackets;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncDelayRangeMinMs}}
+	 *
+	 * @return value of {@link #multisyncDelayRangeMinMs}
+	 */
+	public String getMultisyncDelayRangeMinMs() {
+		return multisyncDelayRangeMinMs;
+	}
+
+	/**
+	 * Sets {@code multisyncDelayRangeMinMs}
+	 *
+	 * @param multisyncDelayRangeMinMs the {@code java.lang.String} field
+	 */
+	public void setMultisyncDelayRangeMinMs(String multisyncDelayRangeMinMs) {
+		this.multisyncDelayRangeMinMs = multisyncDelayRangeMinMs;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncDelayRangeMaxMs}}
+	 *
+	 * @return value of {@link #multisyncDelayRangeMaxMs}
+	 */
+	public String getMultisyncDelayRangeMaxMs() {
+		return multisyncDelayRangeMaxMs;
+	}
+
+	/**
+	 * Sets {@code multisyncDelayRangeMaxMs}
+	 *
+	 * @param multisyncDelayRangeMaxMs the {@code java.lang.String} field
+	 */
+	public void setMultisyncDelayRangeMaxMs(String multisyncDelayRangeMaxMs) {
+		this.multisyncDelayRangeMaxMs = multisyncDelayRangeMaxMs;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncStatus}}
+	 *
+	 * @return value of {@link #multisyncStatus}
+	 */
+	public String getMultisyncStatus() {
+		return multisyncStatus;
+	}
+
+	/**
+	 * Sets {@code multisyncStatus}
+	 *
+	 * @param multisyncStatus the {@code java.lang.String} field
+	 */
+	public void setMultisyncStatus(String multisyncStatus) {
+		this.multisyncStatus = multisyncStatus;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncStatusCode}}
+	 *
+	 * @return value of {@link #multisyncStatusCode}
+	 */
+	public String getMultisyncStatusCode() {
+		return multisyncStatusCode;
+	}
+
+	/**
+	 * Sets {@code multisyncStatusCode}
+	 *
+	 * @param multisyncStatusCode the {@code java.lang.String} field
+	 */
+	public void setMultisyncStatusCode(String multisyncStatusCode) {
+		this.multisyncStatusCode = multisyncStatusCode;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncDelayActual}}
+	 *
+	 * @return value of {@link #multisyncDelayActual}
+	 */
+	public String getMultisyncDelayActual() {
+		return multisyncDelayActual;
+	}
+
+	/**
+	 * Sets {@code multisyncDelayActual}
+	 *
+	 * @param multisyncDelayActual the {@code java.lang.String} field
+	 */
+	public void setMultisyncDelayActual(String multisyncDelayActual) {
+		this.multisyncDelayActual = multisyncDelayActual;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncDelayRange}}
+	 *
+	 * @return value of {@link #multisyncDelayRange}
+	 */
+	public String getMultisyncDelayRange() {
+		return multisyncDelayRange;
+	}
+
+	/**
+	 * Sets {@code multisyncDelayRange}
+	 *
+	 * @param multisyncDelayRange the {@code java.lang.String} field
+	 */
+	public void setMultisyncDelayRange(String multisyncDelayRange) {
+		this.multisyncDelayRange = multisyncDelayRange;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncDelaySet}}
+	 *
+	 * @return value of {@link #multisyncDelaySet}
+	 */
+	public String getMultisyncDelaySet() {
+		return multisyncDelaySet;
+	}
+
+	/**
+	 * Sets {@code multisyncDelaySet}
+	 *
+	 * @param multisyncDelaySet the {@code java.lang.String} field
+	 */
+	public void setMultisyncDelaySet(String multisyncDelaySet) {
+		this.multisyncDelaySet = multisyncDelaySet;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncSystemTime}}
+	 *
+	 * @return value of {@link #multisyncSystemTime}
+	 */
+	public String getMultisyncSystemTime() {
+		return multisyncSystemTime;
+	}
+
+	/**
+	 * Sets {@code multisyncSystemTime}
+	 *
+	 * @param multisyncSystemTime the {@code java.lang.String} field
+	 */
+	public void setMultisyncSystemTime(String multisyncSystemTime) {
+		this.multisyncSystemTime = multisyncSystemTime;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncTimecode}}
+	 *
+	 * @return value of {@link #multisyncTimecode}
+	 */
+	public String getMultisyncTimecode() {
+		return multisyncTimecode;
+	}
+
+	/**
+	 * Sets {@code multisyncTimecode}
+	 *
+	 * @param multisyncTimecode the {@code java.lang.String} field
+	 */
+	public void setMultisyncTimecode(String multisyncTimecode) {
+		this.multisyncTimecode = multisyncTimecode;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncTimecodePackets}}
+	 *
+	 * @return value of {@link #multisyncTimecodePackets}
+	 */
+	public String getMultisyncTimecodePackets() {
+		return multisyncTimecodePackets;
+	}
+
+	/**
+	 * Sets {@code multisyncTimecodePackets}
+	 *
+	 * @param multisyncTimecodePackets the {@code java.lang.String} field
+	 */
+	public void setMultisyncTimecodePackets(String multisyncTimecodePackets) {
+		this.multisyncTimecodePackets = multisyncTimecodePackets;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncTimeDiff}}
+	 *
+	 * @return value of {@link #multisyncTimeDiff}
+	 */
+	public String getMultisyncTimeDiff() {
+		return multisyncTimeDiff;
+	}
+
+	/**
+	 * Sets {@code multisyncTimeDiff}
+	 *
+	 * @param multisyncTimeDiff the {@code java.lang.String} field
+	 */
+	public void setMultisyncTimeDiff(String multisyncTimeDiff) {
+		this.multisyncTimeDiff = multisyncTimeDiff;
+	}
+
+	/**
+	 * Retrieves {@code {@link #multisyncTransmissionTime}}
+	 *
+	 * @return value of {@link #multisyncTransmissionTime}
+	 */
+	public String getMultisyncTransmissionTime() {
+		return multisyncTransmissionTime;
+	}
+
+	/**
+	 * Sets {@code multisyncTransmissionTime}
+	 *
+	 * @param multisyncTransmissionTime the {@code java.lang.String} field
+	 */
+	public void setMultisyncTransmissionTime(String multisyncTransmissionTime) {
+		this.multisyncTransmissionTime = multisyncTransmissionTime;
 	}
 }

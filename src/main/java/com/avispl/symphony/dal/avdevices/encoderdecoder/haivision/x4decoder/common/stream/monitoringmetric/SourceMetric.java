@@ -16,9 +16,10 @@ public enum SourceMetric {
 	COMPRESSION("Compression"),
 	BITRATE("Bitrate"),
 	PROGRAM_ID("ProgramID"),
+	RECEIVED_PACKETS("ReceivedPackets"),
+	RECEIVED_BYTES("ReceivedBytes"),
 	PTS("PTS"),
 	DTS("DTS");
-
 
 	private final String name;
 

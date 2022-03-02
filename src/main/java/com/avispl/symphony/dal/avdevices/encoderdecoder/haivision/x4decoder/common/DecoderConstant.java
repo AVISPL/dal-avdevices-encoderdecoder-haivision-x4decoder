@@ -40,13 +40,13 @@ public class DecoderConstant {
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
 	public static final String AUDIO_PAIR = "Decoder Audio Pair";
-	public static final String SOURCE = "Source";
 	public static final String DEFAULT_STREAM_ID = "-1";
 	public static final String ENABLE = "Enable";
 	public static final String DISABLE = "Disable";
 	public static final String ON = "On";
 	public static final String OFF = "Off";
 	public static final String APPLY = "Apply";
+	public static final String CANCEL = "Cancel";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
 
