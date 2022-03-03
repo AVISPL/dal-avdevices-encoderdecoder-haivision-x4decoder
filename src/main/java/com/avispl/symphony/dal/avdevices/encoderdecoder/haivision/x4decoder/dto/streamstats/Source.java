@@ -31,11 +31,17 @@ public class Source {
 	@JsonAlias("programId")
 	private String programId;
 
+	@JsonAlias("receivedPackets")
+	private String receivedPackets;
+
+	@JsonAlias("receivedBytes")
+	private String receivedBytes;
+
 	@JsonAlias("PTS")
-	private String PTS;
+	private String pts;
 
 	@JsonAlias("DTS")
-	private String DTS;
+	private String dts;
 
 	/**
 	 * Retrieves {@code {@link #name}}
@@ -110,39 +116,75 @@ public class Source {
 	}
 
 	/**
-	 * Retrieves {@code {@link #PTS}}
+	 * Retrieves {@code {@link #receivedPackets}}
 	 *
-	 * @return value of {@link #PTS}
+	 * @return value of {@link #receivedPackets}
 	 */
-	public String getPTS() {
-		return PTS;
+	public String getReceivedPackets() {
+		return receivedPackets;
+	}
+
+	/**
+	 * Sets {@code receivedPackets}
+	 *
+	 * @param receivedPackets the {@code java.lang.String} field
+	 */
+	public void setReceivedPackets(String receivedPackets) {
+		this.receivedPackets = receivedPackets;
+	}
+
+	/**
+	 * Retrieves {@code {@link #receivedBytes}}
+	 *
+	 * @return value of {@link #receivedBytes}
+	 */
+	public String getReceivedBytes() {
+		return receivedBytes;
+	}
+
+	/**
+	 * Sets {@code receivedBytes}
+	 *
+	 * @param receivedBytes the {@code java.lang.String} field
+	 */
+	public void setReceivedBytes(String receivedBytes) {
+		this.receivedBytes = receivedBytes;
+	}
+
+	/**
+	 * Retrieves {@code {@link #pts }}
+	 *
+	 * @return value of {@link #pts}
+	 */
+	public String getPts() {
+		return pts;
 	}
 
 	/**
 	 * Sets {@code PTS}
 	 *
-	 * @param PTS the {@code java.lang.String} field
+	 * @param pts the {@code java.lang.String} field
 	 */
-	public void setPTS(String PTS) {
-		this.PTS = PTS;
+	public void setPts(String pts) {
+		this.pts = pts;
 	}
 
 	/**
-	 * Retrieves {@code {@link #DTS}}
+	 * Retrieves {@code {@link #dts }}
 	 *
-	 * @return value of {@link #DTS}
+	 * @return value of {@link #dts}
 	 */
-	public String getDTS() {
-		return DTS;
+	public String getDts() {
+		return dts;
 	}
 
 	/**
 	 * Sets {@code DTS}
 	 *
-	 * @param DTS the {@code java.lang.String} field
+	 * @param dts the {@code java.lang.String} field
 	 */
-	public void setDTS(String DTS) {
-		this.DTS = DTS;
+	public void setDts(String dts) {
+		this.dts = dts;
 	}
 
 	/**
@@ -158,10 +200,14 @@ public class Source {
 				return getBitrate();
 			case PROGRAM_ID:
 				return getProgramId();
+			case RECEIVED_PACKETS:
+				return getReceivedPackets();
+			case RECEIVED_BYTES:
+				return getReceivedBytes();
 			case PTS:
-				return getPTS();
+				return getPts();
 			case DTS:
-				return DTS;
+				return getDts();
 			default:
 				return DecoderConstant.NONE;
 		}

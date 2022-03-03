@@ -83,7 +83,7 @@ public class Stream {
 			case CONNECTIONS:
 				return streamStats.getConnections();
 			case RECEIVED_PACKET:
-				return streamStats.getReceivedPacket();
+				return streamStats.getReceivedPackets();
 			case RECEIVED_BYTES:
 				return streamStats.getReceivedBytes();
 			case OUTPUT_PACKETS:
@@ -92,16 +92,12 @@ public class Stream {
 				return streamStats.getProgramNumber();
 			case PCR_PID:
 				return streamStats.getPcrPid();
-			case RECEIVED_ERRO:
-				return streamStats.getReceivedErrors();
-			case STREAM_LATENCY:
-				return streamInfo.getLatency();
-			case DROPPED_PACKETS:
+			case ERROR_DROPPED_PACKETS:
 				return streamStats.getDroppedPackets();
-			case CORRUPTED_FRAMES:
+			case ERROR_CORRUPTED_FRAMES:
 				return streamStats.getCorruptedFrames();
-			case RESTARTS:
-				return streamStats.getRestarts();
+			case ERROR_RESTARTS:
+				return streamStats.getResumedStreamFlags();
 			case OUTPUT_BYTES:
 				return streamStats.getOutputBytes();
 			case LAST_RECEIVED:

@@ -127,7 +127,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Test
 	void testHaivisionX4DecoderCommunicatorFiltering() {
 		String streamName = "SRT - WAN Listen (6515), test";
-		String portNumber = "1257-90000";
+		String portNumber = "1257";
 
 		haivisionX4DecoderCommunicator.setStreamName(streamName);
 		haivisionX4DecoderCommunicator.setPortNumber(portNumber);

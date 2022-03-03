@@ -472,10 +472,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			stats.put(decoderStatisticGroup + item.getName(), checkForNullData(decoderData.getValueByDecoderMonitoringMetric(item)));
 		}
 		if (audioPairs != null) {
-			for (int i = 0; i < audioPairs.size(); i++) {
-				String audioPair = decoderStatisticGroup + DecoderConstant.AUDIO_PAIR + i + DecoderConstant.COLON;
+			for (AudioPair audioPair : audioPairs) {
+				int index = 1;
+				String audioPairGroup = decoderStatisticGroup + DecoderConstant.AUDIO_PAIR + index++;
 				for (AudioPairMetric item : AudioPairMetric.values()) {
-					stats.put(audioPair + item.getName(), checkForNullData(audioPairs.get(i).getValueByAudioPairMetric(item)));
+					stats.put(audioPairGroup + item.getName(), checkForNullData(audioPair.getValueByAudioPairMetric(item)));
 				}
 			}
 		}

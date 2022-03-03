@@ -13,11 +13,11 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 public enum SRTMetric {
 
 	// Static metric
-	RECONNECTIONS("Reconnections"),
+	RECONNECTIONS("SRTReconnections"),
 	LOST_PACKETS("SRTLostPackets"),
 	SENT_ACKS("SRTSentAcks"),
 	SENT_NAKS("SRTSentNaks"),
-	DROPPED_PACKET("SkipperdPackets"),
+	DROPPED_PACKET("SRTSkippedPackets"),
 	PATH_MAX_BANDWIDTH("SRTPathMaxBandwidth"),
 	RTT("SRTRtt"),
 

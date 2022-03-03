@@ -40,8 +40,8 @@ public class StreamStats {
 	@JsonAlias("connections")
 	private String connections;
 
-	@JsonAlias("receivedPacket")
-	private String receivedPacket;
+	@JsonAlias("receivedPackets")
+	private String receivedPackets;
 
 	@JsonAlias("receivedBytes")
 	private String receivedBytes;
@@ -71,7 +71,7 @@ public class StreamStats {
 	private String corruptedFrames;
 
 	@JsonAlias("restarts")
-	private String restarts;
+	private String resumedStreamFlags;
 
 	@JsonAlias("localPort")
 	private String localPort;
@@ -244,21 +244,21 @@ public class StreamStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #receivedPacket}}
+	 * Retrieves {@code {@link #receivedPackets }}
 	 *
-	 * @return value of {@link #receivedPacket}
+	 * @return value of {@link #receivedPackets}
 	 */
-	public String getReceivedPacket() {
-		return receivedPacket;
+	public String getReceivedPackets() {
+		return receivedPackets;
 	}
 
 	/**
 	 * Sets {@code receivedPacket}
 	 *
-	 * @param receivedPacket the {@code java.lang.String} field
+	 * @param receivedPackets the {@code java.lang.String} field
 	 */
-	public void setReceivedPacket(String receivedPacket) {
-		this.receivedPacket = receivedPacket;
+	public void setReceivedPackets(String receivedPackets) {
+		this.receivedPackets = receivedPackets;
 	}
 
 	/**
@@ -424,21 +424,21 @@ public class StreamStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #restarts}}
+	 * Retrieves {@code {@link #resumedStreamFlags }}
 	 *
-	 * @return value of {@link #restarts}
+	 * @return value of {@link #resumedStreamFlags}
 	 */
-	public String getRestarts() {
-		return restarts;
+	public String getResumedStreamFlags() {
+		return resumedStreamFlags;
 	}
 
 	/**
 	 * Sets {@code restarts}
 	 *
-	 * @param restarts the {@code java.lang.String} field
+	 * @param resumedStreamFlags the {@code java.lang.String} field
 	 */
-	public void setRestarts(String restarts) {
-		this.restarts = restarts;
+	public void setResumedStreamFlags(String resumedStreamFlags) {
+		this.resumedStreamFlags = resumedStreamFlags;
 	}
 
 	/**
