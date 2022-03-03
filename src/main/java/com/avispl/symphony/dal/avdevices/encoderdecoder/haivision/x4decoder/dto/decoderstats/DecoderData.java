@@ -25,7 +25,7 @@ public class DecoderData {
 	@JsonAlias("info")
 	private DecoderInfo decoderInfo;
 
-	private NormalizeData nomalizeData = new NormalizeData();
+	private NormalizeData normalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #decoderStats }}
@@ -75,17 +75,13 @@ public class DecoderData {
 			case STATE:
 				return decoderStats.getState().getName();
 			case UPTIME:
-				return nomalizeData.formatTimeData(decoderStats.getUptime());
-			case OVERSUBSCRIBED_FRAMES:
-				return decoderStats.getOversubscribedFrames();
+				return normalizeData.formatTimeData(decoderStats.getUptime());
 			case BUFFERING_STATE:
 				return decoderStats.getBufferingState();
 			case BUFFERING_MODE:
 				return decoderStats.getBufferingMode();
 			case BUFFERING_ADJUSTMENTS:
 				return decoderStats.getBufferingAdjustments();
-			case BUFFERING_DELAY:
-				return decoderInfo.getBufferingDelay().toString();
 			case VIDEO_LATENCY:
 				return decoderStats.getVideoLatency();
 			case STC_TO_PCR_LEAD_TIME:
@@ -96,8 +92,6 @@ public class DecoderData {
 				return decoderStats.getVideoProfile();
 			case VIDEO_LEVEL:
 				return decoderStats.getVideoLevel();
-			case VIDEO_OUTPUT_FORMAT:
-				return decoderStats.getVideoOutputFormat();
 			case VIDEO_FRAMING:
 				return decoderStats.getVideoFraming();
 			case VIDEO_SLICES_PER_FRAME:
@@ -112,6 +106,10 @@ public class DecoderData {
 				return decoderStats.getLoadPercentage().toString();
 			case PREPROCESSOR_STATE:
 				return decoderStats.getPreprocessorState();
+			case VIDEO_INPUT_PACKET:
+				return decoderStats.getVideoInputPackets();
+			case VIDEO_ENCODER_FORMAT:
+				return decoderStats.getVideoDisplayResolution();
 			case DISPLAYED_OUTPUT_FRAMES:
 				return decoderStats.getDisplayedOutputFrames();
 			case SKIPPED_OUTPUT_FRAMES:
@@ -156,35 +154,29 @@ public class DecoderData {
 				return decoderStats.getTcOutputPackets();
 			case TC_FREED_PACKETS:
 				return decoderStats.getTcFreedPackets();
-			case RESTART:
-				return decoderStats.getResumedStreamFlags();
-			case DROPPED_PACKETS:
-				return decoderStats.getDroppedPackets();
-			case CORRUPTED_FRAMES:
-				return decoderStats.getCorruptedFrames();
-			case MULTISYNC_DELAY_RANGE_MIN_MS:
+			case MULTI_SYNC_DELAY_RANGE_MIN_MS:
 				return decoderStats.getMultisyncDelayRangeMinMs();
-			case MULTISYNC_DELAY_RANGE_MAX_MS:
+			case MULTI_SYNC_DELAY_RANGE_MAX_MS:
 				return decoderStats.getMultisyncDelayRangeMaxMs();
-			case MULTISYNC_STATUS:
+			case MULTI_SYNC_STATUS:
 				return decoderStats.getMultisyncStatus();
-			case MULTISYNC_STATUS_CODE:
+			case MULTI_SYNC_STATUS_CODE:
 				return decoderStats.getMultisyncStatusCode();
-			case MULTISYNC_DELAY_ACTUAL:
+			case MULTI_SYNC_DELAY_ACTUAL:
 				return decoderStats.getMultisyncDelayActual();
-			case MULTISYNC_DELAY_RANGE:
+			case MULTI_SYNC_DELAY_RANGE:
 				return decoderStats.getMultisyncDelayRange();
-			case MULTISYNC_DELAY_SET:
+			case MULTI_SYNC_DELAY_SET:
 				return decoderStats.getMultisyncDelaySet();
-			case MULTISYNC_SYSTEM_TIME:
+			case MULTI_SYNC_SYSTEM_TIME:
 				return decoderStats.getMultisyncSystemTime();
-			case MULTISYNC_TIMECODE:
+			case MULTI_SYNC_TIME_CODE:
 				return decoderStats.getMultisyncTimecode();
-			case MULTISYNC_TIMECODE_PACKETS:
+			case MULTI_SYNC_TIME_CODE_PACKETS:
 				return decoderStats.getMultisyncTimecodePackets();
-			case MULTISYNC_TIME_DIFF:
+			case MULTI_SYNC_TIME_DIFF:
 				return decoderStats.getMultisyncTimeDiff();
-			case MULTISYNC_TRANSMISSION_TIME:
+			case MULTI_SYNC_TRANSMISSION_TIME:
 				return decoderStats.getMultisyncTransmissionTime();
 			default:
 				return DecoderConstant.NONE;

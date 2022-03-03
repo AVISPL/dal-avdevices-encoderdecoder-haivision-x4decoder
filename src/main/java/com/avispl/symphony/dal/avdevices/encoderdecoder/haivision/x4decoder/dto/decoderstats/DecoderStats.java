@@ -29,9 +29,6 @@ public class DecoderStats {
 	@JsonAlias("uptime")
 	private String uptime;
 
-	@JsonAlias("oversubscribedFrames")
-	private String oversubscribedFrames;
-
 	@JsonAlias("bufferingState")
 	private String bufferingState;
 
@@ -55,9 +52,6 @@ public class DecoderStats {
 
 	@JsonAlias("videoLevel")
 	private String videoLevel;
-
-	@JsonAlias("videoOutputFormat")
-	private String videoOutputFormat;
 
 	@JsonAlias("videoFraming")
 	private String videoFraming;
@@ -83,8 +77,11 @@ public class DecoderStats {
 	@JsonAlias("preprocessorState")
 	private String preprocessorState;
 
-	@JsonAlias("restarts")
-	private String resumedStreamFlags;
+	@JsonAlias("vframerNumInputPackets")
+	private String videoInputPackets;
+
+	@JsonAlias("videoDisplayResolution")
+	private String videoDisplayResolution;
 
 	@JsonAlias("displayedOutputFrames")
 	private String displayedOutputFrames;
@@ -154,12 +151,6 @@ public class DecoderStats {
 
 	@JsonAlias("tcFreedPackets")
 	private String tcFreedPackets;
-
-	@JsonAlias("corruptedFrames")
-	private String corruptedFrames;
-
-	@JsonAlias("droppedPackets")
-	private String droppedPackets;
 
 	@JsonAlias("multisyncDelayRangeMinMs")
 	private String multisyncDelayRangeMinMs;
@@ -249,24 +240,6 @@ public class DecoderStats {
 	 */
 	public void setUptime(String uptime) {
 		this.uptime = uptime;
-	}
-
-	/**
-	 * Retrieves {@code {@link #oversubscribedFrames}}
-	 *
-	 * @return value of {@link #oversubscribedFrames}
-	 */
-	public String getOversubscribedFrames() {
-		return oversubscribedFrames;
-	}
-
-	/**
-	 * Sets {@code oversubscribedFrames}
-	 *
-	 * @param oversubscribedFrames the {@code java.lang.String} field
-	 */
-	public void setOversubscribedFrames(String oversubscribedFrames) {
-		this.oversubscribedFrames = oversubscribedFrames;
 	}
 
 	/**
@@ -414,24 +387,6 @@ public class DecoderStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #videoOutputFormat}}
-	 *
-	 * @return value of {@link #videoOutputFormat}
-	 */
-	public String getVideoOutputFormat() {
-		return videoOutputFormat;
-	}
-
-	/**
-	 * Sets {@code videoOutputFormat}
-	 *
-	 * @param videoOutputFormat the {@code java.lang.String} field
-	 */
-	public void setVideoOutputFormat(String videoOutputFormat) {
-		this.videoOutputFormat = videoOutputFormat;
-	}
-
-	/**
 	 * Retrieves {@code {@link #videoFraming}}
 	 *
 	 * @return value of {@link #videoFraming}
@@ -576,21 +531,39 @@ public class DecoderStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #resumedStreamFlags}}
+	 * Retrieves {@code {@link #videoInputPackets}}
 	 *
-	 * @return value of {@link #resumedStreamFlags}
+	 * @return value of {@link #videoInputPackets}
 	 */
-	public String getResumedStreamFlags() {
-		return resumedStreamFlags;
+	public String getVideoInputPackets() {
+		return videoInputPackets;
 	}
 
 	/**
-	 * Sets {@code troubleCode}
+	 * Sets {@code videoInputPackets}
 	 *
-	 * @param resumedStreamFlags the {@code java.lang.Integer} field
+	 * @param videoInputPackets the {@code java.lang.String} field
 	 */
-	public void setResumedStreamFlags(String resumedStreamFlags) {
-		this.resumedStreamFlags = resumedStreamFlags;
+	public void setVideoInputPackets(String videoInputPackets) {
+		this.videoInputPackets = videoInputPackets;
+	}
+
+	/**
+	 * Retrieves {@code {@link #videoDisplayResolution}}
+	 *
+	 * @return value of {@link #videoDisplayResolution}
+	 */
+	public String getVideoDisplayResolution() {
+		return videoDisplayResolution;
+	}
+
+	/**
+	 * Sets {@code videoDisplayResolution}
+	 *
+	 * @param videoDisplayResolution the {@code java.lang.String} field
+	 */
+	public void setVideoDisplayResolution(String videoDisplayResolution) {
+		this.videoDisplayResolution = videoDisplayResolution;
 	}
 
 	/**
@@ -1005,42 +978,6 @@ public class DecoderStats {
 	 */
 	public void setTcFreedPackets(String tcFreedPackets) {
 		this.tcFreedPackets = tcFreedPackets;
-	}
-
-	/**
-	 * Retrieves {@code {@link #corruptedFrames}}
-	 *
-	 * @return value of {@link #corruptedFrames}
-	 */
-	public String getCorruptedFrames() {
-		return corruptedFrames;
-	}
-
-	/**
-	 * Sets {@code corruptedFrames}
-	 *
-	 * @param corruptedFrames the {@code java.lang.String} field
-	 */
-	public void setCorruptedFrames(String corruptedFrames) {
-		this.corruptedFrames = corruptedFrames;
-	}
-
-	/**
-	 * Retrieves {@code {@link #droppedPackets}}
-	 *
-	 * @return value of {@link #droppedPackets}
-	 */
-	public String getDroppedPackets() {
-		return droppedPackets;
-	}
-
-	/**
-	 * Sets {@code droppedPackets}
-	 *
-	 * @param droppedPackets the {@code java.lang.String} field
-	 */
-	public void setDroppedPackets(String droppedPackets) {
-		this.droppedPackets = droppedPackets;
 	}
 
 	/**

@@ -28,12 +28,10 @@ public enum StreamMonitoringMetric {
 	OUTPUT_BYTES("GeneralOutputBytes"),
 	PROGRAM_NUMBER("GeneralProgramNumber"),
 	PCR_PID("GeneralPcrPid"),
-	RECEIVED_ERRO("StreamErrorReceivedError"),
-	STREAM_LATENCY("StreamLatency"),
-	STREAM_SUMMARY("SRTStreamSummary"),
-	DROPPED_PACKETS("SRTDroppedPackets"),
-	CORRUPTED_FRAMES("SRTCorruptedFrames"),
-	RESTARTS("SRTRestarts");
+	STREAM_SUMMARY("GeneralStreamSummary"),
+	ERROR_CORRUPTED_FRAMES("ErrorCorruptedFrames"),
+	ERROR_DROPPED_PACKETS("ErrorDroppedPackets"),
+	ERROR_RESTARTS("ErrorResumedStreamFlags");
 
 	private final String name;
 
