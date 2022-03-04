@@ -4,7 +4,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**
- * Set of monitoring group metrics keys
+ * Set of monitoring metric group keys
  *
  * @author Harry
  * @since 1.0

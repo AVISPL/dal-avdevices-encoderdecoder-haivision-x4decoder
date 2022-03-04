@@ -552,7 +552,7 @@ public class DecoderInfo {
 	}
 
 	/**
-	 * this method is used to create request body as Json
+	 * This method is used to create request body as Json for decoder controlling start/stop/update
 	 * @return String json request body
 	 */
 	public String jsonRequest() {

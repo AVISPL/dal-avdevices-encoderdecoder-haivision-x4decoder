@@ -65,19 +65,6 @@ public enum FecRTP {
 	}
 
 	/**
-	 * Retrieves name to value map of encapsulation mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (FecRTP fecRTP : FecRTP.values()) {
-			nameToValue.put(fecRTP.getCode(), fecRTP.getName());
-		}
-		return nameToValue;
-	}
-
-	/**
 	 * This method is used to get encapsulation mode by name
 	 *
 	 * @param name is the name of encapsulation mode that want to get

@@ -4,7 +4,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**
- * Set of device info metric
+ * Set of device info metric keys
  *
  * @author Harry
  * @since 1.0

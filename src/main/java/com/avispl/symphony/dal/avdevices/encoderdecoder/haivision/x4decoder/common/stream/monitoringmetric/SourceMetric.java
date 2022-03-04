@@ -24,7 +24,7 @@ public enum SourceMetric {
 	private final String name;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */

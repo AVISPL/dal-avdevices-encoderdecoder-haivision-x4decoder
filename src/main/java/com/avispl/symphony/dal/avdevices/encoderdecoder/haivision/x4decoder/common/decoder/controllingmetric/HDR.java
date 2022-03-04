@@ -27,7 +27,7 @@ public enum HDR {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder HDR mode
@@ -65,19 +65,6 @@ public enum HDR {
 			list.add(hdr.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of HDR drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (HDR hdr : HDR.values()) {
-			nameToValue.put(hdr.getCode(), hdr.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

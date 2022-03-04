@@ -51,7 +51,6 @@ public class DecoderConstant {
 	public static final String CANCELLING = "Cancel";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
-
 	public static final Integer MIN_STILL_IMAGE_DELAY = 0;
 	public static final Integer MAX_STILL_IMAGE_DELAY = 1000;
 	public static final Integer MIN_BUFFERING_DELAY = 0;

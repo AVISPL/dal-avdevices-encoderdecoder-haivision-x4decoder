@@ -26,7 +26,7 @@ public enum SRTMode {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder SRT mode
@@ -64,19 +64,6 @@ public enum SRTMode {
 			list.add(srtMode.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of srt mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (SRTMode srtMode : SRTMode.values()) {
-			nameToValue.put(srtMode.getCode(), srtMode.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

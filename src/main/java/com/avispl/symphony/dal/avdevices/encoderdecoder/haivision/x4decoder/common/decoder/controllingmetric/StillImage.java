@@ -28,7 +28,7 @@ public enum StillImage {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder still image
@@ -66,19 +66,6 @@ public enum StillImage {
 			list.add(bufferingMode.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of buffering mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (StillImage stillImage : StillImage.values()) {
-			nameToValue.put(stillImage.getCode(), stillImage.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

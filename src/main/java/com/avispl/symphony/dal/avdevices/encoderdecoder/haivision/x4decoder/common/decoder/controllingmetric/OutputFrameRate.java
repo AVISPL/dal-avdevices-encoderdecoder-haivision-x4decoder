@@ -32,7 +32,7 @@ public enum OutputFrameRate {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder output frame rate
@@ -70,19 +70,6 @@ public enum OutputFrameRate {
 			list.add(outputFrameRate.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of output frame rate mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (OutputFrameRate outputFrameRate : OutputFrameRate.values()) {
-			nameToValue.put(outputFrameRate.getCode(), outputFrameRate.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

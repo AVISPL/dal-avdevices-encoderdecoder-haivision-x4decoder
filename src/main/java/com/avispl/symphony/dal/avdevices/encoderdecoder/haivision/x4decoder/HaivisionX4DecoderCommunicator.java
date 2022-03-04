@@ -522,7 +522,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * Update failedMonitor with Getting stream statistics error message
+	 * Update failedMonitor with getting stream statistics error message
 	 *
 	 * @param failedMonitor list statistics property
 	 */
@@ -724,7 +724,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	public Set<String> handleAdapterPropertiesInputFromUser(String input) {
 		String[] listAdapterPropertyElement = input.split(DecoderConstant.COMMA);
 
-		// Remove start and end spaces of each gain
+		// Remove start and end spaces of each adapterProperty
 		Set<String> setAdapterPropertiesElement = new HashSet<>();
 		for (String adapterPropertyElement : listAdapterPropertyElement) {
 			setAdapterPropertiesElement.add(adapterPropertyElement.trim());
@@ -737,7 +737,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * When the input is an Integer value this method will check whether it is match with port from stream stats or not
 	 * When the input is a range value this method will convert the range to min/ max port value and check whether it covers port from stream stats or not
 	 *
-	 * @return boolean the
+	 * @return boolean the port and port range filtering result
 	 */
 	public boolean handleAdapterPortRangeFromUser(Integer portNumber) {
 		int minPortNumber = 0;
@@ -771,7 +771,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		} catch (NumberFormatException f) {
 			throw new ResourceNotReachableException(DecoderConstant.PORT_NUMBER_ERROR);
 		}
-
 		return false;
 	}
 
@@ -892,23 +891,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		populateDecoderControlBufferingMode(stats, advancedControllableProperties, decoderInfo);
 		populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 	}
-	/**
-	 * Add advancedControllableProperties if  advancedControllableProperties different empty
-	 *
-	 * @param advancedControllableProperties advancedControllableProperties is the list that store all controllable properties
-	 * @param property the property is item advancedControllableProperties
-	 */
-	private void addAdvanceControlProperties(List<AdvancedControllableProperty> advancedControllableProperties, AdvancedControllableProperty property) {
-		if (property != null) {
-			for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
-				if (controllableProperty.getName().equals(property.getName())) {
-					advancedControllableProperties.remove(controllableProperty);
-					break;
-				}
-			}
-			advancedControllableProperties.add(property);
-		}
-	}
 
 	/**
 	 * This method is used for populate all buffering mode of decoder control:
@@ -933,7 +915,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		switch (bufferingMode) {
 			case AUTO:
 				// Populate buffering mode dropdown list control
-						addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 				break;
 			case FIXED:
 				// Populate buffering mode dropdown list control
@@ -991,68 +973,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 			}
 		}
-	}
-
-	/**
-	 * Instantiate Text controllable property
-	 *
-	 * @param name name of the property
-	 * @param label default button label
-	 * @return instance of AdvancedControllableProperty with AdvancedControllableProperty.Button as type
-	 */
-	private AdvancedControllableProperty createButton(String name, String label, String labelPressed) {
-		AdvancedControllableProperty.Button button = new AdvancedControllableProperty.Button();
-		button.setLabel(label);
-		button.setLabelPressed(labelPressed);
-		button.setGracePeriod(0L);
-		return new AdvancedControllableProperty(name, new Date(), button, "");
-	}
-
-	/**
-	 * Create a switch controllable property
-	 *
-	 * @param name name of the switch
-	 * @param status initial switch state (0|1)
-	 * @return AdvancedControllableProperty button instance
-	 */
-	private AdvancedControllableProperty createSwitch(Map<String, String> stats, String name, boolean status, String labelOff, String labelOn) {
-		AdvancedControllableProperty.Switch toggle = new AdvancedControllableProperty.Switch();
-		toggle.setLabelOff(labelOff);
-		toggle.setLabelOn(labelOn);
-		int statusValue = 0;
-		if (status) {
-			statusValue = 1;
-		}
-		stats.put(name, String.valueOf(statusValue));
-		return new AdvancedControllableProperty(name, new Date(), toggle, statusValue);
-	}
-
-	/***
-	 * Create AdvancedControllableProperty preset instance
-	 * @param name name of the control
-	 * @param initialValue initial value of the control
-	 * @return AdvancedControllableProperty preset instance
-	 */
-	private AdvancedControllableProperty createDropdown(Map<String, String> stats, String name, List<String> values, String initialValue) {
-		stats.put(name, initialValue);
-		AdvancedControllableProperty.DropDown dropDown = new AdvancedControllableProperty.DropDown();
-		dropDown.setOptions(values.toArray(new String[0]));
-		dropDown.setLabels(values.toArray(new String[0]));
-
-		return new AdvancedControllableProperty(name, new Date(), dropDown, initialValue);
-	}
-
-	/**
-	 * Create a controllable property Text
-	 *
-	 * @param name the name of property
-	 * @param stringValue character string
-	 * @return AdvancedControllableProperty Text instance
-	 */
-	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
-		stats.put(name, stringValue);
-		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
-		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------
@@ -1312,6 +1232,92 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	//region Perform stream control
 	//--------------------------------------------------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------------------------------------
+	//endregion
+
+	//region Populate advanced controllable properties
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Add advancedControllableProperties if  advancedControllableProperties different empty
+	 *
+	 * @param advancedControllableProperties advancedControllableProperties is the list that store all controllable properties
+	 * @param property the property is item advancedControllableProperties
+	 */
+	private void addAdvanceControlProperties(List<AdvancedControllableProperty> advancedControllableProperties, AdvancedControllableProperty property) {
+		if (property != null) {
+			for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
+				if (controllableProperty.getName().equals(property.getName())) {
+					advancedControllableProperties.remove(controllableProperty);
+					break;
+				}
+			}
+			advancedControllableProperties.add(property);
+		}
+	}
+
+	/**
+	 * Instantiate Text controllable property
+	 *
+	 * @param name name of the property
+	 * @param label default button label
+	 * @return instance of AdvancedControllableProperty with AdvancedControllableProperty.Button as type
+	 */
+	private AdvancedControllableProperty createButton(String name, String label, String labelPressed) {
+		AdvancedControllableProperty.Button button = new AdvancedControllableProperty.Button();
+		button.setLabel(label);
+		button.setLabelPressed(labelPressed);
+		button.setGracePeriod(0L);
+		return new AdvancedControllableProperty(name, new Date(), button, "");
+	}
+
+	/**
+	 * Create a switch controllable property
+	 *
+	 * @param name name of the switch
+	 * @param status initial switch state (0|1)
+	 * @return AdvancedControllableProperty button instance
+	 */
+	private AdvancedControllableProperty createSwitch(Map<String, String> stats, String name, boolean status, String labelOff, String labelOn) {
+		AdvancedControllableProperty.Switch toggle = new AdvancedControllableProperty.Switch();
+		toggle.setLabelOff(labelOff);
+		toggle.setLabelOn(labelOn);
+		int statusValue = 0;
+		if (status) {
+			statusValue = 1;
+		}
+		stats.put(name, String.valueOf(statusValue));
+		return new AdvancedControllableProperty(name, new Date(), toggle, statusValue);
+	}
+
+	/***
+	 * Create AdvancedControllableProperty preset instance
+	 * @param name name of the control
+	 * @param initialValue initial value of the control
+	 * @return AdvancedControllableProperty preset instance
+	 */
+	private AdvancedControllableProperty createDropdown(Map<String, String> stats, String name, List<String> values, String initialValue) {
+		stats.put(name, initialValue);
+		AdvancedControllableProperty.DropDown dropDown = new AdvancedControllableProperty.DropDown();
+		dropDown.setOptions(values.toArray(new String[0]));
+		dropDown.setLabels(values.toArray(new String[0]));
+
+		return new AdvancedControllableProperty(name, new Date(), dropDown, initialValue);
+	}
+
+	/**
+	 * Create a controllable property Text
+	 *
+	 * @param name the name of property
+	 * @param stringValue character string
+	 * @return AdvancedControllableProperty Text instance
+	 */
+	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
+		stats.put(name, stringValue);
+		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
+		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
+	}
+
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//endregion
 }

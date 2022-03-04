@@ -3,7 +3,6 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats;
 
-
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAlias;

@@ -88,7 +88,6 @@ public class StreamStats {
 	@JsonAlias("sources")
 	private List<Source> sources;
 
-
 	/**
 	 * Retrieves {@code {@link #name}}
 	 *
