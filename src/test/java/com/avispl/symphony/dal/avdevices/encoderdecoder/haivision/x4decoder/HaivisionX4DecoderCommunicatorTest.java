@@ -128,7 +128,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderCommunicatorFiltering() {
-		String streamName = "SRT - WAN Listen (6515), test";
+		String streamName = "SRT - WAN Listen (6515), tests";
 		String portNumber = "1257-90000";
 
 		haivisionX4DecoderCommunicator.setStreamName(streamName);
@@ -140,7 +140,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 		String streamStatisticGroup = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "SRT - WAN Listen (6515)" + DecoderConstant.HASH;
 		Assertions.assertEquals("SRT - WAN Listen (6515)", stats.get(streamStatisticGroup + StreamMonitoringMetric.NAME.getName()));
 
-		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "test" + DecoderConstant.HASH;
+		String streamStatisticGroup3 = MonitoringMetricGroup.STREAM_STATISTICS.getName() + "tests" + DecoderConstant.HASH;
 		Assertions.assertNull(stats.get(streamStatisticGroup3 + StreamMonitoringMetric.NAME.getName()));
 	}
 

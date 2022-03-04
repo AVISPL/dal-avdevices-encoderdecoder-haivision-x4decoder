@@ -6,7 +6,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 import java.util.UUID;
 
 /**
- * Normalized Data
+ * Normalizing Data
  *
  * @author Harry
  * @since 1.0

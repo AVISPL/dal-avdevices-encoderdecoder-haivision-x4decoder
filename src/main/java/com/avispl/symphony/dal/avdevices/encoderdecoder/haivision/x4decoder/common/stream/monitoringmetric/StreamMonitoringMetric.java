@@ -5,7 +5,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric;
 
 /**
- * Set of stream monitoring metrics keys
+ * Set of stream monitoring metric keys
  *
  * @author Harry
  * @since 1.0
@@ -36,7 +36,7 @@ public enum StreamMonitoringMetric {
 	private final String name;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Set of still image mode option
+ * Set of decoder state option
  *
  * @author Harry
  * @since 1.0
@@ -28,7 +28,7 @@ public enum State {
 	private final boolean isRunning;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 * @param name Name of decoder monitoring metric
 	 * @param code Code of decoder status
 	 * @param isRunning status of decoder
@@ -64,31 +64,6 @@ public enum State {
 	 */
 	public boolean isRunning() {
 		return isRunning;
-	}
-
-	/**
-	 *
-	 * @return list of state mode
-	 */
-	public static List<String> getStateList() {
-		List<String> list = new LinkedList<>();
-		for (State state : State.values()) {
-			list.add(state.getName());
-		}
-		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of State drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (State state : State.values()) {
-			nameToValue.put(state.getCode(), state.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

@@ -26,7 +26,7 @@ public enum Encapsulation {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder encapsulation mode
@@ -64,19 +64,6 @@ public enum Encapsulation {
 			list.add(encapsulation.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of encapsulation mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (Encapsulation encapsulation : Encapsulation.values()) {
-			nameToValue.put(encapsulation.getCode(), encapsulation.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

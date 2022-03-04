@@ -26,7 +26,7 @@ public enum BufferingMode {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder buffering mode
@@ -64,19 +64,6 @@ public enum BufferingMode {
 			list.add(bufferingMode.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of buffering mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (BufferingMode bufferingMode : BufferingMode.values()) {
-			nameToValue.put(bufferingMode.getCode(), bufferingMode.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Set of monitoring group metrics keys
+ * Set of controlling metric group keys
  *
  * @author Harry
  * @since 1.0
@@ -23,7 +23,7 @@ public enum ControllingMetricGroup {
 	/**
 	 * Parameterized constructor
 	 *
-	 * @param name Name of Decoder monitoring metric
+	 * @param name Name of decoder controlling metric group
 	 */
 	ControllingMetricGroup(String name) {
 		this.name = name;

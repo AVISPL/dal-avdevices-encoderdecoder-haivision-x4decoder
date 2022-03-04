@@ -28,7 +28,7 @@ public enum SRTMetric {
 	private final String name;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */

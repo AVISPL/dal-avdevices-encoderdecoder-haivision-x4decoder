@@ -41,7 +41,7 @@ public enum DecoderControllingMetric {
 	private final String name;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 */

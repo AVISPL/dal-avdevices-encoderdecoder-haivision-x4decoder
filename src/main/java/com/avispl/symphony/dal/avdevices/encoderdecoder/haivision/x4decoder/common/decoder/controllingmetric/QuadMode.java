@@ -25,7 +25,7 @@ public enum QuadMode {
 	private final Integer code;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder quad mode
@@ -63,19 +63,6 @@ public enum QuadMode {
 			list.add(quadMode.getName());
 		}
 		return list;
-	}
-
-	/**
-	 * Retrieves name to value map of quad mode drop down
-	 *
-	 * @return Map<Integer, String> are name and value
-	 */
-	public static Map<Integer, String> getNameToValueMap() {
-		Map<Integer, String> nameToValue = new HashMap<>();
-		for (QuadMode quadMode : QuadMode.values()) {
-			nameToValue.put(quadMode.getCode(), quadMode.getName());
-		}
-		return nameToValue;
 	}
 
 	/**

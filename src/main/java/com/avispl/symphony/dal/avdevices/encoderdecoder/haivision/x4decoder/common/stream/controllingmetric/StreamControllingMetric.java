@@ -45,7 +45,6 @@ public enum StreamControllingMetric {
 	DELETE("Delete"),
 	UPDATE("Update");
 
-
 	private final String name;
 
 	/**

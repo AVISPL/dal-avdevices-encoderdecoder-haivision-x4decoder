@@ -4,7 +4,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**
- * All URL which will be accessed
+ * URLs which will be accessed
  *
  * @author Harry
  * @since 1.0
