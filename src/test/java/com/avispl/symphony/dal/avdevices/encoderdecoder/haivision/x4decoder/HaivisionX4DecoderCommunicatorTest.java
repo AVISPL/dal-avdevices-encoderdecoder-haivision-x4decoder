@@ -123,7 +123,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4DecoderCommunicator adapter filtering in case having 3 filtering
+	 * Test HaivisionX4DecoderCommunicator adapter filtering exist stream name
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -164,11 +164,11 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty HDR control
+	 * Test HaivisionX4Decoder.controlProperty HDR control (dropdown control)
 	 */
 	@Tag("RealDevice")
 	@Test
-	void testSetCancelControl() {
+	void testSetHDRControl() {
 		ControllableProperty controllableProperty = new ControllableProperty();
 		controllableProperty.setProperty("Decoder0" + DecoderConstant.HASH + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName() );
 		controllableProperty.setValue("ForcePQ");
@@ -180,5 +180,43 @@ public class HaivisionX4DecoderCommunicatorTest {
 
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
 		Assertions.assertEquals("ForcePQ", stats.get(decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty failed (switch control)
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testControlFailed() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("Decoder0" + "#Output2");
+		controllableProperty.setValue("1");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
+		Assertions.assertEquals("1", stats.get(decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty failed (text control)
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testStillImageDelayControlFailed() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("Decoder0" + "#StillImageDelay");
+		controllableProperty.setValue("10000");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
+		Assertions.assertEquals("1000", stats.get(decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName()));
 	}
 }

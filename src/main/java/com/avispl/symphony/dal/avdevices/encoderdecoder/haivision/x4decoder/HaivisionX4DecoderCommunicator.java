@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.http.HttpHeaders;
@@ -561,26 +562,20 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 		}
 
+		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
 		if (!isEmergencyCall) {
-			if (this.streamInfoDTOList.size() > streamID) {
-				for (StreamInfo streamInfoDTO : this.streamInfoDTOList) {
-					if (streamInfoDTO.getId() == streamID) {
-						this.streamInfoDTOList.remove(streamInfoDTO);
-						this.streamInfoDTOList.add(streamInfo);
-					}
-				}
-			} else {
+			if (streamInfoDTO.isPresent()) {
+						this.streamInfoDTOList.remove(streamID);
+						this.streamInfoDTOList.add(streamInfoDTO.get());
+				} else {
 				this.streamInfoDTOList.add(streamInfo);
 			}
 		}
 
-		if (localStreamInfoList.size() >= streamID) {
-			StreamInfo localStreamInfo = this.localStreamInfoList.get(streamID);
-			StreamInfo streamInfoDTO = this.streamInfoDTOList.get(streamID);
-			if (localStreamInfo.equals(streamInfoDTO) && !streamInfoDTO.equals(streamInfo)) {
+		Optional<StreamInfo> localStreamInfo = this.localStreamInfoList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
+		if (localStreamInfo.isPresent() && localStreamInfo.equals(streamInfoDTO) && !streamInfoDTO.equals(streamInfo)) {
 				this.streamInfoDTOList.set(streamID, streamInfo);
 				this.isEmergencyCall = true;
-			}
 		}
 	}
 

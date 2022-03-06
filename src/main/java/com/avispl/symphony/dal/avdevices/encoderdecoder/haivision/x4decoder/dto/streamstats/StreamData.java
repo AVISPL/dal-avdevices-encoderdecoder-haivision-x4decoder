@@ -5,6 +5,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,6 +38,16 @@ public class StreamData {
 	 */
 	public void setStreams(List<Stream> streams) {
 		this.streams = streams;
+	}
+
+	/**
+	 * This method is used to get streamInfo by name
+	 *
+	 * @param streamName name of stream
+	 */
+	public Stream getStreamByStreamName(String streamName) {
+		Optional<Stream> stream = streams.stream().filter(st-> streamName.equals(st.getStreamInfo().getName())).findFirst();
+		return stream.orElse(null);
 	}
 
 }
