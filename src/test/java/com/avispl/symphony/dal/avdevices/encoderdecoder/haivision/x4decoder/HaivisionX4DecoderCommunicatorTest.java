@@ -61,6 +61,10 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() {
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -145,7 +149,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty case output control
+	 * Test HaivisionX4Decoder.controlProperty output control (switch control)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -171,7 +175,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	void testSetHDRControl() {
 		ControllableProperty controllableProperty = new ControllableProperty();
 		controllableProperty.setProperty("Decoder0" + DecoderConstant.HASH + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName() );
-		controllableProperty.setValue("ForcePQ");
+		controllableProperty.setValue("Disable");
 
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
@@ -180,25 +184,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
 		Assertions.assertEquals("ForcePQ", stats.get(decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName()));
-	}
-
-	/**
-	 * Test HaivisionX4Decoder.controlProperty failed (switch control)
-	 */
-	@Tag("RealDevice")
-	@Test
-	void testControlFailed() {
-		ControllableProperty controllableProperty = new ControllableProperty();
-		controllableProperty.setProperty("Decoder0" + "#Output2");
-		controllableProperty.setValue("1");
-
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
-		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		Map<String, String> stats = extendedStatistics.getStatistics();
-
-		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
-		Assertions.assertEquals("1", stats.get(decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName()));
 	}
 
 	/**

@@ -17,6 +17,7 @@ public class DecoderURL {
 	public static final String STREAMS = "/streams";
 	public static final String ROLE_BASED = "/accounts";
 	public static final String DEVICE_INFO = "/status";
+	public static final String SYSTEM_INFO = "/system_info";
 	public static final String START_DECODER = "/start";
 	public static final String STOP_DECODER = "/stop";
 	public static final String UPDATE_DECODER = "";
