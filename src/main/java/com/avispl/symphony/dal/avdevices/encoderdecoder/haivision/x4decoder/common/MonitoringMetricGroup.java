@@ -13,7 +13,8 @@ public enum MonitoringMetricGroup {
 
 	DECODER_STATISTICS("Decoder Statistics"),
 	STREAM_STATISTICS("Stream Statistics"),
-	DEVICE_INFO("Device Info");
+	DEVICE_INFO("Device Info"),
+	SYSTEM_INFO("System Info");
 
 	private final String name;
 

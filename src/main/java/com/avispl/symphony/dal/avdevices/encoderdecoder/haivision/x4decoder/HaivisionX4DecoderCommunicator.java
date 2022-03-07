@@ -60,6 +60,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderStats;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.DeviceInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.SystemInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.SRT;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Stream;
@@ -88,6 +89,7 @@ import com.avispl.symphony.dal.util.StringUtils;
 public class HaivisionX4DecoderCommunicator extends RestCommunicator implements Monitorable, Controller {
 	private AuthenticationCookie authenticationCookie;
 	private AuthenticationInfo authenticationInfo;
+	private SystemInfo systemInfo;
 	private HashMap<String, String> failedMonitor;
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
@@ -231,6 +233,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
+		}
+		if (systemInfo == null) {
+			systemInfo = new SystemInfo();
 		}
 		if (decoderInfoDTOList == null) {
 			decoderInfoDTOList = new ArrayList<>();
@@ -443,6 +448,37 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * Update failedMonitor with getting system info error message
+	 *
+	 * @param failedMonitor list statistics property
+	 */
+	private void updateSystemInfoFailedMonitor(Map<String, String> failedMonitor) {
+		failedMonitor.put(MonitoringMetricGroup.SYSTEM_INFO.getName(), DecoderConstant.GETTING_SYSTEM_INFO_ERR);
+	}
+
+	/**
+	 * This method is used to retrieve System info by send GET request to http://{IP_Address}/apis/system_info
+	 *
+	 * When sessionID is null, the failedMonitor is going to update
+	 * When there is no response data, the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
+	 */
+	private void retrieveSystemInfo() {
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				systemInfo = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.SYSTEM_INFO), SystemInfo.class);
+				if (systemInfo != null) {
+					updateSystemInfoFailedMonitor(failedMonitor);
+				}
+			} else {
+				updateSystemInfoFailedMonitor(failedMonitor);
+			}
+		} catch (Exception e) {
+			updateSystemInfoFailedMonitor(failedMonitor);
+		}
+	}
+
+	/**
 	 * Update failedMonitor with Getting decoder stats error message
 	 *
 	 * @param failedMonitor list statistics property
@@ -566,8 +602,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
 		if (!isUpdateLocalStreamControl) {
 			if (streamInfoDTO.isPresent()) {
-				this.streamInfoDTOList.remove(streamID);
-				this.streamInfoDTOList.add(streamInfoDTO.get());
+				this.streamInfoDTOList.remove(streamInfoDTO.get());
+				this.streamInfoDTOList.add(streamInfo);
 			} else {
 				this.streamInfoDTOList.add(streamInfo);
 			}
@@ -575,7 +611,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		Optional<StreamInfo> localStreamInfo = this.localStreamInfoList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
 		if (localStreamInfo.isPresent() && localStreamInfo.equals(streamInfoDTO) && !streamInfoDTO.equals(streamInfo)) {
-			this.streamInfoDTOList.set(streamID, streamInfo);
+			this.streamInfoDTOList.remove(streamInfoDTO.get());
+			this.streamInfoDTOList.add(streamInfo);
 			this.isUpdateLocalStreamControl = true;
 		}
 	}
@@ -675,6 +712,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		// Retrieving all device info
 		retrieveDeviceInfo(stats);
+
+		// Retrieving all systemInfo
+		retrieveSystemInfo();
 
 		// Retrieving all decoders stats
 		for (int decoderID = DecoderConstant.MIN_DECODER_ID; decoderID < DecoderConstant.MAX_DECODER_ID; decoderID++) {
@@ -854,9 +894,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		// Populate stream id dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID));
 
-		// Populate HDR dropdown list control
-		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
-
+		if (!systemInfo.isHasHDR()) {
+			// Populate HDR dropdown list control
+			advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+		}
 		// Populate output frame rate dropdown list control
 		advancedControllableProperties.add(
 				createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
@@ -1010,15 +1051,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		List<String> stillImageList = StillImage.getStillImageList();
 		List<String> hdrList = HDR.getHDRList();
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
-		Set<String> streamIDSet = new HashSet<>();
 		ArrayList<String> streamIDList = new ArrayList<>();
 
 		if (this.streamInfoDTOList != null) {
 			for (StreamInfo streamInfo :
 					streamInfoDTOList) {
-				streamIDSet.add(streamInfo.getId().toString());
+				streamIDList.add(streamInfo.getId().toString());
 			}
-			streamIDList = new ArrayList<>(streamIDSet);
 		} else {
 			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
 		}
@@ -1040,7 +1079,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				StillImage stillImage = StillImage.getByName(value);
 				decoderInfo.setStillImage(stillImage.getCode());
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1048,24 +1088,27 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case STILL_IMAGE_DELAY:
 				decoderInfo.setStillImageDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case HDR_DYNAMIC_RANGE:
 				HDR hdr = HDR.getByName(value);
-				decoderInfo.setHdrDynamicRange(hdr.getCode());
-				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
-				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				if (systemInfo.isHasHDR()) {
+					decoderInfo.setHdrDynamicRange(hdr.getCode());
+					this.localDecoderInfoList.set(decoderID, decoderInfo);
+					addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+					populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
-				populateLocalExtendedStats(stats, advancedControllableProperties);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+				}
 				break;
 			case OUTPUT_1:
 				decoderInfo.setOutput1(mapSwitchControlValue(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
 						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
