@@ -876,15 +876,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		List<String> quadModeList = QuadMode.getQuadModeList();
 		List<String> stillImageList = StillImage.getStillImageList();
 		List<String> hdrList = HDR.getHDRList();
-		Set<String> streamIDSet = new HashSet<>();
 		ArrayList<String> streamIDList = new ArrayList<>();
 
 		if (this.streamInfoDTOList != null) {
 			for (StreamInfo streamInfo :
 					streamInfoDTOList) {
-				streamIDSet.add(streamInfo.getId().toString());
+				streamIDList.add(streamInfo.getId().toString());
 			}
-			streamIDList = new ArrayList<>(streamIDSet);
 		} else {
 			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
 		}
@@ -894,7 +892,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		// Populate stream id dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID));
 
-		if (!systemInfo.isHasHDR()) {
+		if (systemInfo.isHasHDR()) {
 			// Populate HDR dropdown list control
 			advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
 		}
