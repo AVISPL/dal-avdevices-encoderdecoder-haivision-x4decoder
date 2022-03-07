@@ -86,14 +86,14 @@ import com.avispl.symphony.dal.util.StringUtils;
  * @since 1.0.0
  */
 public class HaivisionX4DecoderCommunicator extends RestCommunicator implements Monitorable, Controller {
-
 	private AuthenticationCookie authenticationCookie;
 	private AuthenticationInfo authenticationInfo;
 	private HashMap<String, String> failedMonitor;
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
 	private Set<String> portNumberSet;
-	private boolean isEmergencyCall = false;
+	private boolean isUpdateLocalDecoderControl = false;
+	private boolean isUpdateLocalStreamControl = false;
 
 	private boolean isEmergencyDelivery = false;
 	private ExtendedStatistics localExtendedStatistics;
@@ -247,13 +247,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		if (!isEmergencyDelivery) {
 			populateDecoderMonitoringMetrics(stats);
-			if (isEmergencyCall || localDecoderInfoList.size() == 0) {
+			if (isUpdateLocalDecoderControl || localDecoderInfoList.size() == 0) {
 				localDecoderInfoList = (ArrayList<DecoderInfo>) decoderInfoDTOList.stream().map(decoderInfo -> new DecoderInfo(decoderInfo)).collect(Collectors.toList());
+				isUpdateLocalDecoderControl = false;
 			}
-			if (isEmergencyCall || localStreamInfoList.size() == 0) {
+			if (isUpdateLocalStreamControl || localStreamInfoList.size() == 0) {
 				localStreamInfoList = (ArrayList<StreamInfo>) streamInfoDTOList.clone();
+				isUpdateLocalStreamControl = false;
 			}
-			isEmergencyCall = false;
 			// check Role is Admin or Operator
 			String role = authenticationInfo.getAuthenticationRole().getRole();
 			if (role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) {
@@ -264,7 +265,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			extendedStatistics.setStatistics(stats);
 			localExtendedStatistics = extendedStatistics;
 		}
-
 		isEmergencyDelivery = false;
 		return Collections.singletonList(localExtendedStatistics);
 	}
@@ -478,7 +478,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 			}
 		}
-		if (!isEmergencyCall) {
+		if (!isUpdateLocalDecoderControl) {
 			if (this.decoderInfoDTOList.size() > decoderID) {
 				this.decoderInfoDTOList.set(decoderID, decoderInfo);
 			} else {
@@ -491,7 +491,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			DecoderInfo decoderInfoDTO = this.decoderInfoDTOList.get(decoderID);
 			if (decoderInfoDTO.deepEquals(localDecoderInfo) && !decoderInfoDTO.deepEquals(decoderInfo)) {
 				this.decoderInfoDTOList.set(decoderID, decoderInfoDTO);
-				this.isEmergencyCall = true;
+				this.isUpdateLocalDecoderControl = true;
 			}
 		}
 	}
@@ -564,19 +564,19 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 
 		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
-		if (!isEmergencyCall) {
+		if (!isUpdateLocalStreamControl) {
 			if (streamInfoDTO.isPresent()) {
-						this.streamInfoDTOList.remove(streamID);
-						this.streamInfoDTOList.add(streamInfoDTO.get());
-				} else {
+				this.streamInfoDTOList.remove(streamID);
+				this.streamInfoDTOList.add(streamInfoDTO.get());
+			} else {
 				this.streamInfoDTOList.add(streamInfo);
 			}
 		}
 
 		Optional<StreamInfo> localStreamInfo = this.localStreamInfoList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
 		if (localStreamInfo.isPresent() && localStreamInfo.equals(streamInfoDTO) && !streamInfoDTO.equals(streamInfo)) {
-				this.streamInfoDTOList.set(streamID, streamInfo);
-				this.isEmergencyCall = true;
+			this.streamInfoDTOList.set(streamID, streamInfo);
+			this.isUpdateLocalStreamControl = true;
 		}
 	}
 
@@ -948,6 +948,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		String cancel = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.CANCEL.getName();
 
 		if (!decoderInfo.deepEquals(decoderInfoDTO)) {
+			stats.put(ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.EDITED.getName(), "True");
 			stats.put(applyChange, DecoderConstant.EMPTY);
 			stats.put(cancel, DecoderConstant.EMPTY);
 			addAdvanceControlProperties(advancedControllableProperties,createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
@@ -955,6 +956,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		} else {
 			stats.remove(applyChange);
 			stats.remove(cancel);
+			stats.put(ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.EDITED.getName(), "False");
 
 			for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
 				if (controllableProperty.getName().equals(applyChange)) {
