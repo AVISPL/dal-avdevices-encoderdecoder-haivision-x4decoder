@@ -32,7 +32,7 @@ public class DecoderConstant {
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";
-	public static final String ADMIN_ROLE = "Admin";
+	public static final String ADMIN_ROLE = "Administrator";
 	public static final String SESSION_ID = "Set-Cookie";
 	public static final String COOKIE = "Cookie";
 	public static final String DAY = " day(s) ";
