@@ -58,4 +58,8 @@ public class DecoderConstant {
 	public static final Integer MAX_BUFFERING_DELAY = 3000;
 	public static final Integer MIN_MULTI_SYNC_BUFFERING_DELAY = 0;
 	public static final Integer MAX_MULTI_SYNC_BUFFERING_DELAY = 10000;
+	public static final Integer MIN_PORT = 1025;
+	public static final Integer MAX_PORT = 65535;
+	public static final Integer MIN_LATENCY = 20;
+	public static final Integer MAX_LATENCY = 8000;
 }
