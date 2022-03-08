@@ -64,7 +64,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -103,12 +102,13 @@ public class HaivisionX4DecoderCommunicatorTest {
 	/**
 	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics get errors when retrieving decoders statistic and streams statistics
 	 * Expected throw ResourceNotReachableException
-	 * failed to get decoder statistic3
-	 * failed to get decoder statistic1
-	 * failed to get decoder statistic2
-	 * failed to get decoder statistic0
-	 * failed to get stream statistic
-	 * failed to get device info
+	 * Failed to get system info
+	 * Failed to get decoder statistic3
+	 * Failed to get decoder statistic1
+	 * Failed to get decoder statistic2
+	 * Failed to get decoder statistic0
+	 * Failed to get stream statistic
+	 * Failed to get device info
 	 */
 	@Tag("Mock")
 	@Test
@@ -122,7 +122,11 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
 			haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
-		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage() + ExceptionMessage.GETTING_DEVICE_INFO.getMessage(),
+		Assertions.assertEquals(ExceptionMessage.GETTING_SYSTEM_INFO.getMessage()
+						+ ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage()
+						+ ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage()
+						+ ExceptionMessage.GETTING_DEVICE_INFO.getMessage()
+				,
 				exception.getMessage());
 	}
 
@@ -175,7 +179,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	void testSetHDRControl() {
 		ControllableProperty controllableProperty = new ControllableProperty();
 		controllableProperty.setProperty("Decoder0" + DecoderConstant.HASH + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName() );
-		controllableProperty.setValue("Disable");
+		controllableProperty.setValue("ForcePQ");
 
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);

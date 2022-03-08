@@ -3,11 +3,15 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
 
 /**
@@ -44,13 +48,13 @@ public class StreamInfo {
 	private String sourceIp;
 
 	@JsonAlias("latency")
-	private String latency;
+	private Integer latency;
 
 	@JsonAlias("srtMode")
-	private String srtMode;
+	private Integer srtMode;
 
 	@JsonAlias("sourcePort")
-	private String sourcePort;
+	private Integer sourcePort;
 
 	@JsonAlias("strictMode")
 	private String strictMode;
@@ -68,7 +72,7 @@ public class StreamInfo {
 	private String srtToUdp_address;
 
 	@JsonAlias("srtToUdp_port")
-	private String srtToUdp_port;
+	private Integer srtToUdp_port;
 
 	@JsonAlias("srtToUdp_tos")
 	private String srtToUdp_tos;
@@ -77,7 +81,40 @@ public class StreamInfo {
 	private String srtToUdp_ttl;
 
 	@JsonAlias("fecRtp")
-	private String fecRtp;
+	private Integer fecRtp;
+
+	private NetworkType netWorkType;
+
+	public StreamInfo() {
+	}
+
+	/**
+	 * This constructor is used for deep clone object
+	 *
+	 * @param streamInfo Stream config info
+	 */
+	public StreamInfo(StreamInfo streamInfo) {
+		this.name = streamInfo.getName();
+		this.id = streamInfo.getId();
+		this.decoderId = streamInfo.getDecoderId();
+		this.encapsulation = streamInfo.getEncapsulation().getCode();
+		this.userData = streamInfo.getUserData();
+		this.address = streamInfo.getAddress();
+		this.port = streamInfo.getPort();
+		this.sourceIp = streamInfo.getSourceIp();
+		this.latency = streamInfo.getLatency();
+		this.srtMode = streamInfo.getSrtMode().getCode();
+		this.sourcePort = streamInfo.getSourcePort();
+		this.strictMode = streamInfo.getStrictMode();
+		this.passphrase = streamInfo.getPassphrase();
+		this.passphraseSet = streamInfo.getPassphraseSet();
+		this.srtToUdp = streamInfo.getSrtToUdp();
+		this.srtToUdp_address = streamInfo.getSrtToUdp_address();
+		this.srtToUdp_port = streamInfo.getSrtToUdp_port();
+		this.srtToUdp_tos = streamInfo.getSrtToUdp_tos();
+		this.srtToUdp_ttl = streamInfo.getSrtToUdp_ttl();
+		this.fecRtp = streamInfo.getFecRtp().getCode();
+	}
 
 	/**
 	 * Retrieves {@code {@link #name}}
@@ -200,6 +237,11 @@ public class StreamInfo {
 	 * @return value of {@link #port}
 	 */
 	public Integer getPort() {
+		if (port < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT;
+		} else if (port > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT;
+		}
 		return port;
 	}
 
@@ -235,7 +277,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #latency}
 	 */
-	public String getLatency() {
+	public Integer getLatency() {
+		if (latency != null) {
+			if (latency < DecoderConstant.MIN_LATENCY) {
+				return DecoderConstant.MIN_LATENCY;
+			} else if (latency > DecoderConstant.MAX_LATENCY) {
+				return DecoderConstant.MAX_LATENCY;
+			}
+		}
 		return latency;
 	}
 
@@ -244,7 +293,7 @@ public class StreamInfo {
 	 *
 	 * @param latency the {@code java.lang.String} field
 	 */
-	public void setLatency(String latency) {
+	public void setLatency(Integer latency) {
 		this.latency = latency;
 	}
 
@@ -269,7 +318,7 @@ public class StreamInfo {
 	 *
 	 * @param srtMode the {@code java.lang.String} field
 	 */
-	public void setSrtMode(String srtMode) {
+	public void setSrtMode(Integer srtMode) {
 		this.srtMode = srtMode;
 	}
 
@@ -278,7 +327,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #sourcePort}
 	 */
-	public String getSourcePort() {
+	public Integer getSourcePort() {
+		if (sourcePort != null) {
+			if (sourcePort < DecoderConstant.MIN_PORT) {
+				return DecoderConstant.MIN_PORT;
+			} else if (sourcePort > DecoderConstant.MAX_PORT) {
+				return DecoderConstant.MAX_PORT;
+			}
+		}
 		return sourcePort;
 	}
 
@@ -287,7 +343,7 @@ public class StreamInfo {
 	 *
 	 * @param sourcePort the {@code java.lang.String} field
 	 */
-	public void setSourcePort(String sourcePort) {
+	public void setSourcePort(Integer sourcePort) {
 		this.sourcePort = sourcePort;
 	}
 
@@ -386,7 +442,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtToUdp_port}
 	 */
-	public String getSrtToUdp_port() {
+	public Integer getSrtToUdp_port() {
+		if (srtToUdp_port != null) {
+			if (srtToUdp_port < DecoderConstant.MIN_PORT) {
+				return DecoderConstant.MIN_PORT;
+			} else if (srtToUdp_port > DecoderConstant.MAX_PORT) {
+				return DecoderConstant.MAX_PORT;
+			}
+		}
 		return srtToUdp_port;
 	}
 
@@ -395,7 +458,7 @@ public class StreamInfo {
 	 *
 	 * @param srtToUdp_port the {@code java.lang.String} field
 	 */
-	public void setSrtToUdp_port(String srtToUdp_port) {
+	public void setSrtToUdp_port(Integer srtToUdp_port) {
 		this.srtToUdp_port = srtToUdp_port;
 	}
 
@@ -452,11 +515,52 @@ public class StreamInfo {
 	}
 
 	/**
+	 * Retrieves {@code {@link #netWorkType}}
+	 *
+	 * @return value of {@link #netWorkType}
+	 */
+	public NetworkType getNetWorkType() {
+		return netWorkType;
+	}
+
+	/**
+	 * Sets {@code netWorkType}
+	 *
+	 * @param netWorkType the {@code com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetWorkType} field
+	 */
+	public void setNetWorkType(NetworkType netWorkType) {
+		this.netWorkType = netWorkType;
+	}
+
+	/**
 	 * Sets {@code fecRtp}
 	 *
 	 * @param fecRtp the {@code java.lang.String} field
 	 */
-	public void setFecRtp(String fecRtp) {
+	public void setFecRtp(Integer fecRtp) {
 		this.fecRtp = fecRtp;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		StreamInfo that = (StreamInfo) o;
+		return Objects.equals(name, that.name) && Objects.equals(id, that.id) && Objects.equals(decoderId, that.decoderId) && Objects.equals(encapsulation,
+				that.encapsulation) && Objects.equals(userData, that.userData) && Objects.equals(address, that.address) && Objects.equals(port, that.port)
+				&& Objects.equals(sourceIp, that.sourceIp) && Objects.equals(latency, that.latency) && Objects.equals(srtMode, that.srtMode) && Objects.equals(sourcePort,
+				that.sourcePort) && Objects.equals(strictMode, that.strictMode) && Objects.equals(passphrase, that.passphrase) && Objects.equals(passphraseSet, that.passphraseSet)
+				&& Objects.equals(srtToUdp, that.srtToUdp) && Objects.equals(srtToUdp_address, that.srtToUdp_address) && Objects.equals(srtToUdp_port, that.srtToUdp_port)
+				&& Objects.equals(srtToUdp_tos, that.srtToUdp_tos) && Objects.equals(srtToUdp_ttl, that.srtToUdp_ttl) && Objects.equals(fecRtp, that.fecRtp);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, id, decoderId, encapsulation, userData, address, port, sourceIp, latency, srtMode, sourcePort, strictMode, passphrase, passphraseSet, srtToUdp, srtToUdp_address,
+				srtToUdp_port, srtToUdp_tos, srtToUdp_ttl, fecRtp);
 	}
 }
