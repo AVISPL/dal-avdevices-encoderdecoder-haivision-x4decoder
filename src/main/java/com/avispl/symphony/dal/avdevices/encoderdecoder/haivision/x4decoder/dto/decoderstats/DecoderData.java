@@ -6,18 +6,19 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NomalizeData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Decoder Data
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DecoderData {
+public class DecoderData{
 
 	@JsonAlias ("stats")
 	private DecoderStats decoderStats;
@@ -25,7 +26,7 @@ public class DecoderData {
 	@JsonAlias("info")
 	private DecoderInfo decoderInfo;
 
-	private NomalizeData nomalizeData = new NomalizeData();
+	private NormalizeData normalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #decoderStats }}
@@ -73,21 +74,15 @@ public class DecoderData {
 			case DECODER_ID:
 				return decoderStats.getDecoderID().toString();
 			case STATE:
-				return decoderStats.getState();
+				return decoderStats.getState().getName();
 			case UPTIME:
-				return nomalizeData.formatTimeData(decoderStats.getUptime());
-			case OVERSUBSCRIBED_FRAMES:
-				return decoderStats.getOversubscribedFrames();
+				return normalizeData.formatTimeData(decoderStats.getUptime());
 			case BUFFERING_STATE:
 				return decoderStats.getBufferingState();
 			case BUFFERING_MODE:
 				return decoderStats.getBufferingMode();
 			case BUFFERING_ADJUSTMENTS:
 				return decoderStats.getBufferingAdjustments();
-			case BUFFERING_DELAY:
-				return decoderInfo.getBufferingDelay();
-			case LATENCY:
-				return decoderInfo.getLatency();
 			case VIDEO_LATENCY:
 				return decoderStats.getVideoLatency();
 			case STC_TO_PCR_LEAD_TIME:
@@ -98,14 +93,10 @@ public class DecoderData {
 				return decoderStats.getVideoProfile();
 			case VIDEO_LEVEL:
 				return decoderStats.getVideoLevel();
-			case VIDEO_OUTPUT_FORMAT:
-				return decoderStats.getVideoOutputFormat();
 			case VIDEO_FRAMING:
 				return decoderStats.getVideoFraming();
 			case VIDEO_SLICES_PER_FRAME:
 				return decoderStats.getVideoSlicesPerFrame();
-			case VIDEO_INPUT_FRAME_RATE:
-				return decoderStats.getVideoInputFrameRate();
 			case STILL_IMAGE:
 				return decoderStats.getStillImage();
 			case VIDEO_DECODER_STATE:
@@ -116,8 +107,10 @@ public class DecoderData {
 				return decoderStats.getLoadPercentage().toString();
 			case PREPROCESSOR_STATE:
 				return decoderStats.getPreprocessorState();
-			case TROUBLE_CODE:
-				return decoderStats.getTroubleCode().toString();
+			case VIDEO_INPUT_PACKET:
+				return decoderStats.getVideoInputPackets();
+			case VIDEO_ENCODER_FORMAT:
+				return decoderStats.getVideoInputResolution();
 			case DISPLAYED_OUTPUT_FRAMES:
 				return decoderStats.getDisplayedOutputFrames();
 			case SKIPPED_OUTPUT_FRAMES:
@@ -162,6 +155,24 @@ public class DecoderData {
 				return decoderStats.getTcOutputPackets();
 			case TC_FREED_PACKETS:
 				return decoderStats.getTcFreedPackets();
+			case MULTI_SYNC_STATUS:
+				return decoderStats.getMultisyncStatus();
+			case MULTI_SYNC_DELAY_ACTUAL:
+				return decoderStats.getMultisyncDelayActual();
+			case MULTI_SYNC_DELAY_RANGE:
+				return decoderStats.getMultisyncDelayRange();
+			case MULTI_SYNC_DELAY_SET:
+				return decoderStats.getMultisyncDelaySet();
+			case MULTI_SYNC_SYSTEM_TIME:
+				return decoderStats.getMultisyncSystemTime();
+			case MULTI_SYNC_TIME_CODE:
+				return decoderStats.getMultisyncTimecode();
+			case MULTI_SYNC_TIME_CODE_PACKETS:
+				return decoderStats.getMultisyncTimecodePackets();
+			case MULTI_SYNC_TIME_DIFF:
+				return decoderStats.getMultisyncTimeDiff();
+			case MULTI_SYNC_TRANSMISSION_TIME:
+				return decoderStats.getMultisyncTransmissionTime();
 			default:
 				return DecoderConstant.NONE;
 		}

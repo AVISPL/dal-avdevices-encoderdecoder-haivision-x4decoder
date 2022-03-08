@@ -3,14 +3,19 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Stream statistics
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StreamStats {
@@ -36,8 +41,8 @@ public class StreamStats {
 	@JsonAlias("connections")
 	private String connections;
 
-	@JsonAlias("receivedPacket")
-	private String receivedPacket;
+	@JsonAlias("receivedPackets")
+	private String receivedPackets;
 
 	@JsonAlias("receivedBytes")
 	private String receivedBytes;
@@ -67,7 +72,7 @@ public class StreamStats {
 	private String corruptedFrames;
 
 	@JsonAlias("restarts")
-	private String restarts;
+	private String resumedStreamFlags;
 
 	@JsonAlias("localPort")
 	private String localPort;
@@ -80,6 +85,9 @@ public class StreamStats {
 
 	@JsonAlias("srt")
 	private SRT srt;
+
+	@JsonAlias("sources")
+	private List<Source> sources;
 
 	/**
 	 * Retrieves {@code {@link #name}}
@@ -141,6 +149,9 @@ public class StreamStats {
 	 * @return value of {@link #state}
 	 */
 	public String getState() {
+		if (state == null) {
+			return DecoderConstant.EMPTY;
+		}
 		switch (state) {
 			case 0:
 				return "UNKNOWN";
@@ -165,7 +176,7 @@ public class StreamStats {
 			case -3:
 				return "UNLICENSED";
 			default:
-				return "";
+				return DecoderConstant.NONE;
 		}
 	}
 
@@ -233,21 +244,21 @@ public class StreamStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #receivedPacket}}
+	 * Retrieves {@code {@link #receivedPackets }}
 	 *
-	 * @return value of {@link #receivedPacket}
+	 * @return value of {@link #receivedPackets}
 	 */
-	public String getReceivedPacket() {
-		return receivedPacket;
+	public String getReceivedPackets() {
+		return receivedPackets;
 	}
 
 	/**
 	 * Sets {@code receivedPacket}
 	 *
-	 * @param receivedPacket the {@code java.lang.String} field
+	 * @param receivedPackets the {@code java.lang.String} field
 	 */
-	public void setReceivedPacket(String receivedPacket) {
-		this.receivedPacket = receivedPacket;
+	public void setReceivedPackets(String receivedPackets) {
+		this.receivedPackets = receivedPackets;
 	}
 
 	/**
@@ -413,21 +424,21 @@ public class StreamStats {
 	}
 
 	/**
-	 * Retrieves {@code {@link #restarts}}
+	 * Retrieves {@code {@link #resumedStreamFlags }}
 	 *
-	 * @return value of {@link #restarts}
+	 * @return value of {@link #resumedStreamFlags}
 	 */
-	public String getRestarts() {
-		return restarts;
+	public String getResumedStreamFlags() {
+		return resumedStreamFlags;
 	}
 
 	/**
 	 * Sets {@code restarts}
 	 *
-	 * @param restarts the {@code java.lang.String} field
+	 * @param resumedStreamFlags the {@code java.lang.String} field
 	 */
-	public void setRestarts(String restarts) {
-		this.restarts = restarts;
+	public void setResumedStreamFlags(String resumedStreamFlags) {
+		this.resumedStreamFlags = resumedStreamFlags;
 	}
 
 	/**
@@ -500,5 +511,23 @@ public class StreamStats {
 	 */
 	public void setSrt(SRT srt) {
 		this.srt = srt;
+	}
+
+	/**
+	 * Retrieves {@code {@link #sources}}
+	 *
+	 * @return value of {@link #sources}
+	 */
+	public List<Source> getSources() {
+		return sources;
+	}
+
+	/**
+	 * Sets {@code sources}
+	 *
+	 * @param sources the {@code java.util.List<com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source>} field
+	 */
+	public void setSources(List<Source> sources) {
+		this.sources = sources;
 	}
 }

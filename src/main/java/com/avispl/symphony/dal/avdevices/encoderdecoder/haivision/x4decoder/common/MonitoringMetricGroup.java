@@ -4,16 +4,18 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
 /**
- * Set of monitoring group metrics keys
+ * Set of monitoring metric group keys
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum MonitoringMetricGroup {
 
 	DECODER_STATISTICS("Decoder Statistics"),
 	STREAM_STATISTICS("Stream Statistics"),
-	DEVICE_INFO("Device Info");
+	DEVICE_INFO("Device Info"),
+	SYSTEM_INFO("System Info");
 
 	private final String name;
 
