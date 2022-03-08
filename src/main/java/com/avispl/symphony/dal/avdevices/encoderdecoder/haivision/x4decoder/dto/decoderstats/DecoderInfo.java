@@ -3,22 +3,25 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.HDR;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.OutputFrameRate;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.QuadMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.State;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Set of decoder configuration properties
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DecoderInfo {
@@ -607,27 +610,29 @@ public class DecoderInfo {
 				'}';
 	}
 
-	public boolean deepEquals(Object o) {
+	@Override
+	public boolean equals(Object o) {
 		if (this == o) {
 			return true;
 		}
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		DecoderInfo decoderInfo = (DecoderInfo) o;
-		return streamId.equals(decoderInfo.streamId)
-				&& stillImage.equals(decoderInfo.stillImage)
-				&& stillImageDelay.equals(decoderInfo.stillImageDelay)
-				&& bufferingMode.equals(decoderInfo.bufferingMode)
-				&& bufferingDelay.equals(decoderInfo.getBufferingDelay())
-				&& multisyncBufferingDelay.equals(decoderInfo.multisyncBufferingDelay)
-				&& outputFrameRate.equals(decoderInfo.outputFrameRate)
-				&& hdrDynamicRange.equals(decoderInfo.hdrDynamicRange)
-				&& output1.equals(decoderInfo.output1)
-				&& output2.equals(decoderInfo.output2)
-				&& output3.equals(decoderInfo.output3)
-				&& output4.equals(decoderInfo.output4)
-				&& quadMode.equals(decoderInfo.quadMode);
+		DecoderInfo that = (DecoderInfo) o;
+		return Objects.equals(id, that.id) && Objects.equals(streamId, that.streamId) && Objects.equals(altStreamId, that.altStreamId) && Objects.equals(state,
+				that.state) && Objects.equals(latency, that.latency) && Objects.equals(stillImage, that.stillImage) && Objects.equals(stillImageDelay, that.stillImageDelay)
+				&& Objects.equals(szStillImageFileName, that.szStillImageFileName) && Objects.equals(enableBuffering, that.enableBuffering) && Objects.equals(bufferingMode,
+				that.bufferingMode) && Objects.equals(bufferingDelay, that.bufferingDelay) && Objects.equals(multisyncBufferingDelay, that.multisyncBufferingDelay)
+				&& Objects.equals(hdrDynamicRange, that.hdrDynamicRange) && Objects.equals(nNumOfOutputs, that.nNumOfOutputs) && Objects.equals(output1, that.output1)
+				&& Objects.equals(output2, that.output2) && Objects.equals(output3, that.output3) && Objects.equals(output4, that.output4) && Objects.equals(
+				outputFrameRate, that.outputFrameRate) && Objects.equals(previewEnabled, that.previewEnabled) && Objects.equals(previewIntervalSec, that.previewIntervalSec)
+				&& Objects.equals(quadMode, that.quadMode);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, streamId, altStreamId, state, latency, stillImage, stillImageDelay, szStillImageFileName, enableBuffering, bufferingMode, bufferingDelay, multisyncBufferingDelay,
+				hdrDynamicRange, nNumOfOutputs, output1, output2, output3, output4, outputFrameRate, previewEnabled, previewIntervalSec, quadMode);
 	}
 }
 

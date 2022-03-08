@@ -8,8 +8,9 @@ import java.util.UUID;
 /**
  * Normalizing Data
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public class NormalizeData {
 	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");

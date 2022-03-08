@@ -11,13 +11,14 @@ import java.util.Optional;
 /**
  * Set of quad mode option
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum QuadMode {
 
-	NORMAL("Normal",0),
-	QUAD_MODE_2SI("QuadMode2SI",1);
+	NORMAL("Normal", 0),
+	QUAD_MODE_2SI("QuadMode2SI", 1);
 
 	private final String name;
 	private final Integer code;

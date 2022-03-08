@@ -11,10 +11,11 @@ import java.util.Optional;
 /**
  * Set of network type option
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
-public enum Type {
+public enum NetworkType {
 
 	UNI_CAST("Unicast"),
 	MULTI_CAST("Multicast");
@@ -26,7 +27,7 @@ public enum Type {
 	 *
 	 * @param name Name of decoder monitoring metric
 	 */
-	Type(String name) {
+	NetworkType(String name) {
 		this.name = name;
 	}
 
@@ -44,7 +45,7 @@ public enum Type {
 	 */
 	public static List<String> getTypeList() {
 		List<String> list = new LinkedList<>();
-		for (Type type : Type.values()) {
+		for (NetworkType type : NetworkType.values()) {
 			list.add(type.getName());
 		}
 		return list;
@@ -56,9 +57,9 @@ public enum Type {
 	 * @param name is the name of network type that want to get
 	 * @return Type is the network type that want to get
 	 */
-	public static Type getByName(String name) {
-		Optional<Type> type = Arrays.stream(Type.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return type.orElse(Type.UNI_CAST);
+	public static NetworkType getByName(String name) {
+		Optional<NetworkType> type = Arrays.stream(NetworkType.values()).filter(com -> com.getName().equals(name)).findFirst();
+		return type.orElse(NetworkType.UNI_CAST);
 	}
 }
 

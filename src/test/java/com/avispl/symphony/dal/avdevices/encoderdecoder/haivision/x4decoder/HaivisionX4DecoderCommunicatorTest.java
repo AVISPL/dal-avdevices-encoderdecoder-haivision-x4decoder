@@ -18,13 +18,13 @@ import org.mockito.Mockito;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.ControllingMetricGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication.AuthenticationCookie;
@@ -32,7 +32,8 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 /**
  * Unit test for HaivisionX4DecoderCommunicator
  *
- * @author Harry
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
  * @version 1.0
  * @since 1.0
  */
@@ -61,6 +62,9 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() {
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -99,12 +103,13 @@ public class HaivisionX4DecoderCommunicatorTest {
 	/**
 	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics get errors when retrieving decoders statistic and streams statistics
 	 * Expected throw ResourceNotReachableException
-	 * failed to get decoder statistic3
-	 * failed to get decoder statistic1
-	 * failed to get decoder statistic2
-	 * failed to get decoder statistic0
-	 * failed to get stream statistic
-	 * failed to get device info
+	 * Failed to get system info
+	 * Failed to get decoder statistic3
+	 * Failed to get decoder statistic1
+	 * Failed to get decoder statistic2
+	 * Failed to get decoder statistic0
+	 * Failed to get stream statistic
+	 * Failed to get device info
 	 */
 	@Tag("Mock")
 	@Test
@@ -118,7 +123,11 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
 			haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
-		Assertions.assertEquals(ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage() + ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage() + ExceptionMessage.GETTING_DEVICE_INFO.getMessage(),
+		Assertions.assertEquals(ExceptionMessage.GETTING_SYSTEM_INFO.getMessage()
+						+ ExceptionMessage.GETTING_DECODER_STATS_ERR.getMessage()
+						+ ExceptionMessage.GETTING_STREAM_STATS_ERR.getMessage()
+						+ ExceptionMessage.GETTING_DEVICE_INFO.getMessage()
+				,
 				exception.getMessage());
 	}
 
@@ -145,7 +154,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty case output control
+	 * Test HaivisionX4Decoder.controlProperty output control (switch control)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -180,25 +189,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
 		Assertions.assertEquals("ForcePQ", stats.get(decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName()));
-	}
-
-	/**
-	 * Test HaivisionX4Decoder.controlProperty failed (switch control)
-	 */
-	@Tag("RealDevice")
-	@Test
-	void testControlFailed() {
-		ControllableProperty controllableProperty = new ControllableProperty();
-		controllableProperty.setProperty("Decoder0" + "#Output2");
-		controllableProperty.setValue("1");
-
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
-		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		Map<String, String> stats = extendedStatistics.getStatistics();
-
-		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
-		Assertions.assertEquals("1", stats.get(decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName()));
 	}
 
 	/**

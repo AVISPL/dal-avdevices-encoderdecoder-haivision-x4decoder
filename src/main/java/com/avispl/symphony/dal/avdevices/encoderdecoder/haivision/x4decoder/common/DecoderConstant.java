@@ -6,8 +6,9 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 /**
  * Set of constants
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public class DecoderConstant {
 
@@ -22,13 +23,14 @@ public class DecoderConstant {
 	public static final String HTTPS = "https://";
 	public static final String NONE = "None";
 	public static final String AUTHORIZED = "Authorized";
-	public static final String GETTING_DEVICE_INFO_ERR = "failed to get device info";
-	public static final String GETTING_DECODER_STATS_ERR = "failed to get decoder statistic";
-	public static final String GETTING_STREAM_STATS_ERR = "failed to get stream statistic";
+	public static final String GETTING_DEVICE_INFO_ERR = "Failed to get device info";
+	public static final String GETTING_SYSTEM_INFO_ERR = "Failed to get system info";
+	public static final String GETTING_DECODER_STATS_ERR = "Failed to get decoder statistic";
+	public static final String GETTING_STREAM_STATS_ERR = "Failed to get stream statistic";
 	public static final String GETTING_SESSION_ID_ERR = "Username and Password are incorrect";
-	public static final String ROLE_BASED_ERR = "required admin or operator role-based";
-	public static final String PORT_NUMBER_ERROR = "invalid port number";
-	public static final String DECODER_CONTROL_ERR = "failed to control decoder: ";
+	public static final String ROLE_BASED_ERR = "Role based is empty";
+	public static final String PORT_NUMBER_ERROR = "Invalid port number";
+	public static final String DECODER_CONTROL_ERR = "Failed to control decoder: ";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";
@@ -57,4 +59,8 @@ public class DecoderConstant {
 	public static final Integer MAX_BUFFERING_DELAY = 3000;
 	public static final Integer MIN_MULTI_SYNC_BUFFERING_DELAY = 0;
 	public static final Integer MAX_MULTI_SYNC_BUFFERING_DELAY = 10000;
+	public static final Integer MIN_PORT = 1025;
+	public static final Integer MAX_PORT = 65535;
+	public static final Integer MIN_LATENCY = 20;
+	public static final Integer MAX_LATENCY = 8000;
 }
