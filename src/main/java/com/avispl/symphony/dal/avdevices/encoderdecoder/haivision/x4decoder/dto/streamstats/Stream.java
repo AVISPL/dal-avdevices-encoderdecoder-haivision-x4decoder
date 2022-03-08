@@ -6,14 +6,15 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Stream
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Stream {
@@ -64,15 +65,16 @@ public class Stream {
 	 * @return String value of Stream monitoring properties by metric
 	 */
 	public String getValueByStreamMonitoringMetric(StreamMonitoringMetric streamMonitoringMetric) {
+
 		switch (streamMonitoringMetric) {
 			case ID:
-				return streamInfo.getId();
+				return streamInfo.getId().toString();
 			case NAME:
 				return streamInfo.getName();
 			case DECODER_ID:
 				return streamInfo.getDecoderId();
 			case ENCAPSULATION:
-				return streamInfo.getEncapsulation();
+				return streamInfo.getEncapsulation().getName();
 			case STATE:
 				return streamStats.getState();
 			case SOURCE_ADDRESS:
@@ -82,7 +84,7 @@ public class Stream {
 			case CONNECTIONS:
 				return streamStats.getConnections();
 			case RECEIVED_PACKET:
-				return streamStats.getReceivedPacket();
+				return streamStats.getReceivedPackets();
 			case RECEIVED_BYTES:
 				return streamStats.getReceivedBytes();
 			case OUTPUT_PACKETS:
@@ -91,20 +93,18 @@ public class Stream {
 				return streamStats.getProgramNumber();
 			case PCR_PID:
 				return streamStats.getPcrPid();
-			case RECEIVED_ERRO:
-				return streamStats.getReceivedErrors();
-			case STREAM_LATENCY:
-				return streamInfo.getLatency();
-			case DROPPED_PACKETS:
+			case ERROR_DROPPED_PACKETS:
 				return streamStats.getDroppedPackets();
-			case CORRUPTED_FRAMES:
+			case ERROR_CORRUPTED_FRAMES:
 				return streamStats.getCorruptedFrames();
-			case RESTARTS:
-				return streamStats.getRestarts();
-			case LOCAL_PORT:
-				return streamStats.getLocalPort();
-			case REMOTE_PORT:
-				return streamStats.getRemotePort();
+			case ERROR_RESTARTS:
+				return streamStats.getResumedStreamFlags();
+			case OUTPUT_BYTES:
+				return streamStats.getOutputBytes();
+			case LAST_RECEIVED:
+				return streamStats.getLastReceived();
+			case STREAM_SUMMARY:
+				return streamStats.getStreamSummary();
 			default:
 				return DecoderConstant.NONE;
 		}
