@@ -6,8 +6,9 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
 /**
  * Set of audio pair metrics keys
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum AudioPairMetric {
 

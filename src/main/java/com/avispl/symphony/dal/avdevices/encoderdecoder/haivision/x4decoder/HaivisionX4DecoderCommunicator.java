@@ -36,10 +36,6 @@ import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.ControllingMetricGroup;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
@@ -60,12 +56,17 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.decoderstats.DecoderStats;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.DeviceInfo;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo.SystemInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.SRT;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Stream;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamStats;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.ControllingMetricGroup;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderURL;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DeviceInfoMetric;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.avispl.symphony.dal.util.StringUtils;
 
@@ -82,13 +83,16 @@ import com.avispl.symphony.dal.util.StringUtils;
  * <li>Start/Stop /Edit Decoder</li>
  * <li>Create/ Edit/ Delete Stream</li>
  *
- * @author Harry
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
  * @since 1.0.0
  */
 public class HaivisionX4DecoderCommunicator extends RestCommunicator implements Monitorable, Controller {
 	private AuthenticationCookie authenticationCookie;
 	private AuthenticationInfo authenticationInfo;
-	private HashMap<String, String> failedMonitor;
+	private SystemInfo systemInfo;
+	private Map<String, String> failedMonitor;
+	private Set<Integer> filteredStreamIDSet;
 	private Set<String> streamNameSet;
 	private Set<String> streamStatusSet;
 	private Set<String> portNumberSet;
@@ -99,10 +103,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private ExtendedStatistics localExtendedStatistics;
 
 	// Decoder and stream DTO
-	private ArrayList<DecoderInfo> decoderInfoDTOList;
-	private ArrayList<StreamInfo> streamInfoDTOList;
-	private ArrayList<DecoderInfo> localDecoderInfoList;
-	private ArrayList<StreamInfo> localStreamInfoList;
+	private List<DecoderInfo> decoderInfoDTOList;
+	private List<StreamInfo> streamInfoDTOList;
+	private List<DecoderInfo> localDecoderInfoList;
+	private List<StreamInfo> localStreamInfoList;
 
 	//Adapter Properties
 	private String streamName;
@@ -181,6 +185,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		// Decoder control
 		String[] splitProperty = property.split(String.valueOf(DecoderConstant.HASH));
+		if (splitProperty.length != 2) {
+			throw new IllegalArgumentException("Unexpected length of control property");
+		}
 		ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitProperty[0]);
 
 		switch (controllingGroup) {
@@ -225,12 +232,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		final Map<String, String> stats = new HashMap<>();
 		final List<AdvancedControllableProperty> advancedControllableProperties = new ArrayList<>();
 		failedMonitor = new HashMap<>();
+		filteredStreamIDSet = new HashSet<>();
 
 		if (localExtendedStatistics == null) {
 			localExtendedStatistics = new ExtendedStatistics();
 		}
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
+		}
+		if (systemInfo == null) {
+			systemInfo = new SystemInfo();
 		}
 		if (decoderInfoDTOList == null) {
 			decoderInfoDTOList = new ArrayList<>();
@@ -248,11 +259,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (!isEmergencyDelivery) {
 			populateDecoderMonitoringMetrics(stats);
 			if (isUpdateLocalDecoderControl || localDecoderInfoList.size() == 0) {
-				localDecoderInfoList = (ArrayList<DecoderInfo>) decoderInfoDTOList.stream().map(decoderInfo -> new DecoderInfo(decoderInfo)).collect(Collectors.toList());
+				localDecoderInfoList = decoderInfoDTOList.stream().map(decoderInfo -> new DecoderInfo(decoderInfo)).collect(Collectors.toList());
 				isUpdateLocalDecoderControl = false;
 			}
-			if (isUpdateLocalStreamControl || localStreamInfoList.size() == 0) {
-				localStreamInfoList = (ArrayList<StreamInfo>) streamInfoDTOList.clone();
+			if (isUpdateLocalStreamControl || localStreamInfoList.size() != filteredStreamIDSet.size()) {
+				localStreamInfoList.clear();
+				localStreamInfoList = streamInfoDTOList.stream().map(streamInfo -> new StreamInfo(streamInfo))
+						.filter(streamInfo -> filteredStreamIDSet.contains(streamInfo.getId())).collect(Collectors.toList());
 				isUpdateLocalStreamControl = false;
 			}
 			// check Role is Admin or Operator
@@ -443,6 +456,37 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * Update failedMonitor with getting system info error message
+	 *
+	 * @param failedMonitor list statistics property
+	 */
+	private void updateSystemInfoFailedMonitor(Map<String, String> failedMonitor) {
+		failedMonitor.put(MonitoringMetricGroup.SYSTEM_INFO.getName(), DecoderConstant.GETTING_SYSTEM_INFO_ERR);
+	}
+
+	/**
+	 * This method is used to retrieve System info by send GET request to http://{IP_Address}/apis/system_info
+	 *
+	 * When sessionID is null, the failedMonitor is going to update
+	 * When there is no response data, the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
+	 */
+	private void retrieveSystemInfo() {
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				systemInfo = doGet(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.SYSTEM_INFO), SystemInfo.class);
+				if (systemInfo != null) {
+					updateSystemInfoFailedMonitor(failedMonitor);
+				}
+			} else {
+				updateSystemInfoFailedMonitor(failedMonitor);
+			}
+		} catch (Exception e) {
+			updateSystemInfoFailedMonitor(failedMonitor);
+		}
+	}
+
+	/**
 	 * Update failedMonitor with Getting decoder stats error message
 	 *
 	 * @param failedMonitor list statistics property
@@ -478,20 +522,19 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 			}
 		}
+		if (localDecoderInfoList.size() > decoderID) {
+			DecoderInfo localDecoderInfo = this.localDecoderInfoList.get(decoderID);
+			DecoderInfo decoderInfoDTO = this.decoderInfoDTOList.get(decoderID);
+			if (decoderInfoDTO.equals(localDecoderInfo) && !decoderInfo.equals(decoderInfoDTO)) {
+				this.decoderInfoDTOList.set(decoderID, decoderInfo);
+				this.isUpdateLocalDecoderControl = true;
+			}
+		}
 		if (!isUpdateLocalDecoderControl) {
 			if (this.decoderInfoDTOList.size() > decoderID) {
 				this.decoderInfoDTOList.set(decoderID, decoderInfo);
 			} else {
 				this.decoderInfoDTOList.add(decoderID, decoderInfo);
-			}
-		}
-
-		if (localDecoderInfoList.size() > decoderID) {
-			DecoderInfo localDecoderInfo = this.localDecoderInfoList.get(decoderID);
-			DecoderInfo decoderInfoDTO = this.decoderInfoDTOList.get(decoderID);
-			if (decoderInfoDTO.deepEquals(localDecoderInfo) && !decoderInfoDTO.deepEquals(decoderInfo)) {
-				this.decoderInfoDTOList.set(decoderID, decoderInfoDTO);
-				this.isUpdateLocalDecoderControl = true;
 			}
 		}
 	}
@@ -563,21 +606,23 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 		}
 
-		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
+		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
+		Optional<StreamInfo> localStreamInfo = this.localStreamInfoList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
+		if (localStreamInfo.isPresent() && localStreamInfo.get().equals(streamInfoDTO.get()) && !streamInfoDTO.get().equals(streamInfo)) {
+			this.streamInfoDTOList.remove(streamInfoDTO.get());
+			this.streamInfoDTOList.add(streamInfo);
+			this.isUpdateLocalStreamControl = true;
+		}
+
 		if (!isUpdateLocalStreamControl) {
 			if (streamInfoDTO.isPresent()) {
-				this.streamInfoDTOList.remove(streamID);
-				this.streamInfoDTOList.add(streamInfoDTO.get());
+				this.streamInfoDTOList.remove(streamInfoDTO.get());
+				this.streamInfoDTOList.add(streamInfo);
 			} else {
 				this.streamInfoDTOList.add(streamInfo);
 			}
 		}
-
-		Optional<StreamInfo> localStreamInfo = this.localStreamInfoList.stream().filter(st-> streamID.equals(st.getId())).findFirst();
-		if (localStreamInfo.isPresent() && localStreamInfo.equals(streamInfoDTO) && !streamInfoDTO.equals(streamInfo)) {
-			this.streamInfoDTOList.set(streamID, streamInfo);
-			this.isUpdateLocalStreamControl = true;
-		}
+		filteredStreamIDSet.add(streamID);
 	}
 
 	/**
@@ -608,7 +653,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 				if (streamData != null) {
 					List<Stream> streams = streamData.getStreams();
-
 					for (Stream stream : streams) {
 						StreamInfo streamInfo = stream.getStreamInfo();
 						StreamStats streamStats = stream.getStreamStats();
@@ -676,6 +720,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		// Retrieving all device info
 		retrieveDeviceInfo(stats);
 
+		// Retrieving all systemInfo
+		retrieveSystemInfo();
+
 		// Retrieving all decoders stats
 		for (int decoderID = DecoderConstant.MIN_DECODER_ID; decoderID < DecoderConstant.MAX_DECODER_ID; decoderID++) {
 			retrieveDecoderStats(stats, decoderID);
@@ -718,14 +765,17 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return Set<String> is the Set of String of filter element
 	 */
 	public Set<String> handleAdapterPropertiesInputFromUser(String input) {
-		String[] listAdapterPropertyElement = input.split(DecoderConstant.COMMA);
+		if (!StringUtils.isNullOrEmpty(input)) {
+			String[] listAdapterPropertyElement = input.split(DecoderConstant.COMMA);
 
-		// Remove start and end spaces of each adapterProperty
-		Set<String> setAdapterPropertiesElement = new HashSet<>();
-		for (String adapterPropertyElement : listAdapterPropertyElement) {
-			setAdapterPropertiesElement.add(adapterPropertyElement.trim());
+			// Remove start and end spaces of each adapterProperty
+			Set<String> setAdapterPropertiesElement = new HashSet<>();
+			for (String adapterPropertyElement : listAdapterPropertyElement) {
+				setAdapterPropertiesElement.add(adapterPropertyElement.trim());
+			}
+			return setAdapterPropertiesElement;
 		}
-		return setAdapterPropertiesElement;
+		return null;
 	}
 
 	/**
@@ -825,7 +875,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		DecoderInfo decoderInfo = this.localDecoderInfoList.get(decoderID);
 		HDR hdr = decoderInfo.getHdrDynamicRange();
 		OutputFrameRate outputFrameRate = decoderInfo.getOutputFrameRate();
-		QuadMode quadMode = decoderInfo.getQuadMode();
 		StillImage stillImage = decoderInfo.getStillImage();
 		String streamID = decoderInfo.getStreamId().toString();
 		if (StringUtils.isNullOrEmpty(streamID)) {
@@ -833,18 +882,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		// Get list values of controllable property (dropdown)
 		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
-		List<String> quadModeList = QuadMode.getQuadModeList();
 		List<String> stillImageList = StillImage.getStillImageList();
 		List<String> hdrList = HDR.getHDRList();
-		Set<String> streamIDSet = new HashSet<>();
-		ArrayList<String> streamIDList = new ArrayList<>();
+		List<String> streamIDList = new ArrayList<>();
 
-		if (this.streamInfoDTOList != null) {
+		if (this.localStreamInfoList != null) {
 			for (StreamInfo streamInfo :
-					streamInfoDTOList) {
-				streamIDSet.add(streamInfo.getId().toString());
+					localStreamInfoList) {
+				streamIDList.add(streamInfo.getId().toString());
 			}
-			streamIDList = new ArrayList<>(streamIDSet);
 		} else {
 			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
 		}
@@ -854,21 +900,22 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		// Populate stream id dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STREAM_ID.getName(), streamIDList, streamID));
 
-		// Populate HDR dropdown list control
-		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
-
+		if (systemInfo.isHasHDR()) {
+			// Populate HDR dropdown list control
+			advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+		}
 		// Populate output frame rate dropdown list control
 		advancedControllableProperties.add(
 				createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_FRAME_RATE.getName(), outputFrameRateList, outputFrameRate.getName()));
 
 		// Populate quad mode dropdown list control
-		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.QUAD_MODE.getName(), quadModeList, quadMode.getName()));
+		populateDecoderControlQuadMode(stats, advancedControllableProperties, decoderInfo);
 
 		// Populate still image dropdown list control
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 
-		// Populate still image delay text control
-		advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+		// Populate still image delay numeric control
+		advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
 
 		// Populate output switch control
 		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
@@ -911,25 +958,57 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		switch (bufferingMode) {
 			case AUTO:
 				// Populate buffering mode dropdown list control
-				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 				break;
 			case FIXED:
 				// Populate buffering mode dropdown list control
 				addAdvanceControlProperties(advancedControllableProperties,
 						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
-				// Populate fixed delay text control
-				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
+				// Populate fixed delay numeric control
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
 				break;
 			case MULTI_SYNC:
 				// Populate buffering mode dropdown list control
 				addAdvanceControlProperties(advancedControllableProperties,
 						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
-				// Populate multi sync delay text control
+				// Populate multi sync delay numeric control
 				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
 				break;
+		}
+	}
+
+	/**
+	 * This method is used for populate all quad mode of decoder control:
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param decoderInfo set of decoder configuration
+	 */
+	private void populateDecoderControlQuadMode(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, DecoderInfo decoderInfo) {
+		// Get controllable property current value
+		String decoderID = decoderInfo.getId();
+		QuadMode quadMode = decoderInfo.getQuadMode();
+
+		// Get list values of controllable property (dropdown)
+		List<String> quadModeList = QuadMode.getQuadModeList();
+
+		String quadModeKey = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.QUAD_MODE.getName();
+
+		// remove unused keys
+		stats.remove(quadModeKey);
+		if (decoderInfo.getOutput1() && decoderInfo.getOutput2() && decoderInfo.getOutput3() && decoderInfo.getOutput4()) {
+			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, quadModeKey, quadModeList, quadMode.getName()));
+		} else {
+			for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
+				if (controllableProperty.getName().equals(quadModeKey)) {
+					advancedControllableProperties.remove(controllableProperty);
+					break;
+				}
+			}
 		}
 	}
 
@@ -947,12 +1026,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		String applyChange = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.APPLY_CHANGE.getName();
 		String cancel = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.CANCEL.getName();
 
-		if (!decoderInfo.deepEquals(decoderInfoDTO)) {
+		if (!decoderInfo.equals(decoderInfoDTO)) {
 			stats.put(ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.EDITED.getName(), "True");
 			stats.put(applyChange, DecoderConstant.EMPTY);
 			stats.put(cancel, DecoderConstant.EMPTY);
-			addAdvanceControlProperties(advancedControllableProperties,createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
-			addAdvanceControlProperties(advancedControllableProperties,createButton(cancel, DecoderConstant.CANCEL, DecoderConstant.CANCELLING));
+			addAdvanceControlProperties(advancedControllableProperties, createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
+			addAdvanceControlProperties(advancedControllableProperties, createButton(cancel, DecoderConstant.CANCEL, DecoderConstant.CANCELLING));
 		} else {
 			stats.remove(applyChange);
 			stats.remove(cancel);
@@ -995,10 +1074,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * <li>Output Frame Rate</li>
 	 * <li>Quad Mode</li>
 	 *
-	 * @param decoderID ID of decoder
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
 	 * @param controllableProperty name of controllable property
 	 * @param decoderID ID of decoder
-	 * @param controllableProperty controllable property
 	 * @param value value of controllable property
 	 */
 	private void decoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID, String controllableProperty, String value) {
@@ -1010,15 +1089,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		List<String> stillImageList = StillImage.getStillImageList();
 		List<String> hdrList = HDR.getHDRList();
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
-		Set<String> streamIDSet = new HashSet<>();
-		ArrayList<String> streamIDList = new ArrayList<>();
+		List<String> streamIDList = new ArrayList<>();
 
-		if (this.streamInfoDTOList != null) {
+		if (this.localStreamInfoList != null) {
 			for (StreamInfo streamInfo :
-					streamInfoDTOList) {
-				streamIDSet.add(streamInfo.getId().toString());
+					localStreamInfoList) {
+				streamIDList.add(streamInfo.getId().toString());
 			}
-			streamIDList = new ArrayList<>(streamIDSet);
 		} else {
 			streamIDList.add(DecoderConstant.DEFAULT_STREAM_ID);
 		}
@@ -1040,7 +1117,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				StillImage stillImage = StillImage.getByName(value);
 				decoderInfo.setStillImage(stillImage.getCode());
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1048,53 +1126,60 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case STILL_IMAGE_DELAY:
 				decoderInfo.setStillImageDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createText(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case HDR_DYNAMIC_RANGE:
 				HDR hdr = HDR.getByName(value);
-				decoderInfo.setHdrDynamicRange(hdr.getCode());
-				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
-				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				if (systemInfo.isHasHDR()) {
+					decoderInfo.setHdrDynamicRange(hdr.getCode());
+					this.localDecoderInfoList.set(decoderID, decoderInfo);
+					addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.HDR_DYNAMIC_RANGE.getName(), hdrList, hdr.getName()));
+					populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
-				populateLocalExtendedStats(stats, advancedControllableProperties);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+				}
 				break;
 			case OUTPUT_1:
 				decoderInfo.setOutput1(mapSwitchControlValue(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
 						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				populateDecoderControlQuadMode(stats, advancedControllableProperties, decoderInfo);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case OUTPUT_2:
 				decoderInfo.setOutput2(mapSwitchControlValue(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput2(),
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_2.getName(), decoderInfo.getOutput2(),
 						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				populateDecoderControlQuadMode(stats, advancedControllableProperties, decoderInfo);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case OUTPUT_3:
 				decoderInfo.setOutput3(mapSwitchControlValue(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput3(),
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_3.getName(), decoderInfo.getOutput3(),
 						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				populateDecoderControlQuadMode(stats, advancedControllableProperties, decoderInfo);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case OUTPUT_4:
 				decoderInfo.setOutput4(mapSwitchControlValue(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				addAdvanceControlProperties(advancedControllableProperties,createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput4(),
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_4.getName(), decoderInfo.getOutput4(),
 						DecoderConstant.DISABLE, DecoderConstant.ENABLE));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
+				populateDecoderControlQuadMode(stats, advancedControllableProperties, decoderInfo);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -1120,7 +1205,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case BUFFERING_DELAY:
 				decoderInfo.setBufferingDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				advancedControllableProperties.add(createText(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1129,7 +1214,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				decoderInfo.setMultisyncBufferingDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				advancedControllableProperties.add(
-						createText(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1304,16 +1389,16 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * Create a controllable property Text
+	 * Create a controllable property Numeric
 	 *
 	 * @param name the name of property
-	 * @param stringValue character string
+	 * @param integerValue character Integer
 	 * @return AdvancedControllableProperty Text instance
 	 */
-	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
-		stats.put(name, stringValue);
-		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
-		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
+	private AdvancedControllableProperty createNumeric(Map<String, String> stats, String name, Integer integerValue) {
+		stats.put(name, integerValue.toString());
+		AdvancedControllableProperty.Numeric numeric = new AdvancedControllableProperty.Numeric();
+		return new AdvancedControllableProperty(name, new Date(), numeric, integerValue);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------

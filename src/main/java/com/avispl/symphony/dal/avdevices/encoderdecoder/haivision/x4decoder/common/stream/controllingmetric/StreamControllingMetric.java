@@ -9,8 +9,9 @@ import java.util.Optional;
 /**
  * Set of decoder controlling metric keys
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum StreamControllingMetric {
 
@@ -34,10 +35,10 @@ public enum StreamControllingMetric {
 	SOURCE_PORT("SourcePort"),
 	SRT_MODE("SrtMode"),
 	SRT_TO_UDP("SrtToUdp"),
-	SRT_TO_UDP_ADDRESS("SrtToUdp_address"),
-	SRT_TO_UDP_PORT("SrtToUdp_port"),
-	SRT_TO_UDP_TOS("SrtToUdp_tos"),
-	SRT_TO_UDP_TTL("SrtToUdp_ttl"),
+	SRT_TO_UDP_ADDRESS("SrtToUdpAddress"),
+	SRT_TO_UDP_PORT("SrtToUdpPort"),
+	SRT_TO_UDP_TOS("SrtToUdpTos"),
+	SRT_TO_UDP_TTL("SrtToUdpTtl"),
 	STRICT_MODE("StrictMode"),
 	USER_DATA("UserData"),
 	ENCRYPTED("Encrypted"),

@@ -11,20 +11,21 @@ import java.util.Optional;
 /**
  * Set of output frame rate option
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum OutputFrameRate {
 
 	AUTO("Automatic", 0),
-	OUTPUT_FRAME_RATE_60 ("60 fps",60),
-	OUTPUT_FRAME_RATE_59 ("59.94 fps",59),
-	OUTPUT_FRAME_RATE_50 ("50 fps",50),
-	OUTPUT_FRAME_RATE_30 ("30 fps",30),
+	OUTPUT_FRAME_RATE_60 ("60 fps", 60),
+	OUTPUT_FRAME_RATE_59 ("59.94 fps", 59),
+	OUTPUT_FRAME_RATE_50 ("50 fps", 50),
+	OUTPUT_FRAME_RATE_30 ("30 fps", 30),
 	OUTPUT_FRAME_RATE_29 ("29.97 fps", 29),
 	OUTPUT_FRAME_RATE_25 ("25 fps", 25),
 	OUTPUT_FRAME_RATE_24 ("24 fps", 24),
-	OUTPUT_FRAME_RATE_23 ("23.98 fps",23);
+	OUTPUT_FRAME_RATE_23 ("23.98 fps", 23);
 
 	private final String name;
 	private final Integer code;
