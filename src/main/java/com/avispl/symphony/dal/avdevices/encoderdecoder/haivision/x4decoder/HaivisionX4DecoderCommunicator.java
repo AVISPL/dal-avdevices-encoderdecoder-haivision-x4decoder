@@ -4,6 +4,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
@@ -36,6 +37,7 @@ import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DropdownList;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.MonitoringMetricGroup;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
@@ -658,18 +660,18 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamStats streamStats = stream.getStreamStats();
 
 						// Stream name filtering
-						if (this.streamName != null && streamNameSet.contains(streamInfo.getName())) {
+						if (this.streamName != null && streamNameSet != null &&  streamNameSet.contains(streamInfo.getName())) {
 							populateStreamStats(stats, stream);
 							continue;
 						}
 
 						// Stream status filtering
-						if (this.streamStatus != null && !streamStatusSet.contains(streamStats.getState())) {
+						if (this.streamStatus != null && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
 							continue;
 						}
 
 						// Port number filtering
-						if (this.portNumber != null) {
+						if (this.portNumber != null && portNumberSet != null) {
 							Integer port = streamInfo.getPort();
 							boolean isValidPort = handleAdapterPortRangeFromUser(port);
 							if (!isValidPort) {
@@ -881,9 +883,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			streamID = DecoderConstant.DEFAULT_STREAM_ID;
 		}
 		// Get list values of controllable property (dropdown)
-		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
-		List<String> stillImageList = StillImage.getStillImageList();
-		List<String> hdrList = HDR.getHDRList();
+		List<String> outputFrameRateList = DropdownList.Names(OutputFrameRate.class);
+		List<String> stillImageList = DropdownList.Names(StillImage.class);
+		List<String> hdrList = DropdownList.Names(HDR.class);
 		List<String> streamIDList = new ArrayList<>();
 
 		if (this.localStreamInfoList != null) {
@@ -948,7 +950,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		String decoderID = decoderInfo.getId();
 
 		// Get list values of controllable property (dropdown)
-		List<String> bufferingModeList = BufferingMode.getBufferingList();
+		List<String> bufferingModeList = DropdownList.Names(BufferingMode.class);
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
 
 		// remove unused keys
@@ -994,7 +996,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		QuadMode quadMode = decoderInfo.getQuadMode();
 
 		// Get list values of controllable property (dropdown)
-		List<String> quadModeList = QuadMode.getQuadModeList();
+		List<String> quadModeList = DropdownList.Names(QuadMode.class);
 
 		String quadModeKey = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.QUAD_MODE.getName();
 
@@ -1084,10 +1086,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		DecoderControllingMetric decoderControllingMetric = DecoderControllingMetric.getByName(controllableProperty);
 		DecoderInfo decoderInfo = this.localDecoderInfoList.get(decoderID);
 
-		List<String> outputFrameRateList = OutputFrameRate.getOutputFrameRateList();
-		List<String> quadModeList = QuadMode.getQuadModeList();
-		List<String> stillImageList = StillImage.getStillImageList();
-		List<String> hdrList = HDR.getHDRList();
+		List<String> outputFrameRateList =  DropdownList.Names(OutputFrameRate.class);
+		List<String> quadModeList = DropdownList.Names(QuadMode.class);
+		List<String> stillImageList = DropdownList.Names(StillImage.class);
+		List<String> hdrList = DropdownList.Names(HDR.class);
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
 		List<String> streamIDList = new ArrayList<>();
 
