@@ -51,6 +51,11 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.AudioPairMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.DecoderMonitoringMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.StreamControllingMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SRTMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SourceMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
@@ -66,6 +71,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Source;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.Stream;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamData;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamDataWrapper;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamInfo;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamStats;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
@@ -99,6 +105,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private Set<String> portNumberSet;
 	private boolean isUpdateLocalDecoderControl = false;
 	private boolean isUpdateLocalStreamControl = false;
+	private boolean isCreatedStreamControl = false;
 
 	private boolean isEmergencyDelivery = false;
 	private ExtendedStatistics localExtendedStatistics;
@@ -108,6 +115,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private List<StreamInfo> streamInfoDTOList;
 	private List<DecoderInfo> localDecoderInfoList;
 	private List<StreamInfo> localStreamInfoList;
+	private StreamInfo createStream;
 
 	//Adapter Properties
 	private String streamName;
@@ -197,7 +205,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				Integer decoderID = Integer.parseInt(name);
 				decoderControl(stats, advancedControllableProperties, decoderID, splitProperty[1], value);
 				break;
+			case CREATE_STREAM:
+				createStreamControl(stats, advancedControllableProperties, ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH, splitProperty[1], value);
+				break;
 			case STREAM:
+				String streamName = splitProperty[0].substring(6);
+				streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH, streamName, splitProperty[1], value);
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + controllingGroup);
@@ -257,6 +270,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			localStreamInfoList = new ArrayList<>();
 		}
 
+		if (createStream == null || isCreatedStreamControl) {
+			createStream = defaultStream();
+			isCreatedStreamControl = false;
+		}
 		if (!isEmergencyDelivery) {
 			populateDecoderMonitoringMetrics(stats);
 			if (isUpdateLocalDecoderControl || localDecoderInfoList.size() == 0) {
@@ -757,7 +774,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			populateDecoderControl(stats, advancedControllableProperties, decoderID);
 		}
 
+		// Create stream control
+		populateCreateStreamControl(stats, advancedControllableProperties, createStream, ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH);
+
 		// Stream control
+		for (StreamInfo streamInfo : this.localStreamInfoList) {
+			populateStreamControl(stats, advancedControllableProperties, streamInfo, ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH);
+		}
 	}
 
 	/**
@@ -916,7 +939,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 
 		// Populate still image delay numeric control
-		advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
+		advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
 
 		// Populate output switch control
 		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
@@ -968,7 +991,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate fixed delay numeric control
-				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
 				break;
 			case MULTI_SYNC:
 				// Populate buffering mode dropdown list control
@@ -977,7 +1000,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 				// Populate multi sync delay numeric control
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
 				break;
 		}
 	}
@@ -1128,7 +1151,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				decoderInfo.setStillImageDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1206,7 +1229,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case BUFFERING_DELAY:
 				decoderInfo.setBufferingDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1215,7 +1238,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				decoderInfo.setMultisyncBufferingDelay(Integer.parseInt(value));
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				advancedControllableProperties.add(
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
@@ -1296,7 +1319,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
+			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod + DecoderConstant.NEXT_LINE + e.getMessage());
 		}
 		return true;
 	}
@@ -1314,8 +1337,1089 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//endregion
 
-	//region Perform stream control
+	//region Populate stream control
 	//--------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * This method is used for populate all stream control properties:
+	 * <li>Protocol: TS over UDP</li>
+	 * <li>Protocol: TS over RTP</li>
+	 * <li>Protocol: TS over SRT</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Get controllable property current value
+		String streamName = streamInfo.getName();
+		Encapsulation encapsulation = streamInfo.getEncapsulation();
+		List<String> encapsulationList = Encapsulation.getEncapsulationList();
+
+		// Populate stream name text control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createText(stats, streamGroup + StreamControllingMetric.STREAM_NAME.getName(), streamName));
+		// Populate Encapsulation dropdown control
+		addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.ENCAPSULATION.getName(), encapsulationList, encapsulation.getName()));
+
+		// Populate delete button
+		addAdvanceControlProperties(advancedControllableProperties, createButton(streamGroup + DecoderConstant.DELETE, DecoderConstant.DELETE, DecoderConstant.DELETING));
+
+		switch (encapsulation) {
+			case TS_OVER_UDP:
+				populateStreamControlCaseTSOverUDP(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case TS_OVER_RTP:
+				populateStreamControlCaseTSOverRTP(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case TS_OVER_SRT:
+				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+		}
+
+		// Populate apply change and cancel button
+		populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamInfo.getId());
+	}
+
+	/**
+	 * This method is used for populate all create stream control properties:
+	 * <li>Protocol: TS over UDP</li>
+	 * <li>Protocol: TS over RTP</li>
+	 * <li>Protocol: TS over SRT</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateCreateStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Get controllable property current value
+		String streamName = streamInfo.getName();
+		Encapsulation encapsulation = streamInfo.getEncapsulation();
+		List<String> encapsulationList = Encapsulation.getEncapsulationList();
+
+		// Populate stream name text control
+		advancedControllableProperties.add(
+				createText(stats, streamGroup + StreamControllingMetric.STREAM_NAME.getName(), streamName));
+
+		// Populate Encapsulation dropdown control
+		advancedControllableProperties.add(createDropdown(stats, streamGroup + StreamControllingMetric.ENCAPSULATION.getName(), encapsulationList, encapsulation.getName()));
+
+		// Populate create button
+		advancedControllableProperties.add(createButton(streamGroup + DecoderConstant.CREATE, DecoderConstant.CREATE, DecoderConstant.CREATING));
+		stats.put(streamGroup + DecoderConstant.CREATE, DecoderConstant.EMPTY);
+
+		switch (encapsulation) {
+			case TS_OVER_UDP:
+				populateStreamControlCaseTSOverUDP(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case TS_OVER_RTP:
+				populateStreamControlCaseTSOverRTP(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case TS_OVER_SRT:
+				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+		}
+		// Populate cancel button
+		populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+	}
+
+	/**
+	 * This method is used for populate all stream control properties:
+	 * <li>Protocol: TS over UDP</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverUDP(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Populate port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+		// Populate network type control
+		populateNetWorkTypeStreamControl(stats, advancedControllableProperties, streamInfo, streamGroup);
+	}
+
+	/**
+	 * This method is used for populate all stream control properties:
+	 * <li>Protocol: TS over RTP</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverRTP(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Get controllable property current value
+		Integer port = streamInfo.getPort();
+		FecRTP fecRTP = streamInfo.getFecRtp();
+		List<String> fecRTPs = FecRTP.getFecRTPList();
+
+		// Populate port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.PORT.getName(), checkForNullData(port.toString())));
+
+		// Populate fecRTP dropdown control
+		addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.FEC_RTP.getName(), fecRTPs, fecRTP.getName()));
+
+		// Populate network type control
+		populateNetWorkTypeStreamControl(stats, advancedControllableProperties, streamInfo, streamGroup);
+	}
+
+	/**
+	 * This method is used for populate stream control properties case NetworkType:
+	 * Network type
+	 * <li>Multicast</li>
+	 * <li>Uni-cast</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateNetWorkTypeStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Get controllable property current value
+		String multicastAddress = streamInfo.getAddress();
+		String sourceIp = streamInfo.getSourceIp();
+		List<String> netWorkTypes = NetworkType.getTypeList();
+
+		// Populate network type control
+		if (multicastAddress.equals(DecoderConstant.ADDRESS_ANY) || sourceIp.equals(DecoderConstant.ADDRESS_ANY)) {
+			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.UNI_CAST.getName()));
+		} else {
+			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.MULTI_CAST.getName()));
+			addAdvanceControlProperties(advancedControllableProperties,
+					createText(stats, streamGroup + StreamControllingMetric.MULTICAST_ADDRESS.getName(), multicastAddress));
+			addAdvanceControlProperties(advancedControllableProperties,
+					createText(stats, streamGroup + StreamControllingMetric.SOURCE_ADDRESS.getName(), sourceIp));
+		}
+	}
+
+	/**
+	 * This method is used for populate all stream control properties:
+	 * Protocol: TS over SRT
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRT(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		SRTMode srtMode = streamInfo.getSrtMode();
+		List<String> srtModeList = SRTMode.getSRTModeList();
+
+		addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.SRT_MODE.getName(), srtModeList, srtMode.getName()));
+
+		switch (srtMode) {
+			case LISTENER:
+				populateStreamControlCaseTSOverSRTListener(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case CALLER:
+				populateStreamControlCaseTSOverSRTCaller(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
+			case RENDEZVOUS:
+				populateStreamControlCaseTSOverSRTRendezvous(stats, advancedControllableProperties, streamInfo, streamGroup);
+		}
+		populateStreamControlCaseTSOverSRTStreamConversion(stats, advancedControllableProperties, streamInfo, streamGroup);
+		populateStreamControlCaseTSOverSRTEncrypted(stats, advancedControllableProperties, streamInfo, streamGroup);
+	}
+
+	/**
+	 * This method is used for populate all stream control properties :
+	 * Protocol: TS over SRT
+	 * SRT mode: Listener
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRTListener(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Populate port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+
+		// Populate latency numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(streamInfo.getLatency().toString())));
+
+		// Populate reject unencrypted caller switch control
+		if (streamInfo.getPassphraseSet()) {
+			addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, streamGroup + StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName(), streamInfo.getStrictMode(),
+					DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+		}
+	}
+
+	/**
+	 * This method is used for populate all stream control properties :
+	 * Protocol: TS over SRT
+	 * Stream conversion
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRTStreamConversion(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo,
+			String streamGroup) {
+		boolean srtToUDP = streamInfo.getSrtToUdp();
+
+		// Populate srt to udp switch control
+		addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName(), srtToUDP,
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+
+		// Populate relevant control when srt to udp is enabled
+		if (srtToUDP) {
+			addAdvanceControlProperties(advancedControllableProperties,
+					createText(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), streamInfo.getSrtToUdpAddress()));
+			addAdvanceControlProperties(advancedControllableProperties,
+					createNumeric(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_PORT.getName(), checkForNullData(streamInfo.getSrtToUdpPort().toString())));
+			addAdvanceControlProperties(advancedControllableProperties,
+					createText(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
+			addAdvanceControlProperties(advancedControllableProperties,
+					createNumeric(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), checkForNullData(streamInfo.getSrtToUdpTtl().toString())));
+		}
+	}
+
+	/**
+	 * This method is used for populate all stream control properties :
+	 * Protocol: TS over SRT
+	 * Encrypted
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRTEncrypted(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		boolean encrypted = streamInfo.getPassphraseSet();
+
+		// Populate encrypted switch control
+		addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, streamGroup + StreamControllingMetric.ENCRYPTED.getName(), encrypted,
+				DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+
+		// Populate relevant control when encrypted is enabled
+		if (encrypted) {
+			addAdvanceControlProperties(advancedControllableProperties,
+					createText(stats, streamGroup + StreamControllingMetric.PASSPHRASE.getName(), streamInfo.getPassphrase()));
+		}
+	}
+
+	/**
+	 * This method is used for populate all stream control properties :
+	 * Protocol: TS over SRT
+	 * SRT mode: caller
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRTCaller(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Populate Address text control
+		if (streamInfo.getAddress().equals(DecoderConstant.ADDRESS_ANY)) {
+			streamInfo.setAddress(DecoderConstant.EMPTY);
+		}
+		addAdvanceControlProperties(advancedControllableProperties,
+				createText(stats, streamGroup + StreamControllingMetric.ADDRESS.getName(), streamInfo.getAddress()));
+
+		// Populate source port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.SOURCE_PORT.getName(), checkForNullData(streamInfo.getSourcePort().toString())));
+
+		// Populate port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.DESTINATION_PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+
+		// Populate latency numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(streamInfo.getLatency().toString())));
+	}
+
+	/**
+	 * This method is used for populate all stream control properties :
+	 * Protocol: TS over SRT
+	 * SRT mode: Rendezvous
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamInfo stream config info
+	 */
+	private void populateStreamControlCaseTSOverSRTRendezvous(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+		// Populate Address text control
+		if (streamInfo.getAddress().equals(DecoderConstant.ADDRESS_ANY)) {
+			streamInfo.setAddress(DecoderConstant.EMPTY);
+		}
+		addAdvanceControlProperties(advancedControllableProperties,
+				createText(stats, streamGroup + StreamControllingMetric.ADDRESS.getName(), streamInfo.getAddress()));
+
+		// Populate source port (auto assign)
+		stats.put(streamGroup + StreamControllingMetric.SOURCE_PORT.getName(), streamInfo.getPort().toString());
+
+		// Populate port numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.DESTINATION_PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+
+		// Populate latency numeric control
+		addAdvanceControlProperties(advancedControllableProperties,
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(streamInfo.getLatency().toString())));
+	}
+
+	/**
+	 * This method is used for populate apply change button and cancel button of stream control:
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamID ID of stream
+	 */
+	private void populateApplyChangeAndCancelButtonForStream(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer streamID) {
+		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
+		Optional<StreamInfo> streamInfo = this.localStreamInfoList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
+		Encapsulation encapsulation = streamInfoDTO.get().getEncapsulation();
+		SRTMode srtMode = streamInfoDTO.get().getSrtMode();
+		Boolean encrypted = streamInfoDTO.get().getPassphraseSet();
+		Boolean srtToUDP = streamInfoDTO.get().getSrtToUdp();
+
+		if (streamInfo.isPresent()) {
+			String applyChange = ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.APPLY_CHANGE.getName();
+			String cancel = ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
+
+			if (!streamInfo.get().equalsByProtocol(streamInfoDTO.get(), encapsulation, srtMode, encrypted, srtToUDP)) {
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
+				stats.put(applyChange, DecoderConstant.EMPTY);
+				stats.put(cancel, DecoderConstant.EMPTY);
+				addAdvanceControlProperties(advancedControllableProperties, createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
+				addAdvanceControlProperties(advancedControllableProperties, createButton(cancel, DecoderConstant.CANCEL, DecoderConstant.CANCELLING));
+			} else {
+				stats.remove(applyChange);
+				stats.remove(cancel);
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
+
+				for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
+					if (controllableProperty.getName().equals(applyChange)) {
+						advancedControllableProperties.remove(controllableProperty);
+						break;
+					}
+				}
+				for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
+					if (controllableProperty.getName().equals(cancel)) {
+						advancedControllableProperties.remove(controllableProperty);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method is used for populate cancel button of create stream control:
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 */
+	private void populateCancelButtonForCreateStream(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties) {
+		StreamInfo streamInfoDTO = defaultStream();
+		Encapsulation encapsulation = createStream.getEncapsulation();
+		SRTMode srtMode = createStream.getSrtMode();
+		Boolean encrypted = createStream.getPassphraseSet();
+		Boolean srtToUDP = createStream.getSrtToUdp();
+
+		String cancel = ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
+
+		if (!streamInfoDTO.equalsByProtocol(createStream, encapsulation, srtMode, encrypted, srtToUDP)) {
+			stats.put(ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
+			stats.put(cancel, DecoderConstant.EMPTY);
+			addAdvanceControlProperties(advancedControllableProperties, createButton(cancel, DecoderConstant.CANCEL, DecoderConstant.CANCELLING));
+		} else {
+			stats.remove(cancel);
+			stats.put(ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
+
+			for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
+				if (controllableProperty.getName().equals(cancel)) {
+					advancedControllableProperties.remove(controllableProperty);
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method is used to add default value of stream config to localStreamInfoList
+	 */
+	private StreamInfo defaultStream() {
+		StreamInfo streamInfo = new StreamInfo();
+		streamInfo.setName(DecoderConstant.EMPTY);
+		streamInfo.setPort(DecoderConstant.MIN_PORT);
+		streamInfo.setEncapsulation(Encapsulation.TS_OVER_UDP.getCode());
+		streamInfo.setAddress(DecoderConstant.ADDRESS_ANY);
+		streamInfo.setSourceIp(DecoderConstant.ADDRESS_ANY);
+		return streamInfo;
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	//endregion
+
+	// region Perform create stream control
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * This method is used for calling control all create stream control properties in case:
+	 * <li>Stream Name</li>
+	 * <li>Encapsulation</li>
+	 * <li>Network type</li>
+	 * <li>Port</li>
+	 * <li>Multicast address</li>
+	 * <li>Source address</li>
+	 * <li>Source port</li>
+	 * <li>Destination port</li>
+	 * <li>FecRTP</li>
+	 * <li>SRT mode</li>
+	 * <li>Latency</li>
+	 * <li>Stream conversion</li>
+	 * <li>SrtToUdpAddress</li>
+	 * <li>SrtToUdpPort</li>
+	 * <li>SrtToUdpTos</li>
+	 * <li>SrtToUdpTtl</li>
+	 * <li>Encrypted</li>
+	 * <li>Passphrase</li>
+	 * <li>Reject unencrypted caller</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param controllableProperty name of controllable property
+	 * @param value value of controllable property
+	 */
+	private void createStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, String streamControllingGroup,
+			String controllableProperty, String value) {
+		StreamControllingMetric streamControllingMetric = StreamControllingMetric.getByName(controllableProperty);
+
+		switch (streamControllingMetric) {
+			case STREAM_NAME:
+				createStream.setName(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.STREAM_NAME.getName(), createStream.getName()));
+
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case ENCAPSULATION:
+				Encapsulation encapsulation = Encapsulation.getByName(value);
+				removeUnusedStatsAndControlByProtocol(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				createStream.setEncapsulation(encapsulation.getCode());
+
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case NETWORK_TYPE:
+				NetworkType networkType = NetworkType.getByName(value);
+				removeUnusedStatsAndControlByNetworkType(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				switch (networkType) {
+					case UNI_CAST:
+						createStream.setAddress(DecoderConstant.ADDRESS_ANY);
+						createStream.setSourceIp(DecoderConstant.ADDRESS_ANY);
+						break;
+					case MULTI_CAST:
+						createStream.setAddress(DecoderConstant.EMPTY);
+						createStream.setSourceIp(DecoderConstant.EMPTY);
+						break;
+					default:
+						break;
+				}
+
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case PORT:
+				createStream.setPort(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.PORT.getName(), checkForNullData(createStream.getPort().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case MULTICAST_ADDRESS:
+				createStream.setAddress(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.MULTICAST_ADDRESS.getName(), createStream.getAddress()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SOURCE_ADDRESS:
+				createStream.setSourceIp(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SOURCE_ADDRESS.getName(), createStream.getSourceIp()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SOURCE_PORT:
+				createStream.setSourcePort(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SOURCE_PORT.getName(), checkForNullData(createStream.getSourcePort().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case DESTINATION_PORT:
+				createStream.setPort(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.DESTINATION_PORT.getName(), checkForNullData(createStream.getPort().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case FEC_RTP:
+				FecRTP fecRTP = FecRTP.getByName(value);
+				List<String> fecRTPList = FecRTP.getFecRTPList();
+				createStream.setFecRtp(fecRTP.getCode());
+				addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamControllingGroup + StreamControllingMetric.FEC_RTP.getName(), fecRTPList, fecRTP.getName()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+			case SRT_MODE:
+				SRTMode srtMode = SRTMode.getByName(value);
+				removeUnusedStatsAndControlBySRTMode(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				createStream.setSrtMode(srtMode.getCode());
+
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case LATENCY:
+				createStream.setLatency(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(createStream.getLatency().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_STREAM_CONVERSION:
+				Boolean srtToUDP = mapSwitchControlValue(value);
+				removeUnusedStatsAndControlByStreamConversion(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				createStream.setSrtToUdp(srtToUDP);
+
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_ADDRESS:
+				createStream.setSrtToUdpAddress(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), createStream.getSrtToUdpAddress()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_PORT:
+				createStream.setSrtToUdpPort(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_PORT.getName(), checkForNullData(createStream.getSrtToUdpPort().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_TOS:
+				createStream.setSrtToUdpTos(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), createStream.getSrtToUdpTos()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_TTL:
+				createStream.setSrtToUdpTtl(Integer.parseInt(value));
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), checkForNullData(createStream.getSrtToUdpTtl().toString())));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case ENCRYPTED:
+				Boolean encrypted = mapSwitchControlValue(value);
+				removeUnusedStatsAndControlByEncrypted(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				createStream.setPassphraseSet(encrypted);
+
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case PASSPHRASE:
+				createStream.setPassphrase(value);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.PASSPHRASE.getName(), createStream.getPassphrase()));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case REJECT_UNENCRYPTED_CALLERS:
+				Boolean rejectUnencryptedCallers = mapSwitchControlValue(value);
+				createStream.setStrictMode(rejectUnencryptedCallers);
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(
+						stats, streamControllingGroup + StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName(), rejectUnencryptedCallers, DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case CREATE:
+				performCreateStreamControl(createStream);
+				break;
+			case CANCEL:
+				createStream = defaultStream();
+				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
+				break;
+			default:
+				throw new IllegalStateException("Unexpected value: " + controllableProperty);
+		}
+	}
+
+	/**
+	 * This method is used to perform create stream control
+	 *
+	 * @param streamInfo set of stream config info
+	 */
+	private StreamInfo performCreateStreamControl(StreamInfo streamInfo) {
+		StreamInfo streamInfoResult = new StreamInfo();
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				String request = streamInfo.jsonRequest();
+				if (logger.isDebugEnabled()) {
+					logger.debug(request);
+				}
+				System.out.println(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS));
+
+				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), request, StreamDataWrapper.class);
+				if (streamDataWrapper == null) {
+					throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+				} else {
+					isCreatedStreamControl = true;
+				}
+			} else {
+				throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+			}
+		} catch (Exception e) {
+			throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR + e.getMessage());
+		}
+		return streamInfoResult;
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty from {@link HaivisionX4DecoderCommunicator#localExtendedStatistics}
+	 *
+	 * @param stats Map of statistics that contains statistics to be removed
+	 * @param controls List of controls that contains AdvancedControllableProperty to be removed
+	 * @param listKeys list key of statistics to be removed
+	 */
+	private void removeUnusedStatsAndControls(Map<String, String> stats, List<AdvancedControllableProperty> controls, List<String> listKeys) {
+		for (String key : listKeys) {
+			stats.remove(key);
+			controls.removeIf(advancedControllableProperty -> advancedControllableProperty.getName().equals(key));
+		}
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty based on protocol:
+	 * <li>TS over UDP</li>
+	 * <li>TS over RTP</li>
+	 * <li>TS over SRT</li>
+	 *
+	 * @param stats Map of statistics
+	 * @param controls List of AdvancedControllableProperty
+	 * @param preStreamInfo previous stream info
+	 * @param groupName group name
+	 */
+	private void removeUnusedStatsAndControlByProtocol(Map<String, String> stats, List<AdvancedControllableProperty> controls, StreamInfo preStreamInfo, String groupName) {
+		Encapsulation preEncapsulation = preStreamInfo.getEncapsulation();
+		List<String> listKeyToBeRemove = new ArrayList<>();
+		switch (preEncapsulation) {
+			case TS_OVER_UDP:
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.NETWORK_TYPE.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.MULTICAST_ADDRESS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SOURCE_ADDRESS.getName()));
+				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+				break;
+			case TS_OVER_RTP:
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.NETWORK_TYPE.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.FEC_RTP.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.MULTICAST_ADDRESS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SOURCE_ADDRESS.getName()));
+				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+				break;
+			case TS_OVER_SRT:
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_MODE.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.LATENCY.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_TOS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_TTL.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.ENCRYPTED.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PASSPHRASE.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.ADDRESS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SOURCE_PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.DESTINATION_PORT.getName()));
+				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+				break;
+			default:
+				break;
+		}
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty based on Network type:
+	 * <li>Uni-cast</li>
+	 * <li>Multicast</li>
+	 *
+	 * @param stats Map of statistics
+	 * @param controls List of AdvancedControllableProperty
+	 * @param preStreamInfo previous stream info
+	 * @param groupName group name
+	 */
+	private void removeUnusedStatsAndControlByNetworkType(Map<String, String> stats, List<AdvancedControllableProperty> controls, StreamInfo preStreamInfo, String groupName) {
+		List<String> listKeyToBeRemove = new ArrayList<>();
+		if (!preStreamInfo.getAddress().equals(DecoderConstant.ADDRESS_ANY) || !preStreamInfo.getSourceIp().equals(DecoderConstant.ADDRESS_ANY)) {
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.MULTICAST_ADDRESS.getName()));
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SOURCE_ADDRESS.getName()));
+			removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+		}
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty based on SRT mode:
+	 * <li>Listener</li>
+	 * <li>Caller</li>
+	 * <li>Rendezvous</li>
+	 *
+	 * @param stats Map of statistics
+	 * @param controls List of AdvancedControllableProperty
+	 * @param preStreamInfo previous stream info
+	 * @param groupName group name
+	 */
+	private void removeUnusedStatsAndControlBySRTMode(Map<String, String> stats, List<AdvancedControllableProperty> controls, StreamInfo preStreamInfo, String groupName) {
+		List<String> listKeyToBeRemove = new ArrayList<>();
+		SRTMode preSRTMode = preStreamInfo.getSrtMode();
+		switch (preSRTMode) {
+			case LISTENER:
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PORT.getName()));
+				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+				break;
+			case CALLER:
+			case RENDEZVOUS:
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.ADDRESS.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SOURCE_PORT.getName()));
+				listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.DESTINATION_PORT.getName()));
+				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+				break;
+			default:
+				break;
+		}
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty based on SRT mode:
+	 *
+	 * @param stats Map of statistics
+	 * @param controls List of AdvancedControllableProperty
+	 * @param preStreamInfo previous stream info
+	 * @param groupName group name
+	 */
+	private void removeUnusedStatsAndControlByStreamConversion(Map<String, String> stats, List<AdvancedControllableProperty> controls, StreamInfo preStreamInfo, String groupName) {
+		List<String> listKeyToBeRemove = new ArrayList<>();
+		if (!preStreamInfo.getSrtToUdp()) {
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName()));
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_PORT.getName()));
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_TOS.getName()));
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.SRT_TO_UDP_TTL.getName()));
+			removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+		}
+	}
+
+	/**
+	 * This method is used to remove unused statistics/AdvancedControllableProperty based on Encrypted:
+	 *
+	 * @param stats Map of statistics
+	 * @param controls List of AdvancedControllableProperty
+	 * @param preStreamInfo previous stream info
+	 * @param groupName group name
+	 */
+	private void removeUnusedStatsAndControlByEncrypted(Map<String, String> stats, List<AdvancedControllableProperty> controls, StreamInfo preStreamInfo, String groupName) {
+		List<String> listKeyToBeRemove = new ArrayList<>();
+		if (!preStreamInfo.getPassphraseSet()) {
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.PASSPHRASE.getName()));
+			listKeyToBeRemove.add(String.format("%s%s", groupName, StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName()));
+			removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	//endregion
+
+	// region Perform stream control
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * This method is used for calling control all stream control properties in case:
+	 * <li>Stream Name</li>
+	 * <li>Encapsulation</li>
+	 * <li>Network type</li>
+	 * <li>Port</li>
+	 * <li>Multicast address</li>
+	 * <li>Source address</li>
+	 * <li>Source port</li>
+	 * <li>Destination port</li>
+	 * <li>FecRTP</li>
+	 * <li>SRT mode</li>
+	 * <li>Latency</li>
+	 * <li>Stream conversion</li>
+	 * <li>SrtToUdpAddress</li>
+	 * <li>SrtToUdpPort</li>
+	 * <li>SrtToUdpTos</li>
+	 * <li>SrtToUdpTtl</li>
+	 * <li>Encrypted</li>
+	 * <li>Passphrase</li>
+	 * <li>Reject unencrypted caller</li>
+	 *
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param streamControllingGroup stream controlling group
+	 * @param streamName name of stream
+	 * @param controllableProperty name of controllable property
+	 * @param value value of controllable property
+	 */
+	private void streamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, String streamControllingGroup, String streamName,
+			String controllableProperty, String value) {
+		StreamControllingMetric streamControllingMetric = StreamControllingMetric.getByName(controllableProperty);
+
+		Integer streamIndex = 0;
+		StreamInfo streamInfo = new StreamInfo();
+		for (int i = 0; i < localStreamInfoList.size(); i++) {
+			streamInfo = localStreamInfoList.get(i);
+			if (streamName.equals(streamInfo.getName())) {
+				streamIndex = i;
+			}
+		}
+		Integer streamID = streamInfo.getId();
+
+		switch (streamControllingMetric) {
+			case STREAM_NAME:
+				streamInfo.setName(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.STREAM_NAME.getName(), streamInfo.getName()));
+
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case ENCAPSULATION:
+				Encapsulation encapsulation = Encapsulation.getByName(value);
+				removeUnusedStatsAndControlByProtocol(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				streamInfo.setEncapsulation(encapsulation.getCode());
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case NETWORK_TYPE:
+				NetworkType networkType = NetworkType.getByName(value);
+				removeUnusedStatsAndControlByNetworkType(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				switch (networkType) {
+					case UNI_CAST:
+						streamInfo.setAddress(DecoderConstant.ADDRESS_ANY);
+						streamInfo.setSourceIp(DecoderConstant.ADDRESS_ANY);
+						break;
+					case MULTI_CAST:
+						streamInfo.setAddress(DecoderConstant.EMPTY);
+						streamInfo.setSourceIp(DecoderConstant.EMPTY);
+						break;
+					default:
+						break;
+				}
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case PORT:
+				streamInfo.setPort(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case MULTICAST_ADDRESS:
+				streamInfo.setAddress(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.MULTICAST_ADDRESS.getName(), streamInfo.getAddress()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SOURCE_ADDRESS:
+				streamInfo.setSourceIp(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SOURCE_ADDRESS.getName(), streamInfo.getSourceIp()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SOURCE_PORT:
+				streamInfo.setSourcePort(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SOURCE_PORT.getName(), checkForNullData(streamInfo.getSourcePort().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case DESTINATION_PORT:
+				streamInfo.setPort(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.DESTINATION_PORT.getName(), checkForNullData(streamInfo.getPort().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case FEC_RTP:
+				FecRTP fecRTP = FecRTP.getByName(value);
+				List<String> fecRTPList = FecRTP.getFecRTPList();
+				streamInfo.setFecRtp(fecRTP.getCode());
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamControllingGroup + StreamControllingMetric.FEC_RTP.getName(), fecRTPList, fecRTP.getName()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+			case SRT_MODE:
+				SRTMode srtMode = SRTMode.getByName(value);
+				removeUnusedStatsAndControlBySRTMode(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				streamInfo.setSrtMode(srtMode.getCode());
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case LATENCY:
+				streamInfo.setLatency(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(streamInfo.getLatency().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_STREAM_CONVERSION:
+				Boolean srtToUDP = mapSwitchControlValue(value);
+				removeUnusedStatsAndControlByStreamConversion(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				streamInfo.setSrtToUdp(srtToUDP);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_ADDRESS:
+				createStream.setSrtToUdpAddress(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), streamInfo.getSrtToUdpAddress()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_PORT:
+				streamInfo.setSrtToUdpPort(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, createStream);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_PORT.getName(), checkForNullData(streamInfo.getSrtToUdpPort().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_TOS:
+				streamInfo.setSrtToUdpTos(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case SRT_TO_UDP_TTL:
+				streamInfo.setSrtToUdpTtl(Integer.parseInt(value));
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), checkForNullData(streamInfo.getSrtToUdpTtl().toString())));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case ENCRYPTED:
+				Boolean encrypted = mapSwitchControlValue(value);
+				removeUnusedStatsAndControlByEncrypted(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				streamInfo.setPassphraseSet(encrypted);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case PASSPHRASE:
+				streamInfo.setPassphrase(value);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties,
+						createText(stats, streamControllingGroup + StreamControllingMetric.PASSPHRASE.getName(), streamInfo.getPassphrase()));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case REJECT_UNENCRYPTED_CALLERS:
+				Boolean rejectUnencryptedCallers = mapSwitchControlValue(value);
+				streamInfo.setStrictMode(rejectUnencryptedCallers);
+				this.localStreamInfoList.set(streamIndex, streamInfo);
+				addAdvanceControlProperties(advancedControllableProperties, createSwitch(
+						stats, streamControllingGroup + StreamControllingMetric.REJECT_UNENCRYPTED_CALLERS.getName(), rejectUnencryptedCallers, DecoderConstant.DISABLE, DecoderConstant.ENABLE));
+				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+
+				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
+			case CREATE:
+				performStreamControl(streamInfo);
+				break;
+			case CANCEL:
+				Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st -> streamName.equals(st.getName())).findFirst();
+				if (streamInfoDTO.isPresent()) {
+					streamInfo = streamInfoDTO.get();
+				} else {
+					streamInfo = defaultStream();
+				}
+				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				break;
+			default:
+				throw new IllegalStateException("Unexpected value: " + controllableProperty);
+		}
+	}
+
+	/**
+	 * This method is used to perform stream control
+	 *
+	 * @param streamInfo set of stream config info
+	 */
+	private StreamInfo performStreamControl(StreamInfo streamInfo) {
+		StreamInfo streamInfoResult = new StreamInfo();
+		Integer streamID = streamInfo.getId();
+		try {
+			if (this.authenticationCookie.getSessionID() != null) {
+				String request = streamInfo.jsonRequest();
+				if (logger.isDebugEnabled()) {
+					logger.debug(request);
+				}
+				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS + DecoderConstant.SLASH + streamID), request, StreamDataWrapper.class);
+				if (streamDataWrapper == null) {
+					throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+				} else {
+					isCreatedStreamControl = true;
+				}
+			} else {
+				throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+			}
+		} catch (Exception e) {
+			throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR + e.getMessage());
+		}
+		return streamInfoResult;
+	}
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//endregion
 
@@ -1390,16 +2494,32 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
+	 * Create a controllable property Text
+	 *
+	 * @param name the name of property
+	 * @param stringValue character string
+	 * @return AdvancedControllableProperty Text instance
+	 */
+	private AdvancedControllableProperty createText(Map<String, String> stats, String name, String stringValue) {
+		if (stringValue == null) {
+			stringValue = DecoderConstant.EMPTY;
+		}
+		stats.put(name, stringValue);
+		AdvancedControllableProperty.Text text = new AdvancedControllableProperty.Text();
+		return new AdvancedControllableProperty(name, new Date(), text, stringValue);
+	}
+
+	/**
 	 * Create a controllable property Numeric
 	 *
 	 * @param name the name of property
-	 * @param integerValue character Integer
+	 * @param initialValue character String
 	 * @return AdvancedControllableProperty Text instance
 	 */
-	private AdvancedControllableProperty createNumeric(Map<String, String> stats, String name, Integer integerValue) {
-		stats.put(name, integerValue.toString());
+	private AdvancedControllableProperty createNumeric(Map<String, String> stats, String name, String initialValue) {
+		stats.put(name, checkForNullData(initialValue));
 		AdvancedControllableProperty.Numeric numeric = new AdvancedControllableProperty.Numeric();
-		return new AdvancedControllableProperty(name, new Date(), numeric, integerValue);
+		return new AdvancedControllableProperty(name, new Date(), numeric, initialValue);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------
