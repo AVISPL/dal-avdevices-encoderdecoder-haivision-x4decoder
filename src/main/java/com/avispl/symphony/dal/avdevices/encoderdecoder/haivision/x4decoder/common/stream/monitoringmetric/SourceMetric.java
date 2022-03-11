@@ -11,20 +11,16 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  * Created on 3/8/2022
  * @since 1.0.0
  */
-public enum SRTMetric {
+public enum SourceMetric {
 
 	// Static metric
-	RECONNECTIONS("SRTReconnections"),
-	LOST_PACKETS("SRTLostPackets"),
-	SENT_ACKS("SRTSentAcks"),
-	SENT_NAKS("SRTSentNaks"),
-	DROPPED_PACKET("SRTSkippedPackets"),
-	PATH_MAX_BANDWIDTH("SRTPathMaxBandwidth"),
-	RTT("SRTRtt"),
-
-	// TODO: Can be Historical metric in next version
-	BUFFER("SRT Buffer"),
-	SRT_LATENCY("SRT Latency");
+	COMPRESSION("Compression"),
+	BITRATE("Bitrate"),
+	PROGRAM_ID("ProgramID"),
+	RECEIVED_PACKETS("ReceivedPackets"),
+	RECEIVED_BYTES("ReceivedBytes"),
+	PTS("PTS"),
+	DTS("DTS");
 
 	private final String name;
 
@@ -33,7 +29,7 @@ public enum SRTMetric {
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */
-	SRTMetric(String name) {
+	SourceMetric(String name) {
 		this.name = name;
 	}
 
