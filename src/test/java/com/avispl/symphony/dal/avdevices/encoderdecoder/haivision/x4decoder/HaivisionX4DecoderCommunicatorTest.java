@@ -19,6 +19,7 @@ import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.DecoderControllingMetric;
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.StreamControllingMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.ExceptionMessage;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.data.MonitoringData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.ControllingMetricGroup;
@@ -154,7 +155,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty output control (switch control)
+	 * Test HaivisionX4Decoder.controlProperty decoder control: output control (switch control)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -173,7 +174,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty HDR control (dropdown control)
+	 * Test HaivisionX4Decoder.controlProperty decoder control: HDR control (dropdown control)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -192,7 +193,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4Decoder.controlProperty still image delay (text control)
+	 * Test HaivisionX4Decoder.controlProperty decoder control: still image delay (text control)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -208,5 +209,105 @@ public class HaivisionX4DecoderCommunicatorTest {
 
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + 0 + DecoderConstant.HASH;
 		Assertions.assertEquals("1000", stats.get(decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty create stream: protocol
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testCreateStreamControlEncapsulation() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("CreateStream" + "#Protocol");
+		controllableProperty.setValue("TS over UDP");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH;
+		Assertions.assertEquals("TS over UDP", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
+	}
+	
+	/**
+	 * Test HaivisionX4Decoder.controlProperty create stream: stream name
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testCreateStreamControlStreamName() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("CreateStream" + "#StreamName");
+		controllableProperty.setValue("Harry test");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH;
+		Assertions.assertEquals("Harry test", stats.get(decoderControllingGroup + StreamControllingMetric.STREAM_NAME.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty create stream: port
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testCreateStreamControlPort() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("CreateStream" + "#Port");
+		controllableProperty.setValue("1725");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH;
+		Assertions.assertEquals("1725", stats.get(decoderControllingGroup + StreamControllingMetric.PORT.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty create stream: protocol
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testStreamControlEncapsulation() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("Streamharry-test" + "#Protocol");
+		controllableProperty.setValue("TS over SRT");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.STREAM.getName() + "harry-test" +DecoderConstant.HASH;
+		Assertions.assertEquals("TS over SRT", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
+	}
+
+	/**
+	 * Test HaivisionX4Decoder.controlProperty create stream: stream name
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testStreamControlStreamName() {
+		ControllableProperty controllableProperty = new ControllableProperty();
+		controllableProperty.setProperty("Streamharry-test" + "#SrtToUdpStreamConversion");
+		controllableProperty.setValue("0");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
+		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String decoderControllingGroup = ControllingMetricGroup.STREAM.getName() + "harry-test" + DecoderConstant.HASH;
+		Assertions.assertEquals("0", stats.get(decoderControllingGroup + StreamControllingMetric.SRT_TO_UDP_STREAM_CONVERSION.getName()));
 	}
 }
