@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,18 +49,6 @@ public enum BufferingMode {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of buffering mode
-	 */
-	public static List<String> getBufferingList() {
-		List<String> list = new LinkedList<>();
-		for (BufferingMode bufferingMode : BufferingMode.values()) {
-			list.add(bufferingMode.getName());
-		}
-		return list;
 	}
 
 	/**

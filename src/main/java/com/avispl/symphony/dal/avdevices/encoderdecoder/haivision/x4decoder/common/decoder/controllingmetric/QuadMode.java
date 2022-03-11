@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -50,18 +48,6 @@ public enum QuadMode {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of quad mode
-	 */
-	public static List<String> getQuadModeList() {
-		List<String> list = new LinkedList<>();
-		for (QuadMode quadMode : QuadMode.values()) {
-			list.add(quadMode.getName());
-		}
-		return list;
 	}
 
 	/**

@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,18 +51,6 @@ public enum StillImage {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of still image mode
-	 */
-	public static List<String> getStillImageList() {
-		List<String> list = new LinkedList<>();
-		for (StillImage bufferingMode : StillImage.values()) {
-			list.add(bufferingMode.getName());
-		}
-		return list;
 	}
 
 	/**
