@@ -5,10 +5,11 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric;
 
 /**
- * Set of stream monitoring metrics keys
+ * Set of stream monitoring metric keys
  *
- * @author Harry
- * @since 1.0
+ * @author Harry / Symphony Dev Team<br>
+ * Created on 3/8/2022
+ * @since 1.0.0
  */
 public enum StreamMonitoringMetric {
 
@@ -28,19 +29,15 @@ public enum StreamMonitoringMetric {
 	OUTPUT_BYTES("GeneralOutputBytes"),
 	PROGRAM_NUMBER("GeneralProgramNumber"),
 	PCR_PID("GeneralPcrPid"),
-	RECEIVED_ERRO("StreamErrorReceivedError"),
-	STREAM_LATENCY("StreamLatency"),
-	STREAM_SUMMARY("SRTStreamSummary"),
-	DROPPED_PACKETS("SRTDroppedPackets"),
-	CORRUPTED_FRAMES("SRTCorruptedFrames"),
-	RESTARTS("SRTRestarts"),
-	LOCAL_PORT("SRTLocalPort"),
-	REMOTE_PORT("SRTRemotePort");
+	STREAM_SUMMARY("GeneralStreamSummary"),
+	ERROR_CORRUPTED_FRAMES("ErrorCorruptedFrames"),
+	ERROR_DROPPED_PACKETS("ErrorDroppedPackets"),
+	ERROR_RESTARTS("ErrorResumedStreamFlags");
 
 	private final String name;
 
 	/**
-	 *Parameterized constructor
+	 * Parameterized constructor
 	 *
 	 * @param name Name of Decoder monitoring metric
 	 */
