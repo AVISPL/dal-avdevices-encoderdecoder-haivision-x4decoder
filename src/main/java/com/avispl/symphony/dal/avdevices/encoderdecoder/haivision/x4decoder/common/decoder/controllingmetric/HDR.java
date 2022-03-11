@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -52,18 +50,6 @@ public enum HDR {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of HDR mode
-	 */
-	public static List<String> getHDRList() {
-		List<String> list = new LinkedList<>();
-		for (HDR hdr : HDR.values()) {
-			list.add(hdr.getName());
-		}
-		return list;
 	}
 
 	/**
