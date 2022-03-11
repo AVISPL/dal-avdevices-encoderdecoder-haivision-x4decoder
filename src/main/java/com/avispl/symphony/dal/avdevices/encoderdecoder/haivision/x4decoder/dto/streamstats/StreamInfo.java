@@ -8,11 +8,11 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
 /**
  * Set of stream configuration properties
@@ -58,16 +58,16 @@ public class StreamInfo {
 	private Integer sourcePort;
 
 	@JsonAlias("strictMode")
-	private String strictMode;
+	private Boolean strictMode;
 
 	@JsonAlias("passphrase")
 	private String passphrase;
 
 	@JsonAlias("passphraseSet")
-	private String passphraseSet;
+	private Boolean passphraseSet;
 
 	@JsonAlias("srtToUdp")
-	private String srtToUdp;
+	private Boolean srtToUdp;
 
 	@JsonAlias("srtToUdp_address")
 	private String srtToUdpAddress;
@@ -79,7 +79,7 @@ public class StreamInfo {
 	private String srtToUdpTos;
 
 	@JsonAlias("srtToUdp_ttl")
-	private String srtToUdpTtl;
+	private Integer srtToUdpTtl;
 
 	@JsonAlias("fecRtp")
 	private Integer fecRtp;
@@ -238,6 +238,9 @@ public class StreamInfo {
 	 * @return value of {@link #port}
 	 */
 	public Integer getPort() {
+		if (port == null) {
+			return DecoderConstant.MIN_PORT;
+		}
 		if (port < DecoderConstant.MIN_PORT) {
 			return DecoderConstant.MIN_PORT;
 		} else if (port > DecoderConstant.MAX_PORT) {
@@ -279,12 +282,13 @@ public class StreamInfo {
 	 * @return value of {@link #latency}
 	 */
 	public Integer getLatency() {
-		if (latency != null) {
-			if (latency < DecoderConstant.MIN_LATENCY) {
-				return DecoderConstant.MIN_LATENCY;
-			} else if (latency > DecoderConstant.MAX_LATENCY) {
-				return DecoderConstant.MAX_LATENCY;
-			}
+		if (latency == null) {
+			return DecoderConstant.MIN_LATENCY;
+		}
+		if (latency < DecoderConstant.MIN_LATENCY) {
+			return DecoderConstant.MIN_LATENCY;
+		} else if (latency > DecoderConstant.MAX_LATENCY) {
+			return DecoderConstant.MAX_LATENCY;
 		}
 		return latency;
 	}
@@ -329,12 +333,13 @@ public class StreamInfo {
 	 * @return value of {@link #sourcePort}
 	 */
 	public Integer getSourcePort() {
-		if (sourcePort != null) {
-			if (sourcePort < DecoderConstant.MIN_PORT) {
-				return DecoderConstant.MIN_PORT;
-			} else if (sourcePort > DecoderConstant.MAX_PORT) {
-				return DecoderConstant.MAX_PORT;
-			}
+		if (sourcePort == null) {
+			return DecoderConstant.MIN_PORT;
+		}
+		if (sourcePort < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT;
+		} else if (sourcePort > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT;
 		}
 		return sourcePort;
 	}
@@ -353,7 +358,10 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #strictMode}
 	 */
-	public String getStrictMode() {
+	public Boolean getStrictMode() {
+		if (strictMode == null) {
+			return false;
+		}
 		return strictMode;
 	}
 
@@ -362,7 +370,7 @@ public class StreamInfo {
 	 *
 	 * @param strictMode the {@code java.lang.String} field
 	 */
-	public void setStrictMode(String strictMode) {
+	public void setStrictMode(Boolean strictMode) {
 		this.strictMode = strictMode;
 	}
 
@@ -389,7 +397,10 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #passphraseSet}
 	 */
-	public String getPassphraseSet() {
+	public Boolean getPassphraseSet() {
+		if (passphraseSet == null) {
+			return false;
+		}
 		return passphraseSet;
 	}
 
@@ -398,7 +409,7 @@ public class StreamInfo {
 	 *
 	 * @param passphraseSet the {@code java.lang.String} field
 	 */
-	public void setPassphraseSet(String passphraseSet) {
+	public void setPassphraseSet(Boolean passphraseSet) {
 		this.passphraseSet = passphraseSet;
 	}
 
@@ -407,7 +418,10 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtToUdp}
 	 */
-	public String getSrtToUdp() {
+	public Boolean getSrtToUdp() {
+		if (srtToUdp == null) {
+			return false;
+		}
 		return srtToUdp;
 	}
 
@@ -416,7 +430,7 @@ public class StreamInfo {
 	 *
 	 * @param srtToUdp the {@code java.lang.String} field
 	 */
-	public void setSrtToUdp(String srtToUdp) {
+	public void setSrtToUdp(Boolean srtToUdp) {
 		this.srtToUdp = srtToUdp;
 	}
 
@@ -444,12 +458,13 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpPort}
 	 */
 	public Integer getSrtToUdpPort() {
-		if (srtToUdpPort != null) {
-			if (srtToUdpPort < DecoderConstant.MIN_PORT) {
-				return DecoderConstant.MIN_PORT;
-			} else if (srtToUdpPort > DecoderConstant.MAX_PORT) {
-				return DecoderConstant.MAX_PORT;
-			}
+		if (srtToUdpPort == null) {
+			return DecoderConstant.MIN_PORT;
+		}
+		if (srtToUdpPort < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT;
+		} else if (srtToUdpPort > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT;
 		}
 		return srtToUdpPort;
 	}
@@ -469,6 +484,9 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpTos}
 	 */
 	public String getSrtToUdpTos() {
+		if (srtToUdpTos == null) {
+			return DecoderConstant.SRT_TO_UDP_TOS;
+		}
 		return srtToUdpTos;
 	}
 
@@ -486,7 +504,10 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtToUdpTtl}
 	 */
-	public String getSrtToUdpTtl() {
+	public Integer getSrtToUdpTtl() {
+		if (srtToUdpTtl == null) {
+			return 64;
+		}
 		return srtToUdpTtl;
 	}
 
@@ -495,7 +516,7 @@ public class StreamInfo {
 	 *
 	 * @param srtToUdpTtl the {@code java.lang.String} field
 	 */
-	public void setSrtToUdpTtl(String srtToUdpTtl) {
+	public void setSrtToUdpTtl(Integer srtToUdpTtl) {
 		this.srtToUdpTtl = srtToUdpTtl;
 	}
 
@@ -540,6 +561,134 @@ public class StreamInfo {
 	 */
 	public void setFecRtp(Integer fecRtp) {
 		this.fecRtp = fecRtp;
+	}
+
+	/**
+	 * This method is used to create request body as Json for stream controlling in case protocol is TS over UDP
+	 *
+	 * @return String json request body
+	 */
+	public String jsonRequest() {
+		return '{' +
+				"\"encapsulation\":" + encapsulation +
+				",\"fecRtp\":" + fecRtp +
+				",\"name\":" + '\"' + name + '\"' +
+				",\"passphrase\":" + '\"' + passphrase + '\"' +
+				",\"address\":" + '\"' + address + '\"' +
+				",\"sourceIp\":" + '\"' + sourceIp + '\"' +
+				",\"stillImage\":" + '\"' + '\"' +
+				",\"port\":" + port +
+				",\"sourcePort\":" + sourcePort +
+				",\"latency\":" + latency +
+				",\"srtMode\":" + srtMode +
+				",\"srtToUdp\":" + srtToUdp +
+				",\"srtToUdp_address\":" + '\"' + srtToUdpAddress + '\"' +
+				",\"srtToUdp_port\":" + srtToUdpPort +
+				",\"srtToUdp_tos\":" + '\"' + srtToUdpTos + '\"' +
+				",\"srtToUdp_ttl\":" + srtToUdpTtl +
+				",\"strictMode\":" + '\"' + strictMode + '\"' +
+
+				'}';
+	}
+
+	/**
+	 * This method is used to compare object in specify protocol
+	 */
+	public boolean equalsByProtocol(Object o, Encapsulation encapsulation, SRTMode srtMode, Boolean encrypted, Boolean srtToUDP) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		StreamInfo that = (StreamInfo) o;
+		switch (encapsulation) {
+			case TS_OVER_UDP:
+				return Objects.equals(name, that.name)
+						&& Objects.equals(this.encapsulation, that.encapsulation)
+						&& Objects.equals(address, that.address)
+						&& Objects.equals(port, that.port)
+						&& Objects.equals(sourceIp, that.sourceIp);
+			case TS_OVER_RTP:
+				return Objects.equals(name, that.name)
+						&& Objects.equals(this.encapsulation, that.encapsulation)
+						&& Objects.equals(address, that.address)
+						&& Objects.equals(port, that.port)
+						&& Objects.equals(sourceIp, that.sourceIp)
+						&& Objects.equals(fecRtp, that.fecRtp);
+			case TS_OVER_SRT:
+				return Objects.equals(name, that.name)
+						&& Objects.equals(this.encapsulation, that.encapsulation)
+						&& Objects.equals(address, that.address)
+						&& Objects.equals(port, that.port)
+						&& Objects.equals(sourcePort, that.sourcePort)
+						&& equalsByStreamConversion(o, srtToUDP)
+						&& equalsBySRTMode(o, srtMode)
+						&& equalsByEncrypted(o, encrypted);
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * This method is used to compare object in specify stream conversion
+	 */
+	public boolean equalsByStreamConversion(Object o, Boolean srtToUdp) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		StreamInfo that = (StreamInfo) o;
+		if (srtToUdp) {
+			return Objects.equals(srtToUdpAddress, that.srtToUdpAddress)
+					&& Objects.equals(srtToUdpPort, that.srtToUdpPort)
+					&& Objects.equals(srtToUdpTos, that.srtToUdpTos)
+					&& Objects.equals(srtToUdpTtl, that.srtToUdpTtl);
+		}
+		return true;
+	}
+
+	/**
+	 * This method is used to compare object in specify encrypted
+	 */
+	public boolean equalsByEncrypted(Object o, Boolean passphraseSet) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		StreamInfo that = (StreamInfo) o;
+		if (passphraseSet) {
+			return Objects.equals(passphrase, that.passphrase);
+		}
+		return true;
+	}
+
+	/**
+	 * This method is used to compare object in specify SRT mode
+	 */
+	public boolean equalsBySRTMode(Object o, SRTMode srtMode) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		StreamInfo that = (StreamInfo) o;
+		switch (srtMode) {
+			case LISTENER:
+				return Objects.equals(port, that.port)
+						&& Objects.equals(strictMode, that.strictMode);
+			case CALLER:
+			case RENDEZVOUS:
+				return Objects.equals(sourcePort,
+						that.sourcePort);
+			default:
+				return false;
+		}
 	}
 
 	@Override
