@@ -1319,7 +1319,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
+			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod + DecoderConstant.NEXT_LINE + e.getMessage());
 		}
 		return true;
 	}
@@ -1654,7 +1654,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		addAdvanceControlProperties(advancedControllableProperties,
 				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), checkForNullData(streamInfo.getLatency().toString())));
 	}
-	
+
 	/**
 	 * This method is used for populate apply change button and cancel button of stream control:
 	 *
