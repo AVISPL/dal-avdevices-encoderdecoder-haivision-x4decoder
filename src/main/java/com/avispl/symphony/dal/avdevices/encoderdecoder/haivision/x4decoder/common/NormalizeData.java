@@ -14,6 +14,7 @@ import java.util.UUID;
  */
 public class NormalizeData {
 	private final String uuidDay = UUID.randomUUID().toString().replace(DecoderConstant.DASH, "");
+
 	/**
 	 * Format time data
 	 *

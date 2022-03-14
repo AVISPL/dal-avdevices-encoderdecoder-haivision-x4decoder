@@ -16,6 +16,7 @@ public class DecoderConstant {
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
 	public static final String COMMA = ",";
+	public static final String RIGHT_PARENTHESES = ")";
 	public static final String DASH = "-";
 	public static final String SPACE =  " ";
 	public static final String EMPTY = "";
@@ -30,7 +31,9 @@ public class DecoderConstant {
 	public static final String ROLE_BASED_ERR = "Role based is empty";
 	public static final String PORT_NUMBER_ERROR = "Invalid port number";
 	public static final String DECODER_CONTROL_ERR = "Failed to control decoder: ";
-	public static final String CREATE_CONTROL_ERR = "Failed to create stream: ";
+	public static final String CREATE_STREAM_CONTROL_ERR = "Failed to create stream: ";
+	public static final String APPLY_CHANGE_STREAM_CONTROL_ERR = "Failed to control stream: ";
+	public static final String DELETE_STREAM_CONTROL_ERR = "Failed to control stream: ";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";
