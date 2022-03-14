@@ -13,6 +13,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Set of stream configuration properties
@@ -220,6 +221,9 @@ public class StreamInfo {
 	 * @return value of {@link #address}
 	 */
 	public String getAddress() {
+		if (address == null){
+			return DecoderConstant.EMPTY;
+		}
 		return address;
 	}
 
@@ -264,6 +268,9 @@ public class StreamInfo {
 	 * @return value of {@link #sourceIp}
 	 */
 	public String getSourceIp() {
+		if (sourceIp == null){
+			return DecoderConstant.EMPTY;
+		}
 		return sourceIp;
 	}
 
@@ -380,6 +387,9 @@ public class StreamInfo {
 	 * @return value of {@link #passphrase}
 	 */
 	public String getPassphrase() {
+		if (passphrase == null){
+			return DecoderConstant.EMPTY;
+		}
 		return passphrase;
 	}
 
@@ -440,6 +450,9 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpAddress}
 	 */
 	public String getSrtToUdpAddress() {
+		if (srtToUdpAddress == null){
+			return DecoderConstant.EMPTY;
+		}
 		return srtToUdpAddress;
 	}
 
@@ -484,7 +497,7 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpTos}
 	 */
 	public String getSrtToUdpTos() {
-		if (srtToUdpTos == null) {
+		if (StringUtils.isNullOrEmpty(srtToUdpTos)) {
 			return DecoderConstant.SRT_TO_UDP_TOS;
 		}
 		return srtToUdpTos;
@@ -570,24 +583,23 @@ public class StreamInfo {
 	 */
 	public String jsonRequest() {
 		return '{' +
-				"\"encapsulation\":" + encapsulation +
-				",\"fecRtp\":" + fecRtp +
+				"\"encapsulation\":" + getEncapsulation().getCode() +
+				",\"fecRtp\":" + getFecRtp().getCode() +
 				",\"name\":" + '\"' + name + '\"' +
-				",\"passphrase\":" + '\"' + passphrase + '\"' +
-				",\"address\":" + '\"' + address + '\"' +
-				",\"sourceIp\":" + '\"' + sourceIp + '\"' +
+				",\"passphrase\":" + '\"' + getPassphrase() + '\"' +
+				",\"address\":" + '\"' + getAddress() + '\"' +
+				",\"sourceIp\":" + '\"' + getSourceIp() + '\"' +
 				",\"stillImage\":" + '\"' + '\"' +
-				",\"port\":" + port +
-				",\"sourcePort\":" + sourcePort +
-				",\"latency\":" + latency +
-				",\"srtMode\":" + srtMode +
-				",\"srtToUdp\":" + srtToUdp +
-				",\"srtToUdp_address\":" + '\"' + srtToUdpAddress + '\"' +
-				",\"srtToUdp_port\":" + srtToUdpPort +
-				",\"srtToUdp_tos\":" + '\"' + srtToUdpTos + '\"' +
-				",\"srtToUdp_ttl\":" + srtToUdpTtl +
-				",\"strictMode\":" + '\"' + strictMode + '\"' +
-
+				",\"port\":" + getPort() +
+				",\"sourcePort\":" + getSourcePort() +
+				",\"latency\":" + getLatency() +
+				",\"srtMode\":" + getSrtMode().getCode() +
+				",\"srtToUdp\":" + getSrtToUdp() +
+				",\"srtToUdp_address\":" + '\"' + getSrtToUdpAddress() + '\"' +
+				",\"srtToUdp_port\":" + getSrtToUdpPort() +
+				",\"srtToUdp_tos\":" + '\"' + getSrtToUdpTos() + '\"' +
+				",\"srtToUdp_ttl\":" + getSrtToUdpTtl() +
+				",\"strictMode\":" + getStrictMode() +
 				'}';
 	}
 
@@ -606,22 +618,23 @@ public class StreamInfo {
 			case TS_OVER_UDP:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
 						&& Objects.equals(port, that.port)
+						&& Objects.equals(address, that.address)
 						&& Objects.equals(sourceIp, that.sourceIp);
 			case TS_OVER_RTP:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
 						&& Objects.equals(port, that.port)
+						&& Objects.equals(address, that.address)
 						&& Objects.equals(sourceIp, that.sourceIp)
 						&& Objects.equals(fecRtp, that.fecRtp);
 			case TS_OVER_SRT:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
-						&& Objects.equals(port, that.port)
-						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(latency, that.latency)
+						&& Objects.equals(this.srtMode, that.srtMode)
+						&& Objects.equals(passphraseSet, that.passphraseSet)
+						&& Objects.equals(srtToUdp, that.srtToUdp)
 						&& equalsByStreamConversion(o, srtToUDP)
 						&& equalsBySRTMode(o, srtMode)
 						&& equalsByEncrypted(o, encrypted);
@@ -684,8 +697,10 @@ public class StreamInfo {
 						&& Objects.equals(strictMode, that.strictMode);
 			case CALLER:
 			case RENDEZVOUS:
-				return Objects.equals(sourcePort,
-						that.sourcePort);
+				return Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(address, that.address)
+						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(port, that.port);
 			default:
 				return false;
 		}
