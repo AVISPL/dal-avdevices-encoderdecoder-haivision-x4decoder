@@ -6,6 +6,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.monitoringmetric.AudioPairMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
@@ -46,6 +47,7 @@ public class AudioPair {
 	@JsonAlias("sampeRateOut")
 	private Integer sampeRateOut;
 
+	private NormalizeData normalizeData = new NormalizeData();
 	/**
 	 * Retrieves {@code {@link #audioPairMode}}
 	 *
@@ -221,15 +223,19 @@ public class AudioPair {
 			case COMPRESSION:
 				return getCompression();
 			case BITRATE:
-				return getBitrate();
+				return normalizeData.getDataValue(getBitrate());
 			case AV_SYNC_MS:
 				return getAvSyncMs();
 			case DISCONTINUITIES:
 				return getDiscontinuities().toString();
 			case DECODE_ERRORS:
-				return getDecodeErrors();
+				return normalizeData.getDataValue(getDecodeErrors());
+			case LAST_DECODE_ERRORS:
+				return normalizeData.getDataExtraInfo(getDecodeErrors());
 			case OUTPUT_ERRORS:
-				return getOutputErrors();
+				return normalizeData.getDataValue(getOutputErrors());
+			case LAST_OUTPUT_ERRORS:
+				return normalizeData.getDataExtraInfo(getOutputErrors());
 			case SAMPE_RATE_IN:
 				return getSampeRateIn().toString();
 			case SAMPE_RATE_OUT:

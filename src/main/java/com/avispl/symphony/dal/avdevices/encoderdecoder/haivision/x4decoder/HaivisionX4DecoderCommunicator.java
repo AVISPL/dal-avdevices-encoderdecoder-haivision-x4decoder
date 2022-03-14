@@ -408,7 +408,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.ROLE_BASED_ERR,e);
+			throw new ResourceNotReachableException("Retrieve role based error: " + e.getMessage());
 		}
 	}
 
@@ -1295,7 +1295,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	/**
 	 * This method is used to perform decoder control start/ stop/ update
 	 *
-	 * @param decoderInfo list of decoder data
+	 * @param decoderInfo set of decoder config info
 	 * @param controlMethod start/stop/update
 	 * @param controlURL API entry point
 	 * @return decoder info set of decoder config info
@@ -1326,13 +1326,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	/**
 	 * This method is used to perform decoder control start/ stop/ update
 	 *
-	 * @param decoderInfo list of decoder data
+	 * @param stats is the map that store all statistics
+	 * @param advancedControllableProperties is the list that store all controllable properties
+	 * @param decoderInfo set of decoder config info
 	 * @param controlMethod start/stop/update
 	 * @param controlURL API entry point
-	 * @return decoderInfo set of decoder config info
+
 	 */
-	private DecoderInfo performActiveDecoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, DecoderInfo decoderInfo, String controlURL, String controlMethod) {
-		DecoderInfo decoderInfoResult;
+	private void performActiveDecoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, DecoderInfo decoderInfo, String controlURL, String controlMethod) {
 		String decoderID = decoderInfo.getId();
 		String decoderControllingGroup = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH;
 		try {
@@ -1342,15 +1343,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					logger.debug(request);
 				}
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
-				decoderInfoResult = decoderData.getDecoderInfo();
 				if (decoderData == null) {
 					populateActiveControlAfterControlFailed(decoderInfo);
 					addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 							DecoderConstant.OFF, DecoderConstant.ON));
 					throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 				}else{
-					addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
-							DecoderConstant.OFF, DecoderConstant.ON));
+					this.decoderInfoDTOList.set(Integer.parseInt(decoderID), decoderData.getDecoderInfo());
+					this.localDecoderInfoList.set(Integer.parseInt(decoderID), decoderData.getDecoderInfo());
+					populateDecoderControl(stats, advancedControllableProperties, Integer.parseInt(decoderID));
 				}
 			} else {
 				populateActiveControlAfterControlFailed(decoderInfo);
@@ -1364,11 +1365,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					DecoderConstant.OFF, DecoderConstant.ON));
 			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod + DecoderConstant.NEXT_LINE + e.getMessage());
 		}
-		populateActiveControlAfterControlFailed(decoderInfo);
-		addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
-				DecoderConstant.OFF, DecoderConstant.ON));
-		return decoderInfoResult;
 	}
+
 
 	/**
 	 * This method is used to perform decoder control start/ stop/ update
@@ -1550,7 +1548,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		List<String> netWorkTypes = NetworkType.getTypeList();
 
 		// Populate network type control
-		if (multicastAddress.equals(DecoderConstant.ADDRESS_ANY) || sourceIp.equals(DecoderConstant.ADDRESS_ANY)) {
+		if (multicastAddress.equals(DecoderConstant.ADDRESS_ANY) && sourceIp.equals(DecoderConstant.ADDRESS_ANY)) {
 			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.UNI_CAST.getName()));
 		} else {
 			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.MULTI_CAST.getName()));
@@ -2044,8 +2042,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				if (logger.isDebugEnabled()) {
 					logger.debug(request);
 				}
-				System.out.println(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS));
-
 				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), request, StreamDataWrapper.class);
 				if (streamDataWrapper == null) {
 					throw new ResourceNotReachableException(DecoderConstant.CREATE_STREAM_CONTROL_ERR);
@@ -2488,7 +2484,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				System.out.println(request);
 				if (logger.isDebugEnabled()) {
 					logger.debug(request);
 				}
@@ -2515,7 +2510,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				System.out.println(request);
 				if (logger.isDebugEnabled()) {
 					logger.debug(request);
 				}

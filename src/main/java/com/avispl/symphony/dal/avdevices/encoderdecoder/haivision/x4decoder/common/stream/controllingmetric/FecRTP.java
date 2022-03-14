@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 public enum FecRTP {
 
-	DISABLE("disable", 0),
+	DISABLE("Disable", 0),
 	MPEG_PRO_FEC("MPEG PRO FEC", 2);
 
 	private final String name;

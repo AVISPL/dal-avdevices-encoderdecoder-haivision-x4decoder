@@ -6,6 +6,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SRTMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
@@ -45,6 +46,8 @@ public class SRT {
 
 	@JsonAlias("droppedPackets")
 	private String droppedPackets;
+
+	private NormalizeData normalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #lostPackets}}
@@ -216,11 +219,11 @@ public class SRT {
 			case LOST_PACKETS:
 				return getLostPackets();
 			case SENT_ACKS:
-				return getSentAcks();
+				return normalizeData.getValueOnly(getSentAcks());
 			case SENT_NAKS:
-				return getSentNaks();
+				return normalizeData.getValueOnly(getSentNaks());
 			case PATH_MAX_BANDWIDTH:
-				return getPathMaxBandwidth();
+				return normalizeData.getValueOnly(getPathMaxBandwidth());
 			case RTT:
 				return getRtt();
 			case BUFFER:

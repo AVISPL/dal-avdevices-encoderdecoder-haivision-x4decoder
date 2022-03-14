@@ -7,6 +7,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.SourceMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
@@ -43,6 +44,8 @@ public class Source {
 
 	@JsonAlias("DTS")
 	private String dts;
+
+	private NormalizeData normalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #name}}
@@ -198,13 +201,15 @@ public class Source {
 			case COMPRESSION:
 				return getCompression();
 			case BITRATE:
-				return getBitrate();
+				return normalizeData.getDataValue(getBitrate());
 			case PROGRAM_ID:
 				return getProgramId();
 			case RECEIVED_PACKETS:
-				return getReceivedPackets();
+				return normalizeData.getDataValue(getReceivedPackets());
+			case LAST_RECEIVED_PACKETS:
+				return normalizeData.getDataExtraInfo(getReceivedPackets());
 			case RECEIVED_BYTES:
-				return getReceivedBytes();
+				return normalizeData.getValueOnly(getReceivedBytes());
 			case PTS:
 				return getPts();
 			case DTS:

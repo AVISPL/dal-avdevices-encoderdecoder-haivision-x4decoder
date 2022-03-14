@@ -82,11 +82,13 @@ public class DecoderData{
 			case BUFFERING_MODE:
 				return decoderStats.getBufferingMode();
 			case BUFFERING_ADJUSTMENTS:
-				return decoderStats.getBufferingAdjustments();
+				return normalizeData.getDataValue(decoderStats.getBufferingAdjustments());
+			case LAST_BUFFERING_ADJUSTMENTS:
+				return normalizeData.getDataExtraInfo(decoderStats.getBufferingAdjustments());
 			case VIDEO_LATENCY:
-				return decoderStats.getVideoLatency();
+				return normalizeData.getDataValue(decoderStats.getVideoLatency());
 			case STC_TO_PCR_LEAD_TIME:
-				return decoderStats.getStcToPcrLeadTime();
+				return normalizeData.getDataValue(decoderStats.getStcToPcrLeadTime());
 			case VIDEO_ALGORITHM:
 				return decoderStats.getVideoAlgorithm();
 			case VIDEO_PROFILE:
@@ -112,23 +114,47 @@ public class DecoderData{
 			case VIDEO_ENCODER_FORMAT:
 				return decoderStats.getVideoInputResolution();
 			case DISPLAYED_OUTPUT_FRAMES:
-				return decoderStats.getDisplayedOutputFrames();
+				return normalizeData.getDataValue(decoderStats.getDisplayedOutputFrames());
+			case DISPLAYED_OUTPUT_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getDisplayedOutputFrames());
+			case LAST_DISPLAYED_OUTPUT_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getDisplayedOutputFrames());
 			case SKIPPED_OUTPUT_FRAMES:
-				return decoderStats.getSkippedOutputFrames();
+				return normalizeData.getDataValue(decoderStats.getSkippedOutputFrames());
+			case SKIPPED_OUTPUT_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getSkippedOutputFrames());
+			case LAST_SKIPPED_OUTPUT_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getSkippedOutputFrames());
 			case REPLAYED_OUTPUT_FRAMES:
-				return decoderStats.getReplayedOutputFrames();
+				return normalizeData.getDataValue(decoderStats.getReplayedOutputFrames());
+			case REPLAYED_OUTPUT_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getReplayedOutputFrames());
+			case LAST_REPLAYED_OUTPUT_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getReplayedOutputFrames());
 			case AUDIO_STATE:
 				return decoderStats.getAudioState();
 			case AUDIO_SAMPLE_RATE:
-				return decoderStats.getAudioSampleRate();
+				return normalizeData.getDataValue(decoderStats.getAudioSampleRate());
 			case AUDIO_PAIRS_AMOUNT:
 				return decoderStats.getAudioPairsAmount().toString();
 			case AUDIO_DECODED_FRAMES:
-				return decoderStats.getAudioDecodedFrames();
+				return normalizeData.getDataValue(decoderStats.getAudioDecodedFrames());
+			case AUDIO_DECODED_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getAudioDecodedFrames());
+			case LAST_AUDIO_DECODED_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getAudioDecodedFrames());
 			case AUDIO_PLAYED_FRAMES:
-				return decoderStats.getAudioPlayedFrames();
+				return normalizeData.getDataValue(decoderStats.getAudioPlayedFrames());
+			case AUDIO_PLAYED_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getAudioPlayedFrames());
+			case LAST_AUDIO_PLAYED_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getAudioPlayedFrames());
 			case AUDIO_SKIPPED_FRAMES:
-				return decoderStats.getAudioSkippedFrames();
+				return normalizeData.getDataValue(decoderStats.getAudioSkippedFrames());
+			case AUDIO_SKIPPED_FRAMES_PERCENT:
+				return normalizeData.getDataPercentValue(decoderStats.getAudioSkippedFrames());
+			case LAST_AUDIO_SKIPPED_FRAMES:
+				return normalizeData.getDataExtraInfo(decoderStats.getAudioSkippedFrames());
 			case CLOCK_TRACKING_MODE:
 				return decoderStats.getClockTrackingMode();
 			case CLOCK_STATUS:
@@ -136,9 +162,9 @@ public class DecoderData{
 			case CLOCK_RE_SYNC_COUNT:
 				return decoderStats.getClockReSyncCount().toString();
 			case CLOCK_CURRENT_STC:
-				return decoderStats.getClockCurrentStc();
+				return normalizeData.getDataValue(decoderStats.getClockCurrentStc());
 			case CLOCK_STC_AVG:
-				return decoderStats.getClockStcAvg();
+				return normalizeData.getDataValue(decoderStats.getClockStcAvg());
 			case HDR_TYPE_IN:
 				return decoderStats.getHdrTypeIn();
 			case HDR_TYPE:
@@ -150,11 +176,17 @@ public class DecoderData{
 			case HDR_MATRIX_COEFFICIENTS:
 				return decoderStats.getHdrMatrixCoefficients();
 			case TC_RECEIVED_PACKETS:
-				return decoderStats.getTcReceivedPackets();
+				return normalizeData.getDataValue(decoderStats.getTcReceivedPackets());
+			case LAST_TC_RECEIVED_PACKETS:
+				return normalizeData.getDataExtraInfo(decoderStats.getTcReceivedPackets());
 			case TC_OUTPUT_PACKETS:
-				return decoderStats.getTcOutputPackets();
+				return normalizeData.getDataValue(decoderStats.getTcOutputPackets());
+			case LAST_TC_OUTPUT_PACKETS:
+				return normalizeData.getDataExtraInfo(decoderStats.getTcOutputPackets());
 			case TC_FREED_PACKETS:
-				return decoderStats.getTcFreedPackets();
+				return normalizeData.getDataValue(decoderStats.getTcFreedPackets());
+			case LAST_TC_FREED_PACKETS:
+				return normalizeData.getDataExtraInfo(decoderStats.getTcFreedPackets());
 			case MULTI_SYNC_STATUS:
 				return decoderStats.getMultisyncStatus();
 			case MULTI_SYNC_DELAY_ACTUAL:
