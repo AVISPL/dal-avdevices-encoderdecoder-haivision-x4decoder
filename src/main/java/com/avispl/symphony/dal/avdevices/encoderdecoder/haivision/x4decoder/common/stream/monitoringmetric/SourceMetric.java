@@ -15,9 +15,10 @@ public enum SourceMetric {
 
 	// Static metric
 	COMPRESSION("Compression"),
-	BITRATE("Bitrate"),
+	BITRATE("Bitrate(Mbps)"),
 	PROGRAM_ID("ProgramID"),
 	RECEIVED_PACKETS("ReceivedPackets"),
+	LAST_RECEIVED_PACKETS("LastReceivedPackets"),
 	RECEIVED_BYTES("ReceivedBytes"),
 	PTS("PTS"),
 	DTS("DTS");

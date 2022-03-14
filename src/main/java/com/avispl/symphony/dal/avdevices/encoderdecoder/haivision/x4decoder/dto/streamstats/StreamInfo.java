@@ -290,7 +290,7 @@ public class StreamInfo {
 	 */
 	public Integer getLatency() {
 		if (latency == null) {
-			return DecoderConstant.MIN_LATENCY;
+			return DecoderConstant.DEFAULT_LATENCY;
 		}
 		if (latency < DecoderConstant.MIN_LATENCY) {
 			return DecoderConstant.MIN_LATENCY;
@@ -521,6 +521,11 @@ public class StreamInfo {
 		if (srtToUdpTtl == null) {
 			return 64;
 		}
+		if (srtToUdpTtl < DecoderConstant.MIN_TTL) {
+			return DecoderConstant.MIN_TTL;
+		} else if (srtToUdpTtl > DecoderConstant.MAX_TTL) {
+			return DecoderConstant.MAX_TTL;
+		}
 		return srtToUdpTtl;
 	}
 
@@ -541,7 +546,7 @@ public class StreamInfo {
 	public FecRTP getFecRtp() {
 		if (this.fecRtp != null) {
 			for (FecRTP fecRTP : FecRTP.values()) {
-				if (fecRTP.getCode().equals(this.encapsulation)) {
+				if (fecRTP.getCode().equals(this.fecRtp)) {
 					return fecRTP;
 				}
 			}

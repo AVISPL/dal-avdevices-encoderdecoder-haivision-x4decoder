@@ -6,6 +6,7 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.NormalizeData;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric.StreamMonitoringMetric;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 
@@ -24,6 +25,8 @@ public class Stream {
 
 	@JsonAlias("stats")
 	private StreamStats streamStats;
+
+	private NormalizeData normalizeData = new NormalizeData();
 
 	/**
 	 * Retrieves {@code {@link #streamInfo}}
@@ -80,27 +83,37 @@ public class Stream {
 			case SOURCE_ADDRESS:
 				return streamStats.getSourceAddress();
 			case BIT_RATE:
-				return streamStats.getBitRate();
+				return normalizeData.getDataValue(streamStats.getBitRate());
 			case CONNECTIONS:
-				return streamStats.getConnections();
+				return normalizeData.getDataValue(streamStats.getConnections());
+			case LAST_CONNECTIONS:
+				return normalizeData.getDataExtraInfo(streamStats.getConnections());
 			case RECEIVED_PACKET:
-				return streamStats.getReceivedPackets();
+				return normalizeData.getValueOnly(streamStats.getReceivedPackets());
 			case RECEIVED_BYTES:
-				return streamStats.getReceivedBytes();
+				return normalizeData.getValueOnly(streamStats.getReceivedBytes());
 			case OUTPUT_PACKETS:
-				return streamStats.getOutputPackets();
+				return normalizeData.getDataValue(streamStats.getOutputPackets());
+			case LAST_OUTPUT_PACKETS:
+				return normalizeData.getDataExtraInfo(streamStats.getOutputPackets());
 			case PROGRAM_NUMBER:
 				return streamStats.getProgramNumber();
 			case PCR_PID:
 				return streamStats.getPcrPid();
 			case ERROR_DROPPED_PACKETS:
-				return streamStats.getDroppedPackets();
+				return normalizeData.getDataValue(streamStats.getDroppedPackets());
+			case ERROR_LAST_DROPPED_PACKETS:
+				return normalizeData.getDataExtraInfo(streamStats.getDroppedPackets());
 			case ERROR_CORRUPTED_FRAMES:
-				return streamStats.getCorruptedFrames();
+				return normalizeData.getDataValue(streamStats.getCorruptedFrames());
+			case ERROR_LAST_CORRUPTED_FRAMES:
+				return normalizeData.getDataExtraInfo(streamStats.getCorruptedFrames());
 			case ERROR_RESTARTS:
-				return streamStats.getResumedStreamFlags();
+				return normalizeData.getDataValue(streamStats.getResumedStreamFlags());
+			case ERROR_LAST_RESTARTS:
+				return normalizeData.getDataExtraInfo(streamStats.getResumedStreamFlags());
 			case OUTPUT_BYTES:
-				return streamStats.getOutputBytes();
+				return normalizeData.getValueOnly(streamStats.getOutputBytes());
 			case LAST_RECEIVED:
 				return streamStats.getLastReceived();
 			case STREAM_SUMMARY:

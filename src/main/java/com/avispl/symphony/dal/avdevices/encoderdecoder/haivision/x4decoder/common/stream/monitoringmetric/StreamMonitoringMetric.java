@@ -20,19 +20,24 @@ public enum StreamMonitoringMetric {
 	ENCAPSULATION("GeneralEncapsulation"),
 	STATE("GeneralStreamStatus"),
 	SOURCE_ADDRESS("GeneralSourceAddress"),
-	BIT_RATE("GeneralBitRate"),
+	BIT_RATE("GeneralBitRate(Mbps)"),
 	CONNECTIONS("GeneralConnections"),
+	LAST_CONNECTIONS("GeneralLastConnections"),
 	RECEIVED_PACKET("GeneralReceivedPacket"),
 	RECEIVED_BYTES("GeneralReceivedBytes"),
 	LAST_RECEIVED("GeneralLastReceived"),
 	OUTPUT_PACKETS("GeneralOutputPackets"),
+	LAST_OUTPUT_PACKETS("GeneralLastOutputPackets"),
 	OUTPUT_BYTES("GeneralOutputBytes"),
 	PROGRAM_NUMBER("GeneralProgramNumber"),
 	PCR_PID("GeneralPcrPid"),
 	STREAM_SUMMARY("GeneralStreamSummary"),
 	ERROR_CORRUPTED_FRAMES("ErrorCorruptedFrames"),
+	ERROR_LAST_CORRUPTED_FRAMES("ErrorLastCorruptedFrames"),
 	ERROR_DROPPED_PACKETS("ErrorDroppedPackets"),
-	ERROR_RESTARTS("ErrorResumedStreamFlags");
+	ERROR_LAST_DROPPED_PACKETS("ErrorLastDroppedPackets"),
+	ERROR_RESTARTS("ErrorResumedStreamFlags"),
+	ERROR_LAST_RESTARTS("ErrorLastResumedStreamFlags");
 
 	private final String name;
 
