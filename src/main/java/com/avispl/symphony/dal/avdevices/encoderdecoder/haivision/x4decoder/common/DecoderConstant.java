@@ -16,7 +16,9 @@ public class DecoderConstant {
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
 	public static final String COMMA = ",";
+	public static final String COLON = ":";
 	public static final String RIGHT_PARENTHESES = ")";
+	public static final String LEFT_PARENTHESES = "(";
 	public static final String DASH = "-";
 	public static final String SPACE =  " ";
 	public static final String EMPTY = "";

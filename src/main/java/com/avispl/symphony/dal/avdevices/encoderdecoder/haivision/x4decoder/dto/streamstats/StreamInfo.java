@@ -87,6 +87,8 @@ public class StreamInfo {
 
 	private NetworkType netWorkType;
 
+	private String defaultStreamName;
+
 	public StreamInfo() {
 	}
 
@@ -573,6 +575,25 @@ public class StreamInfo {
 	}
 
 	/**
+	 * Retrieves {@code {@link #defaultStreamName}}
+	 *
+	 * @return value of {@link #defaultStreamName}
+	 */
+	public String getDefaultStreamName() {
+		return getEncapsulation().getName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
+				DecoderConstant.COLON + DecoderConstant.LEFT_PARENTHESES + getPort() + DecoderConstant.RIGHT_PARENTHESES;
+	}
+
+	/**
+	 * Sets {@code defaultStreamName}
+	 *
+	 * @param defaultStreamName the {@code java.lang.String} field
+	 */
+	public void setDefaultStreamName(String defaultStreamName) {
+		this.defaultStreamName = defaultStreamName;
+	}
+
+	/**
 	 * Sets {@code fecRtp}
 	 *
 	 * @param fecRtp the {@code java.lang.String} field
@@ -701,10 +722,11 @@ public class StreamInfo {
 				return Objects.equals(port, that.port)
 						&& Objects.equals(strictMode, that.strictMode);
 			case CALLER:
-			case RENDEZVOUS:
-				return Objects.equals(sourcePort, that.sourcePort)
-						&& Objects.equals(address, that.address)
+				return Objects.equals(address, that.address)
 						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(port, that.port);
+			case RENDEZVOUS:
+				return Objects.equals(address, that.address)
 						&& Objects.equals(port, that.port);
 			default:
 				return false;

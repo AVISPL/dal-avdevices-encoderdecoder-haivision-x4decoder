@@ -158,12 +158,6 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Test
 	void testSetOutputControl() {
 		ControllableProperty controllableProperty = new ControllableProperty();
-		controllableProperty.setProperty("Decoder0" + "#Active");
-		controllableProperty.setValue("1");
-
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
-
 		controllableProperty.setProperty("Decoder0" + "#Output2");
 		controllableProperty.setValue("1");
 
@@ -229,23 +223,11 @@ public class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
 
-		controllableProperty.setProperty("CreateStream" + "#Latency");
-		controllableProperty.setValue("200");
-
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
-
-		controllableProperty.setProperty("CreateStream" + "#Create");
-		controllableProperty.setValue("1");
-
-		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
-		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
-
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
 		String decoderControllingGroup = ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH;
-		Assertions.assertEquals("TS over UDP", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
+		Assertions.assertEquals("TS over SRT", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
 	}
 
 	/**
@@ -311,7 +293,7 @@ public class HaivisionX4DecoderCommunicatorTest {
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
 		String decoderControllingGroup = ControllingMetricGroup.STREAM.getName() + "harry-test" +DecoderConstant.HASH;
-		Assertions.assertEquals("TS over SRT", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
+		Assertions.assertEquals("TS over RTP", stats.get(decoderControllingGroup + StreamControllingMetric.ENCAPSULATION.getName()));
 	}
 
 	/**
