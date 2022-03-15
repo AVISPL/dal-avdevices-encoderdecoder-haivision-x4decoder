@@ -19,7 +19,7 @@ public class DropdownList {
 	 *
 	 * @param enumType the enumtype is enum class
 	 */
-	public static <T extends Enum<T>> List<String> Names(Class<T> enumType) {
+	public static <T extends Enum<T>> List<String> names(Class<T> enumType) {
 		List<String> names = new ArrayList<>();
 		for (T c : enumType.getEnumConstants()) {
 			try {

@@ -5,7 +5,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric;
 
 /**
- * Set of SRT monitoring metrics keys
+ * Set of source monitoring metrics keys
  *
  * @author Harry / Symphony Dev Team<br>
  * Created on 3/8/2022
@@ -15,9 +15,10 @@ public enum SourceMetric {
 
 	// Static metric
 	COMPRESSION("Compression"),
-	BITRATE("Bitrate"),
+	BITRATE("Bitrate(Mbps)"),
 	PROGRAM_ID("ProgramID"),
 	RECEIVED_PACKETS("ReceivedPackets"),
+	LAST_RECEIVED_PACKETS("LastReceivedPackets"),
 	RECEIVED_BYTES("ReceivedBytes"),
 	PTS("PTS"),
 	DTS("DTS");
