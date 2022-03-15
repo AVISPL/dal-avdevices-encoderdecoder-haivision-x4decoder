@@ -1032,6 +1032,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				addAdvanceControlProperties(advancedControllableProperties,
 						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
 				break;
+			default:
+				break;
 		}
 	}
 
@@ -1478,6 +1480,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 
 		// Populate apply change and cancel button
@@ -1520,6 +1524,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 		// Populate cancel button
 		populateCancelButtonForCreateStream(stats, advancedControllableProperties);
@@ -1617,6 +1623,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case RENDEZVOUS:
 				populateStreamControlCaseTSOverSRTRendezvous(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 		populateStreamControlCaseTSOverSRTStreamConversion(stats, advancedControllableProperties, streamInfo, streamGroup);
 		populateStreamControlCaseTSOverSRTEncrypted(stats, advancedControllableProperties, streamInfo, streamGroup);
