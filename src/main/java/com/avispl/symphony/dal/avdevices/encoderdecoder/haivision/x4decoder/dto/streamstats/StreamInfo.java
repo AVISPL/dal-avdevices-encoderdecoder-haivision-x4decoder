@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
 
 /**
@@ -83,8 +82,6 @@ public class StreamInfo {
 
 	@JsonAlias("fecRtp")
 	private Integer fecRtp;
-
-	private NetworkType netWorkType;
 
 	public StreamInfo() {
 	}
@@ -220,6 +217,9 @@ public class StreamInfo {
 	 * @return value of {@link #address}
 	 */
 	public String getAddress() {
+		if (address == null){
+			return DecoderConstant.EMPTY;
+		}
 		return address;
 	}
 
@@ -264,6 +264,9 @@ public class StreamInfo {
 	 * @return value of {@link #sourceIp}
 	 */
 	public String getSourceIp() {
+		if (sourceIp == null){
+			return DecoderConstant.EMPTY;
+		}
 		return sourceIp;
 	}
 
@@ -283,7 +286,7 @@ public class StreamInfo {
 	 */
 	public Integer getLatency() {
 		if (latency == null) {
-			return DecoderConstant.MIN_LATENCY;
+			return DecoderConstant.DEFAULT_LATENCY;
 		}
 		if (latency < DecoderConstant.MIN_LATENCY) {
 			return DecoderConstant.MIN_LATENCY;
@@ -380,6 +383,9 @@ public class StreamInfo {
 	 * @return value of {@link #passphrase}
 	 */
 	public String getPassphrase() {
+		if (passphrase == null){
+			return DecoderConstant.EMPTY;
+		}
 		return passphrase;
 	}
 
@@ -440,6 +446,9 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpAddress}
 	 */
 	public String getSrtToUdpAddress() {
+		if (srtToUdpAddress == null){
+			return DecoderConstant.EMPTY;
+		}
 		return srtToUdpAddress;
 	}
 
@@ -508,6 +517,11 @@ public class StreamInfo {
 		if (srtToUdpTtl == null) {
 			return 64;
 		}
+		if (srtToUdpTtl < DecoderConstant.MIN_TTL) {
+			return DecoderConstant.MIN_TTL;
+		} else if (srtToUdpTtl > DecoderConstant.MAX_TTL) {
+			return DecoderConstant.MAX_TTL;
+		}
 		return srtToUdpTtl;
 	}
 
@@ -528,7 +542,7 @@ public class StreamInfo {
 	public FecRTP getFecRtp() {
 		if (this.fecRtp != null) {
 			for (FecRTP fecRTP : FecRTP.values()) {
-				if (fecRTP.getCode().equals(this.encapsulation)) {
+				if (fecRTP.getCode().equals(this.fecRtp)) {
 					return fecRTP;
 				}
 			}
@@ -537,21 +551,13 @@ public class StreamInfo {
 	}
 
 	/**
-	 * Retrieves {@code {@link #netWorkType}}
+	 * Retrieves default stream name when stream name is empty
 	 *
-	 * @return value of {@link #netWorkType}
+	 * @return String default stream name
 	 */
-	public NetworkType getNetWorkType() {
-		return netWorkType;
-	}
-
-	/**
-	 * Sets {@code netWorkType}
-	 *
-	 * @param netWorkType the {@code com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetWorkType} field
-	 */
-	public void setNetWorkType(NetworkType netWorkType) {
-		this.netWorkType = netWorkType;
+	public String getDefaultStreamName() {
+		return getEncapsulation().getName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
+				DecoderConstant.COLON + DecoderConstant.LEFT_PARENTHESES + getPort() + DecoderConstant.RIGHT_PARENTHESES;
 	}
 
 	/**
@@ -569,25 +575,44 @@ public class StreamInfo {
 	 * @return String json request body
 	 */
 	public String jsonRequest() {
+		if (getPassphraseSet() && !getPassphrase().isEmpty()) {
+			return '{' +
+					"\"encapsulation\":" + getEncapsulation().getCode() +
+					",\"fecRtp\":" + getFecRtp().getCode() +
+					",\"name\":" + '\"' + name + '\"' +
+					",\"passphrase\":" + '\"' + getPassphrase() + '\"' +
+					",\"address\":" + '\"' + getAddress() + '\"' +
+					",\"sourceIp\":" + '\"' + getSourceIp() + '\"' +
+					",\"stillImage\":" + '\"' + '\"' +
+					",\"port\":" + getPort() +
+					",\"sourcePort\":" + getSourcePort() +
+					",\"latency\":" + getLatency() +
+					",\"srtMode\":" + getSrtMode().getCode() +
+					",\"srtToUdp\":" + getSrtToUdp() +
+					",\"srtToUdp_address\":" + '\"' + getSrtToUdpAddress() + '\"' +
+					",\"srtToUdp_port\":" + getSrtToUdpPort() +
+					",\"srtToUdp_tos\":" + '\"' + getSrtToUdpTos() + '\"' +
+					",\"srtToUdp_ttl\":" + getSrtToUdpTtl() +
+					",\"strictMode\":" + getStrictMode() +
+					'}';
+		}
 		return '{' +
-				"\"encapsulation\":" + encapsulation +
-				",\"fecRtp\":" + fecRtp +
+				"\"encapsulation\":" + getEncapsulation().getCode() +
+				",\"fecRtp\":" + getFecRtp().getCode() +
 				",\"name\":" + '\"' + name + '\"' +
-				",\"passphrase\":" + '\"' + passphrase + '\"' +
-				",\"address\":" + '\"' + address + '\"' +
-				",\"sourceIp\":" + '\"' + sourceIp + '\"' +
+				",\"address\":" + '\"' + getAddress() + '\"' +
+				",\"sourceIp\":" + '\"' + getSourceIp() + '\"' +
 				",\"stillImage\":" + '\"' + '\"' +
-				",\"port\":" + port +
-				",\"sourcePort\":" + sourcePort +
-				",\"latency\":" + latency +
-				",\"srtMode\":" + srtMode +
-				",\"srtToUdp\":" + srtToUdp +
-				",\"srtToUdp_address\":" + '\"' + srtToUdpAddress + '\"' +
-				",\"srtToUdp_port\":" + srtToUdpPort +
-				",\"srtToUdp_tos\":" + '\"' + srtToUdpTos + '\"' +
-				",\"srtToUdp_ttl\":" + srtToUdpTtl +
-				",\"strictMode\":" + '\"' + strictMode + '\"' +
-
+				",\"port\":" + getPort() +
+				",\"sourcePort\":" + getSourcePort() +
+				",\"latency\":" + getLatency() +
+				",\"srtMode\":" + getSrtMode().getCode() +
+				",\"srtToUdp\":" + getSrtToUdp() +
+				",\"srtToUdp_address\":" + '\"' + getSrtToUdpAddress() + '\"' +
+				",\"srtToUdp_port\":" + getSrtToUdpPort() +
+				",\"srtToUdp_tos\":" + '\"' + getSrtToUdpTos() + '\"' +
+				",\"srtToUdp_ttl\":" + getSrtToUdpTtl() +
+				",\"strictMode\":" + getStrictMode() +
 				'}';
 	}
 
@@ -606,22 +631,23 @@ public class StreamInfo {
 			case TS_OVER_UDP:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
 						&& Objects.equals(port, that.port)
+						&& Objects.equals(address, that.address)
 						&& Objects.equals(sourceIp, that.sourceIp);
 			case TS_OVER_RTP:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
 						&& Objects.equals(port, that.port)
+						&& Objects.equals(address, that.address)
 						&& Objects.equals(sourceIp, that.sourceIp)
 						&& Objects.equals(fecRtp, that.fecRtp);
 			case TS_OVER_SRT:
 				return Objects.equals(name, that.name)
 						&& Objects.equals(this.encapsulation, that.encapsulation)
-						&& Objects.equals(address, that.address)
-						&& Objects.equals(port, that.port)
-						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(latency, that.latency)
+						&& Objects.equals(this.srtMode, that.srtMode)
+						&& Objects.equals(passphraseSet, that.passphraseSet)
+						&& Objects.equals(srtToUdp, that.srtToUdp)
 						&& equalsByStreamConversion(o, srtToUDP)
 						&& equalsBySRTMode(o, srtMode)
 						&& equalsByEncrypted(o, encrypted);
@@ -683,9 +709,12 @@ public class StreamInfo {
 				return Objects.equals(port, that.port)
 						&& Objects.equals(strictMode, that.strictMode);
 			case CALLER:
+				return Objects.equals(address, that.address)
+						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(port, that.port);
 			case RENDEZVOUS:
-				return Objects.equals(sourcePort,
-						that.sourcePort);
+				return Objects.equals(address, that.address)
+						&& Objects.equals(port, that.port);
 			default:
 				return false;
 		}

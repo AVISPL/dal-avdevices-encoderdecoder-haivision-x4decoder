@@ -38,7 +38,7 @@ public enum ControllingMetricGroup {
 	}
 
 	/**
-	 * This method is used to get controlling metric by name
+	 * This method is used to get controlling metric group by name
 	 *
 	 * @param name is the name of controlling metric that want to get
 	 * @return ControllingMetric is the controlling metric group that want to get
