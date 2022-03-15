@@ -1308,9 +1308,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = decoderInfo.jsonRequest();
 				String decoderID = decoderInfo.getId();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
 				if (decoderData == null) {
 					throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
@@ -1319,7 +1316,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod + DecoderConstant.NEXT_LINE + e.getMessage());
+			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod, e);
 		}
 		return true;
 	}
@@ -1337,7 +1334,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//endregion
 
-	//region Populate stream control
+	//region Populate create stream and stream control
 	//--------------------------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -1374,6 +1371,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 
 		// Populate apply change and cancel button
@@ -1416,6 +1415,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 		// Populate cancel button
 		populateCancelButtonForCreateStream(stats, advancedControllableProperties);
@@ -1513,6 +1514,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case RENDEZVOUS:
 				populateStreamControlCaseTSOverSRTRendezvous(stats, advancedControllableProperties, streamInfo, streamGroup);
+			default:
+				break;
 		}
 		populateStreamControlCaseTSOverSRTStreamConversion(stats, advancedControllableProperties, streamInfo, streamGroup);
 		populateStreamControlCaseTSOverSRTEncrypted(stats, advancedControllableProperties, streamInfo, streamGroup);
@@ -1663,19 +1666,29 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param streamID ID of stream
 	 */
 	private void populateApplyChangeAndCancelButtonForStream(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer streamID) {
-		Optional<StreamInfo> streamInfoDTO = this.streamInfoDTOList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
-		Optional<StreamInfo> streamInfo = this.localStreamInfoList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
-		Encapsulation encapsulation = streamInfoDTO.get().getEncapsulation();
-		SRTMode srtMode = streamInfoDTO.get().getSrtMode();
-		Boolean encrypted = streamInfoDTO.get().getPassphraseSet();
-		Boolean srtToUDP = streamInfoDTO.get().getSrtToUdp();
+		Optional<StreamInfo> streamInfoDTOOptional = this.streamInfoDTOList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
+		Optional<StreamInfo> streamInfoOptional = this.localStreamInfoList.stream().filter(st -> streamID.equals(st.getId())).findFirst();
 
-		if (streamInfo.isPresent()) {
-			String applyChange = ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.APPLY_CHANGE.getName();
-			String cancel = ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
+		StreamInfo streamInfoDTO = defaultStream();
+		StreamInfo streamInfo = defaultStream();
 
-			if (!streamInfo.get().equalsByProtocol(streamInfoDTO.get(), encapsulation, srtMode, encrypted, srtToUDP)) {
-				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
+		if (streamInfoDTOOptional.isPresent()){
+			streamInfo = streamInfoDTOOptional.get();
+		}
+		if (streamInfoOptional.isPresent()){
+			streamInfo = streamInfoOptional.get();
+		}
+		Encapsulation encapsulation = streamInfoDTO.getEncapsulation();
+		SRTMode srtMode = streamInfoDTO.getSrtMode();
+		Boolean encrypted = streamInfoDTO.getPassphraseSet();
+		Boolean srtToUDP = streamInfoDTO.getSrtToUdp();
+
+		if (streamInfoOptional.isPresent()) {
+			String applyChange = ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.APPLY_CHANGE.getName();
+			String cancel = ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
+
+			if (!streamInfo.equalsByProtocol(streamInfoDTO, encapsulation, srtMode, encrypted, srtToUDP)) {
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
 				stats.put(applyChange, DecoderConstant.EMPTY);
 				stats.put(cancel, DecoderConstant.EMPTY);
 				addAdvanceControlProperties(advancedControllableProperties, createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
@@ -1683,7 +1696,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			} else {
 				stats.remove(applyChange);
 				stats.remove(cancel);
-				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.get().getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
 
 				for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
 					if (controllableProperty.getName().equals(applyChange)) {
@@ -1867,6 +1880,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
 			case SRT_MODE:
 				SRTMode srtMode = SRTMode.getByName(value);
 				removeUnusedStatsAndControlBySRTMode(stats, advancedControllableProperties, createStream, streamControllingGroup);
@@ -1970,9 +1984,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				System.out.println(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS));
 
 				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), request, StreamDataWrapper.class);
@@ -1985,7 +1996,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR + e.getMessage());
+			throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR, e);
 		}
 		return streamInfoResult;
 	}
@@ -2284,6 +2295,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
+				break;
 			case SRT_MODE:
 				SRTMode srtMode = SRTMode.getByName(value);
 				removeUnusedStatsAndControlBySRTMode(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
@@ -2403,20 +2415,17 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS + DecoderConstant.SLASH + streamID), request, StreamDataWrapper.class);
 				if (streamDataWrapper == null) {
-					throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+					throw new ResourceNotReachableException(DecoderConstant.STREAM_CONTROL_ERR);
 				} else {
 					isCreatedStreamControl = true;
 				}
 			} else {
-				throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR);
+				throw new ResourceNotReachableException(DecoderConstant.STREAM_CONTROL_ERR);
 			}
 		} catch (Exception e) {
-			throw new ResourceNotReachableException(DecoderConstant.CREATE_CONTROL_ERR + e.getMessage());
+			throw new ResourceNotReachableException(DecoderConstant.STREAM_CONTROL_ERR, e);
 		}
 		return streamInfoResult;
 	}

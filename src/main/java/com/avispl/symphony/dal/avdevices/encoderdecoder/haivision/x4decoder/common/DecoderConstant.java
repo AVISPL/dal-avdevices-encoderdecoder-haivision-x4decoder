@@ -31,6 +31,7 @@ public class DecoderConstant {
 	public static final String PORT_NUMBER_ERROR = "Invalid port number";
 	public static final String DECODER_CONTROL_ERR = "Failed to control decoder: ";
 	public static final String CREATE_CONTROL_ERR = "Failed to create stream: ";
+	public static final String STREAM_CONTROL_ERR = "Failed to control stream: ";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String OPERATOR_ROLE = "Operator";
