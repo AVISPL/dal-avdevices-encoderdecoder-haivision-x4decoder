@@ -1339,9 +1339,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = decoderInfo.jsonRequest();
 				String decoderID = decoderInfo.getId();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
 				decoderInfoResult = decoderData.getDecoderInfo();
 				if (decoderData == null) {
@@ -1438,7 +1435,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//endregion
 
-	//region Populate stream control
+	//region Populate create stream and stream control
 	//--------------------------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -1792,7 +1789,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		Boolean encrypted = streamInfoDTO.getPassphraseSet();
 		Boolean srtToUDP = streamInfoDTO.getSrtToUdp();
 
-
 		if (streamInfoOptional.isPresent()) {
 			String streamName =  streamInfo.getName();
 			if(StringUtils.isNullOrEmpty(streamName)){
@@ -2087,9 +2083,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				StreamDataWrapper streamDataWrapper = doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS), request, StreamDataWrapper.class);
 				if (streamDataWrapper == null) {
 					throw new ResourceNotReachableException(DecoderConstant.CREATE_STREAM_CONTROL_ERR);
@@ -2540,9 +2533,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() != null) {
 				String request = streamInfo.jsonRequest();
-				if (logger.isDebugEnabled()) {
-					logger.debug(request);
-				}
 				StreamDataWrapper streamDataWrapper = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.STREAMS + DecoderConstant.SLASH + streamID), request, StreamDataWrapper.class);
 				if (streamDataWrapper == null) {
 					throw new ResourceNotReachableException(DecoderConstant.APPLY_CHANGE_STREAM_CONTROL_ERR);
