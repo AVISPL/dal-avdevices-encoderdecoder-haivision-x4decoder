@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Set of decoder controlling metric keys
+ * Set of stream controlling metric keys
  *
  * @author Harry / Symphony Dev Team<br>
  * Created on 3/8/2022

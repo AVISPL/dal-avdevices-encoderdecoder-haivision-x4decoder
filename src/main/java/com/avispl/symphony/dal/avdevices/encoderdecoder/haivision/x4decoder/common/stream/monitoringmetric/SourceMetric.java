@@ -5,7 +5,7 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.monitoringmetric;
 
 /**
- * Set of SRT monitoring metrics keys
+ * Set of source monitoring metrics keys
  *
  * @author Harry / Symphony Dev Team<br>
  * Created on 3/8/2022
