@@ -575,7 +575,7 @@ public class StreamInfo {
 	 * @return String json request body
 	 */
 	public String jsonRequest() {
-		if (passphraseSet && !passphrase.isEmpty()) {
+		if (getPassphraseSet() && !getPassphrase().isEmpty()) {
 			return '{' +
 					"\"encapsulation\":" + getEncapsulation().getCode() +
 					",\"fecRtp\":" + getFecRtp().getCode() +
