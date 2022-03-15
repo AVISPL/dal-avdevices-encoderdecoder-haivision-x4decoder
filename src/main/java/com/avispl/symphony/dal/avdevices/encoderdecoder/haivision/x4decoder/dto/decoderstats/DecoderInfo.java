@@ -340,6 +340,9 @@ public class DecoderInfo {
 	 * @return value of {@link #bufferingDelay}
 	 */
 	public Integer getBufferingDelay() {
+		if (bufferingDelay == null){
+			return DecoderConstant.MIN_BUFFERING_DELAY;
+		}
 		if (bufferingDelay < DecoderConstant.MIN_BUFFERING_DELAY) {
 			return DecoderConstant.MIN_BUFFERING_DELAY;
 		} else if (bufferingDelay > DecoderConstant.MAX_BUFFERING_DELAY) {
