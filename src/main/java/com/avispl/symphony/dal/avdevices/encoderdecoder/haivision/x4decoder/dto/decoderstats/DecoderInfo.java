@@ -253,6 +253,9 @@ public class DecoderInfo {
 	 * @return value of {@link #stillImageDelay}
 	 */
 	public Integer getStillImageDelay() {
+		if (stillImageDelay == null){
+			return DecoderConstant.MIN_STILL_IMAGE_DELAY;
+		}
 		if (stillImageDelay < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
 			return DecoderConstant.MIN_STILL_IMAGE_DELAY;
 		} else if (stillImageDelay > DecoderConstant.MAX_STILL_IMAGE_DELAY) {
@@ -260,7 +263,6 @@ public class DecoderInfo {
 		}
 		return stillImageDelay;
 	}
-
 
 	/**
 	 * Sets {@code stillImageDelay}
@@ -361,6 +363,9 @@ public class DecoderInfo {
 	 * @return value of {@link #multisyncBufferingDelay}
 	 */
 	public Integer getMultisyncBufferingDelay() {
+		if(multisyncBufferingDelay == null){
+			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY;
+		}
 		if (multisyncBufferingDelay < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
 			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY;
 		} else if (multisyncBufferingDelay > DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY) {
