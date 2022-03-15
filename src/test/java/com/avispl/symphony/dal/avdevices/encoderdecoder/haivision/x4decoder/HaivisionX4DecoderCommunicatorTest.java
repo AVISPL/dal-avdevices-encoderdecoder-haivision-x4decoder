@@ -303,10 +303,15 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Test
 	void testStreamControlStreamName() {
 		ControllableProperty controllableProperty = new ControllableProperty();
-		controllableProperty.setProperty("StreamSRT - WAN Listen (6518)" + "#SrtToUdpStreamConversion");
+		controllableProperty.setProperty("StreamSRT - WAN Listen (6516)" + "#SrtToUdpStreamConversion");
 		controllableProperty.setValue("0");
 
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+
+		controllableProperty.setProperty("StreamSRT - WAN Listen (6516)" + "#ApplyChange");
+		controllableProperty.setValue("0");
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
 
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
