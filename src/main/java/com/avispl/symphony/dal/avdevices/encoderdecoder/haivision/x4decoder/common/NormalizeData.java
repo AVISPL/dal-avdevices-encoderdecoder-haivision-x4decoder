@@ -97,7 +97,6 @@ public class NormalizeData {
 		if(data == null){
 			return DecoderConstant.EMPTY;
 		}
-		StringBuilder stringBuilder = new StringBuilder();
 		String[] spiltDataList = data.split(DecoderConstant.SPACE, 3);
 		return spiltDataList[1].replaceAll("[^0-9?!\\.]", DecoderConstant.EMPTY);
 	}

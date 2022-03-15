@@ -87,8 +87,6 @@ public class StreamInfo {
 
 	private NetworkType netWorkType;
 
-	private String defaultStreamName;
-
 	public StreamInfo() {
 	}
 
@@ -575,22 +573,13 @@ public class StreamInfo {
 	}
 
 	/**
-	 * Retrieves {@code {@link #defaultStreamName}}
+	 * Retrieves default stream name when stream name is empty
 	 *
-	 * @return value of {@link #defaultStreamName}
+	 * @return String default stream name
 	 */
 	public String getDefaultStreamName() {
 		return getEncapsulation().getName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
 				DecoderConstant.COLON + DecoderConstant.LEFT_PARENTHESES + getPort() + DecoderConstant.RIGHT_PARENTHESES;
-	}
-
-	/**
-	 * Sets {@code defaultStreamName}
-	 *
-	 * @param defaultStreamName the {@code java.lang.String} field
-	 */
-	public void setDefaultStreamName(String defaultStreamName) {
-		this.defaultStreamName = defaultStreamName;
 	}
 
 	/**
