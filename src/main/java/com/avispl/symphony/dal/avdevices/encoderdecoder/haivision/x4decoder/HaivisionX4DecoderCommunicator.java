@@ -1772,12 +1772,17 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		Boolean encrypted = streamInfoDTO.getPassphraseSet();
 		Boolean srtToUDP = streamInfoDTO.getSrtToUdp();
 
+
 		if (streamInfoOptional.isPresent()) {
-			String applyChange = ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.APPLY_CHANGE.getName();
-			String cancel = ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
+			String streamName =  streamInfo.getName();
+			if(StringUtils.isNullOrEmpty(streamName)){
+				streamName = streamInfo.getDefaultStreamName();
+			}
+			String applyChange = ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH + StreamControllingMetric.APPLY_CHANGE.getName();
+			String cancel = ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH + StreamControllingMetric.CANCEL.getName();
 
 			if (!streamInfo.equalsByProtocol(streamInfoDTO, encapsulation, srtMode, encrypted, srtToUDP)) {
-				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "True");
 				stats.put(applyChange, DecoderConstant.EMPTY);
 				stats.put(cancel, DecoderConstant.EMPTY);
 				addAdvanceControlProperties(advancedControllableProperties, createButton(applyChange, DecoderConstant.APPLY, DecoderConstant.APPLYING));
@@ -1785,7 +1790,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			} else {
 				stats.remove(applyChange);
 				stats.remove(cancel);
-				stats.put(ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
+				stats.put(ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH + StreamControllingMetric.EDITED.getName(), "False");
 
 				for (AdvancedControllableProperty controllableProperty : advancedControllableProperties) {
 					if (controllableProperty.getName().equals(applyChange)) {
@@ -2461,8 +2466,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			case APPLY_CHANGE:
 				StreamInfo controlResult = performStreamControl(streamInfo);
 				if (controlResult != null) {
-					this.localStreamInfoList.set(streamIndex, controlResult);
-					this.streamInfoDTOList.set(streamIndex, controlResult);
 					populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
 				}
 				break;
