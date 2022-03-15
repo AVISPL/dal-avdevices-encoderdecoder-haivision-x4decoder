@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,18 +49,6 @@ public enum SRTMode {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of srt mode
-	 */
-	public static List<String> getSRTModeList() {
-		List<String> list = new LinkedList<>();
-		for (SRTMode srtMode : SRTMode.values()) {
-			list.add(srtMode.getName());
-		}
-		return list;
 	}
 
 	/**

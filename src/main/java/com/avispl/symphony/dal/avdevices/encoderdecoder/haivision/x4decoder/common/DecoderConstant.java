@@ -47,7 +47,6 @@ public class DecoderConstant {
 	public static final String MINUTE = " minute(s) ";
 	public static final String SECOND = " second(s) ";
 	public static final String AUDIO_PAIR = "Decoder Audio Pair";
-	public static final String DEFAULT_STREAM_ID = "-1";
 	public static final String ENABLE = "Enable";
 	public static final String DISABLE = "Disable";
 	public static final String ON = "On";
@@ -77,4 +76,5 @@ public class DecoderConstant {
 	public static final Integer DEFAULT_LATENCY = 125;
 	public static final Integer MIN_TTL = 1;
 	public static final Integer MAX_TTL = 255;
+	public static final Integer DEFAULT_STREAM_ID = -1;
 }

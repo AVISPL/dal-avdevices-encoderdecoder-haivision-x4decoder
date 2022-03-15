@@ -11,9 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetworkType;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
-import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Set of stream configuration properties
@@ -84,8 +82,6 @@ public class StreamInfo {
 
 	@JsonAlias("fecRtp")
 	private Integer fecRtp;
-
-	private NetworkType netWorkType;
 
 	public StreamInfo() {
 	}
@@ -497,7 +493,7 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpTos}
 	 */
 	public String getSrtToUdpTos() {
-		if (StringUtils.isNullOrEmpty(srtToUdpTos)) {
+		if (srtToUdpTos == null) {
 			return DecoderConstant.SRT_TO_UDP_TOS;
 		}
 		return srtToUdpTos;
@@ -552,24 +548,6 @@ public class StreamInfo {
 			}
 		}
 		return FecRTP.DISABLE;
-	}
-
-	/**
-	 * Retrieves {@code {@link #netWorkType}}
-	 *
-	 * @return value of {@link #netWorkType}
-	 */
-	public NetworkType getNetWorkType() {
-		return netWorkType;
-	}
-
-	/**
-	 * Sets {@code netWorkType}
-	 *
-	 * @param netWorkType the {@code com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.NetWorkType} field
-	 */
-	public void setNetWorkType(NetworkType netWorkType) {
-		this.netWorkType = netWorkType;
 	}
 
 	/**
