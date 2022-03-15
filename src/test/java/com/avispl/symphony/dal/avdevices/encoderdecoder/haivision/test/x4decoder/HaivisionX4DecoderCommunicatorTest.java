@@ -263,6 +263,12 @@ public class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
 
+		controllableProperty.setProperty("CreateStream" + "#Create");
+		controllableProperty.setValue("1725");
+
+		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
+		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);
+
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
