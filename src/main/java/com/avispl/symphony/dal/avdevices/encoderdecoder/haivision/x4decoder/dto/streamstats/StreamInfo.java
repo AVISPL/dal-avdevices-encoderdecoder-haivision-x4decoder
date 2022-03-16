@@ -12,6 +12,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.comm
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.Encapsulation;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.FecRTP;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric.SRTMode;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Set of stream configuration properties
@@ -42,7 +43,7 @@ public class StreamInfo {
 	private String address;
 
 	@JsonAlias("port")
-	private Integer port;
+	private String port;
 
 	@JsonAlias("sourceIp")
 	private String sourceIp;
@@ -54,7 +55,7 @@ public class StreamInfo {
 	private Integer srtMode;
 
 	@JsonAlias("sourcePort")
-	private Integer sourcePort;
+	private String sourcePort;
 
 	@JsonAlias("strictMode")
 	private Boolean strictMode;
@@ -72,7 +73,7 @@ public class StreamInfo {
 	private String srtToUdpAddress;
 
 	@JsonAlias("srtToUdp_port")
-	private Integer srtToUdpPort;
+	private String srtToUdpPort;
 
 	@JsonAlias("srtToUdp_tos")
 	private String srtToUdpTos;
@@ -240,14 +241,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #port}
 	 */
-	public Integer getPort() {
-		if (port == null) {
-			return DecoderConstant.MIN_PORT;
+	public String getPort() {
+		if (StringUtils.isNullOrEmpty(port)) {
+			return DecoderConstant.EMPTY;
 		}
-		if (port < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT;
-		} else if (port > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT;
+		if (Integer.parseInt(port) < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT.toString();
+		} else if (Integer.parseInt(port) > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT.toString();
 		}
 		return port;
 	}
@@ -257,7 +258,7 @@ public class StreamInfo {
 	 *
 	 * @param port the {@code java.lang.String} field
 	 */
-	public void setPort(Integer port) {
+	public void setPort(String port) {
 		this.port = port;
 	}
 
@@ -338,14 +339,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #sourcePort}
 	 */
-	public Integer getSourcePort() {
-		if (sourcePort == null) {
-			return DecoderConstant.MIN_PORT;
+	public String getSourcePort() {
+		if (StringUtils.isNullOrEmpty(sourcePort) || sourcePort.equals("0")) {
+			return DecoderConstant.EMPTY;
 		}
-		if (sourcePort < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT;
-		} else if (sourcePort > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT;
+		if (Integer.parseInt(sourcePort) < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT.toString();
+		} else if (Integer.parseInt(sourcePort) > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT.toString();
 		}
 		return sourcePort;
 	}
@@ -355,7 +356,7 @@ public class StreamInfo {
 	 *
 	 * @param sourcePort the {@code java.lang.String} field
 	 */
-	public void setSourcePort(Integer sourcePort) {
+	public void setSourcePort(String sourcePort) {
 		this.sourcePort = sourcePort;
 	}
 
@@ -469,14 +470,14 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtToUdpPort}
 	 */
-	public Integer getSrtToUdpPort() {
-		if (srtToUdpPort == null) {
-			return DecoderConstant.MIN_PORT;
+	public String getSrtToUdpPort() {
+		if (StringUtils.isNullOrEmpty(srtToUdpPort) || srtToUdpPort.equals("0")) {
+			return DecoderConstant.EMPTY;
 		}
-		if (srtToUdpPort < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT;
-		} else if (srtToUdpPort > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT;
+		if (Integer.parseInt(srtToUdpPort) < DecoderConstant.MIN_PORT) {
+			return DecoderConstant.MIN_PORT.toString();
+		} else if (Integer.parseInt(srtToUdpPort) > DecoderConstant.MAX_PORT) {
+			return DecoderConstant.MAX_PORT.toString();
 		}
 		return srtToUdpPort;
 	}
@@ -486,7 +487,7 @@ public class StreamInfo {
 	 *
 	 * @param srtToUdpPort the {@code java.lang.String} field
 	 */
-	public void setSrtToUdpPort(Integer srtToUdpPort) {
+	public void setSrtToUdpPort(String srtToUdpPort) {
 		this.srtToUdpPort = srtToUdpPort;
 	}
 
@@ -578,6 +579,20 @@ public class StreamInfo {
 	 * @return String json request body
 	 */
 	public String jsonRequest() {
+		String sourcePortDTO = getSourcePort();
+		String srtToUDPPortDTO = getSrtToUdpPort();
+		String portDTO = getPort();
+		if (sourcePortDTO.isEmpty()){
+			sourcePortDTO = "0";
+		}
+		if (srtToUDPPortDTO.isEmpty()){
+			srtToUDPPortDTO = "0";
+		}
+		if (portDTO.isEmpty()){
+			portDTO = "0";
+		}
+
+
 		if (getPassphraseSet() && !getPassphrase().isEmpty()) {
 			return '{' +
 					"\"encapsulation\":" + getEncapsulation().getCode() +
@@ -587,13 +602,13 @@ public class StreamInfo {
 					",\"address\":" + '\"' + getAddress() + '\"' +
 					",\"sourceIp\":" + '\"' + getSourceIp() + '\"' +
 					",\"stillImage\":" + '\"' + '\"' +
-					",\"port\":" + getPort() +
-					",\"sourcePort\":" + getSourcePort() +
+					",\"port\":" + portDTO +
+					",\"sourcePort\":" + sourcePortDTO +
 					",\"latency\":" + getLatency() +
 					",\"srtMode\":" + getSrtMode().getCode() +
 					",\"srtToUdp\":" + getSrtToUdp() +
 					",\"srtToUdp_address\":" + '\"' + getSrtToUdpAddress() + '\"' +
-					",\"srtToUdp_port\":" + getSrtToUdpPort() +
+					",\"srtToUdp_port\":" + srtToUDPPortDTO +
 					",\"srtToUdp_tos\":" + '\"' + getSrtToUdpTos() + '\"' +
 					",\"srtToUdp_ttl\":" + getSrtToUdpTtl() +
 					",\"strictMode\":" + getStrictMode() +
@@ -606,13 +621,13 @@ public class StreamInfo {
 				",\"address\":" + '\"' + getAddress() + '\"' +
 				",\"sourceIp\":" + '\"' + getSourceIp() + '\"' +
 				",\"stillImage\":" + '\"' + '\"' +
-				",\"port\":" + getPort() +
-				",\"sourcePort\":" + getSourcePort() +
+				",\"port\":" + portDTO +
+				",\"sourcePort\":" + sourcePortDTO +
 				",\"latency\":" + getLatency() +
 				",\"srtMode\":" + getSrtMode().getCode() +
 				",\"srtToUdp\":" + getSrtToUdp() +
 				",\"srtToUdp_address\":" + '\"' + getSrtToUdpAddress() + '\"' +
-				",\"srtToUdp_port\":" + getSrtToUdpPort() +
+				",\"srtToUdp_port\":" + srtToUDPPortDTO +
 				",\"srtToUdp_tos\":" + '\"' + getSrtToUdpTos() + '\"' +
 				",\"srtToUdp_ttl\":" + getSrtToUdpTtl() +
 				",\"strictMode\":" + getStrictMode() +
@@ -672,7 +687,7 @@ public class StreamInfo {
 		StreamInfo that = (StreamInfo) o;
 		if (srtToUdp) {
 			return Objects.equals(srtToUdpAddress, that.srtToUdpAddress)
-					&& Objects.equals(srtToUdpPort, that.srtToUdpPort)
+					&& Objects.equals(getSrtToUdpPort(), that.getSrtToUdpPort())
 					&& Objects.equals(srtToUdpTos, that.srtToUdpTos)
 					&& Objects.equals(srtToUdpTtl, that.srtToUdpTtl);
 		}
@@ -713,7 +728,7 @@ public class StreamInfo {
 						&& Objects.equals(strictMode, that.strictMode);
 			case CALLER:
 				return Objects.equals(address, that.address)
-						&& Objects.equals(sourcePort, that.sourcePort)
+						&& Objects.equals(getSourcePort(), that.getSourcePort())
 						&& Objects.equals(port, that.port);
 			case RENDEZVOUS:
 				return Objects.equals(address, that.address)
