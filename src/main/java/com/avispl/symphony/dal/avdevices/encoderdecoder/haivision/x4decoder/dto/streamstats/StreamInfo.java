@@ -138,6 +138,9 @@ public class StreamInfo {
 	 * @return value of {@link #id}
 	 */
 	public Integer getId() {
+		if (id == null) {
+			return DecoderConstant.DEFAULT_STREAM_ID;
+		}
 		return id;
 	}
 
