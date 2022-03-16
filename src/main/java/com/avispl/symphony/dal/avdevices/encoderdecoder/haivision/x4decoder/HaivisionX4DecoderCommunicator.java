@@ -413,7 +413,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * check for null data
+	 * Check for null data
 	 *
 	 * @param value value of monitoring properties
 	 * @return String (none/value)
@@ -1132,8 +1132,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
-	 * @param controllableProperty name of controllable property
 	 * @param decoderID ID of decoder
+	 * @param controllableProperty name of controllable property
 	 * @param value value of controllable property
 	 */
 	private void decoderControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, Integer decoderID, String controllableProperty, String value) {
@@ -1326,7 +1326,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * This method is used to perform decoder control start/ stop/ update
+	 * This method is used to perform decoder control: update
 	 *
 	 * @param decoderInfo set of decoder config info
 	 * @param controlMethod start/stop/update
@@ -1355,7 +1355,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	}
 
 	/**
-	 * This method is used to perform decoder control start/ stop/ update
+	 * This method is used to perform decoder control start/ stop
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1373,7 +1373,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 				DecoderData decoderData = doPut(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.DECODERS + DecoderConstant.SLASH + decoderID + controlURL), request, DecoderData.class);
 				if (decoderData == null) {
-					populateActiveControlAfterControlFailed(decoderInfo);
+					reverseActiveControlAfterControlFailed(decoderInfo);
 					addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 							DecoderConstant.OFF, DecoderConstant.ON));
 					throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
@@ -1383,13 +1383,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					populateDecoderControl(stats, advancedControllableProperties, Integer.parseInt(decoderID));
 				}
 			} else {
-				populateActiveControlAfterControlFailed(decoderInfo);
+				reverseActiveControlAfterControlFailed(decoderInfo);
 				addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 						DecoderConstant.OFF, DecoderConstant.ON));
 				throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod);
 			}
 		} catch (Exception e) {
-			populateActiveControlAfterControlFailed(decoderInfo);
+			reverseActiveControlAfterControlFailed(decoderInfo);
 			addAdvanceControlProperties(advancedControllableProperties, createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.STATE.getName(), decoderInfo.getState().isRunning(),
 					DecoderConstant.OFF, DecoderConstant.ON));
 			throw new ResourceNotReachableException(DecoderConstant.DECODER_CONTROL_ERR + controlMethod + DecoderConstant.NEXT_LINE + e.getMessage(), e);
@@ -1398,11 +1398,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 
 	/**
-	 * This method is used to perform decoder control start/ stop/ update
+	 * This method is used to reverse active control value after control failed
 	 *
 	 * @param decoderInfo list of decoder data
 	 */
-	private void populateActiveControlAfterControlFailed(DecoderInfo decoderInfo) {
+	private void reverseActiveControlAfterControlFailed(DecoderInfo decoderInfo) {
 		State state = decoderInfo.getState();
 		Integer decoderID = Integer.parseInt(decoderInfo.getId());
 		switch (state) {
@@ -1568,9 +1568,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate stream control properties case NetworkType:
-	 * Network type
-	 * <li>Multicast</li>
-	 * <li>Uni-cast</li>
+	 * <li>Network type: Multicast</li>
+	 * <li>Network type: Uni-cast</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1596,7 +1595,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties:
-	 * Protocol: TS over SRT
+	 * <li>Protocol: TS over SRT</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1626,8 +1625,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties :
-	 * Protocol: TS over SRT
-	 * SRT mode: Listener
+	 * <li>Protocol: TS over SRT</li>
+	 * <li>SRT mode: Listener</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1651,8 +1650,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties :
-	 * Protocol: TS over SRT
-	 * Stream conversion
+	 * <li>Protocol: TS over SRT</li>
+	 * <li>Stream conversion</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1681,8 +1680,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties :
-	 * Protocol: TS over SRT
-	 * Encrypted
+	 * <li>Protocol: TS over SRT</li>
+	 * <li>Encrypted</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1704,8 +1703,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties :
-	 * Protocol: TS over SRT
-	 * SRT mode: caller
+	 * <li>Protocol: TS over SRT</li>
+	 * <li>SRT mode: caller</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -1734,8 +1733,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	/**
 	 * This method is used for populate all stream control properties :
-	 * Protocol: TS over SRT
-	 * SRT mode: Rendezvous
+	 * <li>Protocol: TS over SRT</li>
+	 * <li>SRT mode: Rendezvous</li>
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param advancedControllableProperties is the list that store all controllable properties
@@ -2629,7 +2628,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param name name of the property
 	 * @param label default button label
-	 * @return instance of AdvancedControllableProperty with AdvancedControllableProperty.Button as type
+	 * @return AdvancedControllableProperty button instance
 	 */
 	private AdvancedControllableProperty createButton(String name, String label, String labelPressed) {
 		AdvancedControllableProperty.Button button = new AdvancedControllableProperty.Button();
