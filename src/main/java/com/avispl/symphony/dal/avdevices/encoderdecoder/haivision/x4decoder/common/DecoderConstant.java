@@ -61,6 +61,8 @@ public class DecoderConstant {
 	public static final String DELETING = "Deleting";
 	public static final String ADDRESS_ANY = "Any";
 	public static final String SRT_TO_UDP_TOS = "0x80";
+	public static final String MAX_OF_TOS = "FF";
+	public static final String MIN_OF_TOS = "00";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
 	public static final Integer MIN_STILL_IMAGE_DELAY = 1;
@@ -76,5 +78,6 @@ public class DecoderConstant {
 	public static final Integer DEFAULT_LATENCY = 125;
 	public static final Integer MIN_TTL = 1;
 	public static final Integer MAX_TTL = 255;
+	public static final Integer DEFAULT_TTL = 64;
 	public static final Integer DEFAULT_STREAM_ID = -1;
 }
