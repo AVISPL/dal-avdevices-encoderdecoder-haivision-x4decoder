@@ -213,7 +213,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH, streamName, splitProperty[1], value);
 				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + controllingGroup);
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
+				}
+				throw new IllegalStateException(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
 		}
 	}
 
@@ -792,11 +795,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		// Stream control
 		for (StreamInfo streamInfo : this.localStreamInfoList) {
-			String streamName = streamInfo.getName();
-			if (StringUtils.isNullOrEmpty(streamName)) {
-				streamName = streamInfo.getDefaultStreamName();
-			}
-			populateStreamControl(stats, advancedControllableProperties, streamInfo, ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH);
+			populateStreamControl(stats, advancedControllableProperties, streamInfo);
 		}
 	}
 
@@ -969,7 +968,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		advancedControllableProperties.add(createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE.getName(), stillImageList, stillImage.getName()));
 
 		// Populate still image delay numeric control
-		advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+		advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
 
 		// Populate output switch control
 		advancedControllableProperties.add(createSwitch(stats, decoderControllingGroup + DecoderControllingMetric.OUTPUT_1.getName(), decoderInfo.getOutput1(),
@@ -1021,7 +1020,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						createDropdown(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_MODE.getName(), bufferingModeList, bufferingMode.getName()));
 
 				// Populate fixed delay numeric control
-				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
 				break;
 			case MULTI_SYNC:
 				// Populate buffering mode dropdown list control
@@ -1030,9 +1029,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 				// Populate multi sync delay numeric control
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
 				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Buffering mode %s is not supported.", bufferingMode.getName()));
+				}
 				break;
 		}
 	}
@@ -1186,10 +1188,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case STILL_IMAGE_DELAY:
-				decoderInfo.setStillImageDelay(Integer.parseInt(value));
+				decoderInfo.setStillImageDelay(value);
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay().toString()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.STILL_IMAGE_DELAY.getName(), decoderInfo.getStillImageDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -1257,17 +1259,17 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case BUFFERING_DELAY:
-				decoderInfo.setBufferingDelay(Integer.parseInt(value));
+				decoderInfo.setBufferingDelay(value);
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
-				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay().toString()));
+				advancedControllableProperties.add(createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.BUFFERING_DELAY.getName(), decoderInfo.getBufferingDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case MULTI_SYNC_BUFFERING_DELAY:
-				decoderInfo.setMultisyncBufferingDelay(Integer.parseInt(value));
+				decoderInfo.setMultisyncBufferingDelay(value);
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				advancedControllableProperties.add(
-						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay().toString()));
+						createNumeric(stats, decoderControllingGroup + DecoderControllingMetric.MULTI_SYNC_BUFFERING_DELAY.getName(), decoderInfo.getMultisyncBufferingDelay()));
 				populateApplyChangeAndCancelButtonForDecoder(stats, advancedControllableProperties, decoderID);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -1292,7 +1294,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						performActiveDecoderControl(stats, advancedControllableProperties, decoderInfo, DecoderURL.START_DECODER, state.getName());
 						break;
 					default:
-						throw new IllegalStateException("Unexpected value: " + state);
+						if (logger.isWarnEnabled()) {
+							logger.warn(String.format("Decoder state %s is not supported.", state.getName()));
+						}
+						break;
 				}
 				break;
 			case APPLY_CHANGE:
@@ -1309,7 +1314,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateDecoderControl(stats, advancedControllableProperties, decoderID);
 				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + controllableProperty);
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
+				}
+				throw new IllegalStateException(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
 		}
 	}
 
@@ -1417,6 +1425,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				this.localDecoderInfoList.set(decoderID, decoderInfo);
 				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Decoder state %s is not supported.", state.getName()));
+				}
 				break;
 		}
 	}
@@ -1447,10 +1458,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param advancedControllableProperties is the list that store all controllable properties
 	 * @param streamInfo stream config info
 	 */
-	private void populateStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
+	private void populateStreamControl(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo) {
 		// Get controllable property current value
+		String streamGroup;
 		if (StringUtils.isNullOrEmpty(streamInfo.getName())) {
 			streamGroup = ControllingMetricGroup.STREAM.getName() + streamInfo.getDefaultStreamName() + DecoderConstant.HASH;
+		} else {
+			streamGroup = ControllingMetricGroup.STREAM.getName() + streamInfo.getName() + DecoderConstant.HASH;
 		}
 		Encapsulation encapsulation = streamInfo.getEncapsulation();
 		List<String> encapsulationList = DropdownList.names(Encapsulation.class);
@@ -1474,7 +1488,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Encapsulation mode %s is not supported.", encapsulation.getName()));
+				}
 				break;
 		}
 
@@ -1518,7 +1536,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case TS_OVER_SRT:
 				populateStreamControlCaseTSOverSRT(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Encapsulation mode %s is not supported.", encapsulation.getName()));
+				}
 				break;
 		}
 		// Populate cancel button
@@ -1551,13 +1573,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	private void populateStreamControlCaseTSOverRTP(Map<String, String> stats, List<AdvancedControllableProperty> advancedControllableProperties, StreamInfo streamInfo, String streamGroup) {
 		// Get controllable property current value
-		Integer port = Integer.parseInt(streamInfo.getPort());
+		String port = streamInfo.getPort();
 		FecRTP fecRTP = streamInfo.getFecRtp();
 		List<String> fecRTPs = DropdownList.names(FecRTP.class);
 
 		// Populate port numeric control
 		addAdvanceControlProperties(advancedControllableProperties,
-				createNumeric(stats, streamGroup + StreamControllingMetric.PORT.getName(), checkForNullData(port.toString())));
+				createNumeric(stats, streamGroup + StreamControllingMetric.PORT.getName(), port));
 
 		// Populate fecRTP dropdown control
 		addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.FEC_RTP.getName(), fecRTPs, fecRTP.getName()));
@@ -1585,6 +1607,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (multicastAddress.equals(DecoderConstant.ADDRESS_ANY) && sourceIp.equals(DecoderConstant.ADDRESS_ANY)) {
 			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.UNI_CAST.getName()));
 		} else {
+			if (sourceIp.equals(DecoderConstant.ADDRESS_ANY)){
+				sourceIp = DecoderConstant.EMPTY;
+			}
 			addAdvanceControlProperties(advancedControllableProperties, createDropdown(stats, streamGroup + StreamControllingMetric.NETWORK_TYPE.getName(), netWorkTypes, NetworkType.MULTI_CAST.getName()));
 			addAdvanceControlProperties(advancedControllableProperties,
 					createText(stats, streamGroup + StreamControllingMetric.MULTICAST_ADDRESS.getName(), multicastAddress));
@@ -1616,7 +1641,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case RENDEZVOUS:
 				populateStreamControlCaseTSOverSRTRendezvous(stats, advancedControllableProperties, streamInfo, streamGroup);
+				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("SRT mode %s is not supported.", srtMode.getName()));
+				}
 				break;
 		}
 		populateStreamControlCaseTSOverSRTStreamConversion(stats, advancedControllableProperties, streamInfo, streamGroup);
@@ -1639,7 +1668,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		// Populate latency numeric control
 		addAdvanceControlProperties(advancedControllableProperties,
-				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency().toString()));
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency()));
 
 		// Populate reject unencrypted caller switch control
 		if (streamInfo.getPassphraseSet()) {
@@ -1674,7 +1703,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			addAdvanceControlProperties(advancedControllableProperties,
 					createText(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
 			addAdvanceControlProperties(advancedControllableProperties,
-					createNumeric(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), streamInfo.getSrtToUdpTtl().toString()));
+					createNumeric(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), streamInfo.getSrtToUdpTtl()));
 		}
 	}
 
@@ -1728,7 +1757,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		// Populate latency numeric control
 		addAdvanceControlProperties(advancedControllableProperties,
-				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency().toString()));
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency()));
 	}
 
 	/**
@@ -1757,7 +1786,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		// Populate latency numeric control
 		addAdvanceControlProperties(advancedControllableProperties,
-				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency().toString()));
+				createNumeric(stats, streamGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency()));
 	}
 
 	/**
@@ -1931,6 +1960,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						createStream.setSourceIp(DecoderConstant.EMPTY);
 						break;
 					default:
+						if (logger.isWarnEnabled()) {
+							logger.warn(String.format("SRT mode %s is not supported.", networkType.getName()));
+						}
 						break;
 				}
 
@@ -1995,9 +2027,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case LATENCY:
-				createStream.setLatency(Integer.parseInt(value));
+				createStream.setLatency(value);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), createStream.getLatency().toString()));
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), createStream.getLatency()));
 				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -2030,9 +2062,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TTL:
-				createStream.setSrtToUdpTtl(Integer.parseInt(value));
+				createStream.setSrtToUdpTtl(value);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), createStream.getSrtToUdpTtl().toString()));
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), createStream.getSrtToUdpTtl()));
 				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -2066,7 +2098,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateCreateStreamControl(stats, advancedControllableProperties, createStream, streamControllingGroup);
 				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + controllableProperty);
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
+				}
+				throw new IllegalStateException(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
 		}
 	}
 
@@ -2176,6 +2211,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
 				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Encapsulation mode %s is not supported.", preEncapsulation.getName()));
+				}
 				break;
 		}
 	}
@@ -2226,6 +2264,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				removeUnusedStatsAndControls(stats, controls, listKeyToBeRemove);
 				break;
 			default:
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("SRT mode %s is not supported.", preSRTMode.getName()));
+				}
 				break;
 		}
 	}
@@ -2318,22 +2359,34 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		switch (streamControllingMetric) {
 			case STREAM_NAME:
+				removeUnusedStatsAndControlByProtocol(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
 				streamInfo.setName(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
-				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, streamControllingGroup + StreamControllingMetric.STREAM_NAME.getName(), streamInfo.getName()));
-				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case ENCAPSULATION:
 				Encapsulation encapsulation = Encapsulation.getByName(value);
+				if (encapsulation.equals(Encapsulation.TS_OVER_SRT)){
+					SRTMode srtMode = streamInfo.getSrtMode();
+					switch (srtMode) {
+						case CALLER:
+						case RENDEZVOUS:
+							if (streamInfo.getAddress().equals(DecoderConstant.ADDRESS_ANY)) {
+								streamInfo.setAddress(DecoderConstant.EMPTY);
+							}
+							break;
+						default:
+							if (logger.isWarnEnabled()) {
+								logger.warn(String.format("SRT mode %s is not supported.", srtMode.getName()));
+							}
+							break;
+					}
+				}
 				removeUnusedStatsAndControlByProtocol(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
 				streamInfo.setEncapsulation(encapsulation.getCode());
 				this.localStreamInfoList.set(streamIndex, streamInfo);
-				if (StringUtils.isNullOrEmpty(streamInfo.getName())) {
-					streamControllingGroup = ControllingMetricGroup.STREAM.getName() + streamInfo.getDefaultStreamName() + DecoderConstant.HASH;
-				}
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case NETWORK_TYPE:
@@ -2349,11 +2402,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						streamInfo.setSourceIp(DecoderConstant.EMPTY);
 						break;
 					default:
+						if (logger.isWarnEnabled()) {
+							logger.warn(String.format("Network type mode %s is not supported.", networkType.getName()));
+						}
 						break;
 				}
 				this.localStreamInfoList.set(streamIndex, streamInfo);
 
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case PORT:
@@ -2365,7 +2421,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 				addAdvanceControlProperties(advancedControllableProperties,
 						createNumeric(stats, streamControllingGroup + StreamControllingMetric.PORT.getName(), streamInfo.getPort()));
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case ADDRESS:
@@ -2377,7 +2433,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 				addAdvanceControlProperties(advancedControllableProperties,
 						createText(stats, streamControllingGroup + StreamControllingMetric.ADDRESS.getName(), streamInfo.getAddress()));
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case MULTICAST_ADDRESS:
@@ -2389,7 +2445,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				}
 				addAdvanceControlProperties(advancedControllableProperties,
 						createText(stats, streamControllingGroup + StreamControllingMetric.MULTICAST_ADDRESS.getName(), streamInfo.getAddress()));
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SOURCE_ADDRESS:
@@ -2417,8 +2473,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 					streamControllingGroup = ControllingMetricGroup.STREAM.getName() + streamInfo.getDefaultStreamName() + DecoderConstant.HASH;
 				}
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, streamControllingGroup + StreamControllingMetric.DESTINATION_PORT.getName(),streamInfo.getPort()));
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.DESTINATION_PORT.getName(), streamInfo.getPort()));
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case FEC_RTP:
@@ -2432,28 +2488,30 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				break;
 			case SRT_MODE:
 				SRTMode srtMode = SRTMode.getByName(value);
-				switch (srtMode){
-					case LISTENER:
-						streamInfo.setAddress(DecoderConstant.ADDRESS_ANY);
-						break;
+				switch (srtMode) {
 					case CALLER:
 					case RENDEZVOUS:
-						streamInfo.setAddress(DecoderConstant.EMPTY);
+						if (streamInfo.getAddress().equals(DecoderConstant.ADDRESS_ANY)) {
+							streamInfo.setAddress(DecoderConstant.EMPTY);
+						}
 						break;
 					default:
+						if (logger.isWarnEnabled()) {
+							logger.warn(String.format("SRT mode %s is not supported.", srtMode.getName()));
+						}
 						break;
 				}
 				removeUnusedStatsAndControlByProtocol(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
 				streamInfo.setSrtMode(srtMode.getCode());
 				this.localStreamInfoList.set(streamIndex, streamInfo);
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case LATENCY:
-				streamInfo.setLatency(Integer.parseInt(value));
+				streamInfo.setLatency(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency().toString()));
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.LATENCY.getName(), streamInfo.getLatency()));
 				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -2462,11 +2520,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				removeUnusedStatsAndControlByStreamConversion(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
 				streamInfo.setSrtToUdp(srtToUDP);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_ADDRESS:
-				createStream.setSrtToUdpAddress(value);
+				streamInfo.setSrtToUdpAddress(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
 				addAdvanceControlProperties(advancedControllableProperties,
 						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), streamInfo.getSrtToUdpAddress()));
@@ -2490,10 +2548,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TTL:
-				streamInfo.setSrtToUdpTtl(Integer.parseInt(value));
+				streamInfo.setSrtToUdpTtl(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
 				addAdvanceControlProperties(advancedControllableProperties,
-						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), streamInfo.getSrtToUdpTtl().toString()));
+						createNumeric(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TTL.getName(), streamInfo.getSrtToUdpTtl()));
 				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
@@ -2502,7 +2560,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				removeUnusedStatsAndControlByEncrypted(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
 				streamInfo.setPassphraseSet(encrypted);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
-				populateStreamControl(stats, advancedControllableProperties, streamInfo, streamControllingGroup);
+				populateStreamControl(stats, advancedControllableProperties, streamInfo);
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case PASSPHRASE:
@@ -2535,21 +2593,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				if (streamInfoDTO.isPresent()) {
 					controlResult = streamInfoDTO.get();
 					this.localStreamInfoList.set(streamIndex, controlResult);
-					populateStreamControl(stats, advancedControllableProperties, controlResult, streamControllingGroup);
+					populateStreamControl(stats, advancedControllableProperties, controlResult);
 				}
 				break;
 			case DELETE:
 				Boolean deleteResult = performDeleteStream(streamInfo);
 
-				if (deleteResult){
+				if (deleteResult) {
 					this.localStreamInfoList.remove(streamInfo);
 					for (StreamInfo localStreamInfo : this.localStreamInfoList) {
-						populateStreamControl(stats, advancedControllableProperties, localStreamInfo, ControllingMetricGroup.STREAM.getName() + localStreamInfo.getName() + DecoderConstant.HASH);
+						populateStreamControl(stats, advancedControllableProperties, localStreamInfo);
 					}
 				}
 				break;
 			default:
-				throw new IllegalStateException("Unexpected value: " + controllableProperty);
+				if (logger.isWarnEnabled()) {
+					logger.warn(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
+				}
+				throw new IllegalStateException(String.format("Operation %s with value %s is not supported.", controllableProperty, value));
 		}
 	}
 

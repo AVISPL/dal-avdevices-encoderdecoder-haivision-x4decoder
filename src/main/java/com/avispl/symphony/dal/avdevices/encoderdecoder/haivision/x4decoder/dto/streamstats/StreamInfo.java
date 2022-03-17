@@ -49,7 +49,7 @@ public class StreamInfo {
 	private String sourceIp;
 
 	@JsonAlias("latency")
-	private Integer latency;
+	private String latency;
 
 	@JsonAlias("srtMode")
 	private Integer srtMode;
@@ -79,7 +79,7 @@ public class StreamInfo {
 	private String srtToUdpTos;
 
 	@JsonAlias("srtToUdp_ttl")
-	private Integer srtToUdpTtl;
+	private String srtToUdpTtl;
 
 	@JsonAlias("fecRtp")
 	private Integer fecRtp;
@@ -242,13 +242,17 @@ public class StreamInfo {
 	 * @return value of {@link #port}
 	 */
 	public String getPort() {
-		if (StringUtils.isNullOrEmpty(port)) {
+		if (StringUtils.isNullOrEmpty(port) || port.equals("0")) {
 			return DecoderConstant.EMPTY;
 		}
-		if (Integer.parseInt(port) < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT.toString();
-		} else if (Integer.parseInt(port) > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT.toString();
+		try {
+			if (Integer.parseInt(port) < DecoderConstant.MIN_PORT) {
+				return DecoderConstant.MIN_PORT.toString();
+			} else if (Integer.parseInt(port) > DecoderConstant.MAX_PORT) {
+				return DecoderConstant.MAX_PORT.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.EMPTY;
 		}
 		return port;
 	}
@@ -288,14 +292,18 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #latency}
 	 */
-	public Integer getLatency() {
-		if (latency == null) {
-			return DecoderConstant.DEFAULT_LATENCY;
+	public String getLatency() {
+		if (StringUtils.isNullOrEmpty(latency)) {
+			return DecoderConstant.DEFAULT_LATENCY.toString();
 		}
-		if (latency < DecoderConstant.MIN_LATENCY) {
-			return DecoderConstant.MIN_LATENCY;
-		} else if (latency > DecoderConstant.MAX_LATENCY) {
-			return DecoderConstant.MAX_LATENCY;
+		try {
+			if (Integer.parseInt(latency) < DecoderConstant.MIN_LATENCY) {
+				return DecoderConstant.MIN_LATENCY.toString();
+			} else if (Integer.parseInt(latency) > DecoderConstant.MAX_LATENCY) {
+				return DecoderConstant.MAX_LATENCY.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.DEFAULT_LATENCY.toString();
 		}
 		return latency;
 	}
@@ -305,7 +313,7 @@ public class StreamInfo {
 	 *
 	 * @param latency the {@code java.lang.String} field
 	 */
-	public void setLatency(Integer latency) {
+	public void setLatency(String latency) {
 		this.latency = latency;
 	}
 
@@ -343,11 +351,15 @@ public class StreamInfo {
 		if (StringUtils.isNullOrEmpty(sourcePort) || sourcePort.equals("0")) {
 			return DecoderConstant.EMPTY;
 		}
-		if (Integer.parseInt(sourcePort) < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT.toString();
-		} else if (Integer.parseInt(sourcePort) > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT.toString();
-		}
+		try {
+			if (Integer.parseInt(sourcePort) < DecoderConstant.MIN_PORT) {
+				return DecoderConstant.MIN_PORT.toString();
+			} else if (Integer.parseInt(sourcePort) > DecoderConstant.MAX_PORT) {
+				return DecoderConstant.MAX_PORT.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.EMPTY;
+	}
 		return sourcePort;
 	}
 
@@ -474,10 +486,14 @@ public class StreamInfo {
 		if (StringUtils.isNullOrEmpty(srtToUdpPort) || srtToUdpPort.equals("0")) {
 			return DecoderConstant.EMPTY;
 		}
-		if (Integer.parseInt(srtToUdpPort) < DecoderConstant.MIN_PORT) {
-			return DecoderConstant.MIN_PORT.toString();
-		} else if (Integer.parseInt(srtToUdpPort) > DecoderConstant.MAX_PORT) {
-			return DecoderConstant.MAX_PORT.toString();
+		try {
+			if (Integer.parseInt(srtToUdpPort) < DecoderConstant.MIN_PORT) {
+				return DecoderConstant.MIN_PORT.toString();
+			} else if (Integer.parseInt(srtToUdpPort) > DecoderConstant.MAX_PORT) {
+				return DecoderConstant.MAX_PORT.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.EMPTY;
 		}
 		return srtToUdpPort;
 	}
@@ -497,8 +513,23 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpTos}
 	 */
 	public String getSrtToUdpTos() {
-		if (srtToUdpTos == null) {
+		if (StringUtils.isNullOrEmpty(srtToUdpTos) || !srtToUdpTos.startsWith("0x")) {
 			return DecoderConstant.SRT_TO_UDP_TOS;
+		}else {
+			String valueCopy = srtToUdpTos.replace("0x", "");
+			try {
+				int decTos = Integer.parseInt(valueCopy, 16);
+				int decMaxTos = Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16);
+				int decMinTos = Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16);
+				if (decTos < decMinTos) {
+					srtToUdpTos = "0x" + DecoderConstant.MIN_OF_TOS;
+				}
+				if (decTos > decMaxTos) {
+					srtToUdpTos = "0x" + DecoderConstant.MAX_OF_TOS;
+				}
+			} catch (Exception e) {
+				return DecoderConstant.SRT_TO_UDP_TOS;
+			}
 		}
 		return srtToUdpTos;
 	}
@@ -517,14 +548,18 @@ public class StreamInfo {
 	 *
 	 * @return value of {@link #srtToUdpTtl}
 	 */
-	public Integer getSrtToUdpTtl() {
-		if (srtToUdpTtl == null) {
-			return 64;
+	public String getSrtToUdpTtl() {
+		if (StringUtils.isNullOrEmpty(srtToUdpTtl)) {
+			return "64";
 		}
-		if (srtToUdpTtl < DecoderConstant.MIN_TTL) {
-			return DecoderConstant.MIN_TTL;
-		} else if (srtToUdpTtl > DecoderConstant.MAX_TTL) {
-			return DecoderConstant.MAX_TTL;
+		try {
+			if (Integer.parseInt(srtToUdpTtl) < DecoderConstant.MIN_TTL) {
+				return DecoderConstant.MIN_TTL.toString();
+			} else if (Integer.parseInt(srtToUdpTtl) > DecoderConstant.MAX_TTL) {
+				return DecoderConstant.MAX_TTL.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.DEFAULT_TTL.toString();
 		}
 		return srtToUdpTtl;
 	}
@@ -534,7 +569,7 @@ public class StreamInfo {
 	 *
 	 * @param srtToUdpTtl the {@code java.lang.String} field
 	 */
-	public void setSrtToUdpTtl(Integer srtToUdpTtl) {
+	public void setSrtToUdpTtl(String srtToUdpTtl) {
 		this.srtToUdpTtl = srtToUdpTtl;
 	}
 
