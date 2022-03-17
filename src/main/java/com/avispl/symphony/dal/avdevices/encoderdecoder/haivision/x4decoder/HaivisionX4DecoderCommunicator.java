@@ -1696,8 +1696,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		// Populate relevant control when srt to udp is enabled
 		if (srtToUDP) {
+			String srtToUdpAddress = streamInfo.getSrtToUdpAddress();
+			if (srtToUdpAddress.equals(DecoderConstant.ADDRESS_ANY)){
+				srtToUdpAddress = DecoderConstant.EMPTY;
+			}
 			addAdvanceControlProperties(advancedControllableProperties,
-					createText(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), streamInfo.getSrtToUdpAddress()));
+					createText(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_ADDRESS.getName(), srtToUdpAddress));
 			addAdvanceControlProperties(advancedControllableProperties,
 					createNumeric(stats, streamGroup + StreamControllingMetric.SRT_TO_UDP_PORT.getName(), streamInfo.getSrtToUdpPort()));
 			addAdvanceControlProperties(advancedControllableProperties,
