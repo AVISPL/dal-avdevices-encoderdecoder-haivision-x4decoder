@@ -237,8 +237,8 @@ public class HaivisionX4DecoderCommunicatorTest {
 	@Test
 	void testCreateStreamControlStreamName() {
 		ControllableProperty controllableProperty = new ControllableProperty();
-		controllableProperty.setProperty("CreateStream" + "#StreamName");
-		controllableProperty.setValue("Harry test");
+		controllableProperty.setProperty("CreateStream" + "#SrtToUdpTos");
+		controllableProperty.setValue("254");
 
 		haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		haivisionX4DecoderCommunicator.controlProperty(controllableProperty);

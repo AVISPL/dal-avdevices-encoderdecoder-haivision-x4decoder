@@ -2059,12 +2059,30 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TOS:
-				createStream.setSrtToUdpTos(value);
-				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), createStream.getSrtToUdpTos()));
-				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
-				populateLocalExtendedStats(stats, advancedControllableProperties);
-				break;
+				try {
+					String copyHexValue;
+					Integer copyValue;
+					if (value.startsWith(DecoderConstant.HEX_PREFIX)) {
+						copyValue = Integer.parseInt(value.replace(DecoderConstant.HEX_PREFIX, ""), 16);
+					} else {
+						copyValue = (int) Float.parseFloat(value);
+					}
+					copyHexValue = DecoderConstant.HEX_PREFIX + String.format("%02X", 0xFF & copyValue);
+					if (copyValue < Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MIN_OF_TOS;
+					}
+					if (copyValue > Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MAX_OF_TOS;
+					}
+					createStream.setSrtToUdpTos(copyHexValue);
+					addAdvanceControlProperties(advancedControllableProperties,
+							createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), createStream.getSrtToUdpTos()));
+					populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+					break;
+				} catch (Exception var60) {
+					throw new NumberFormatException("Value of ParameterToS is invalid. TOS must be hex value range to 00-FF");
+				}
 			case SRT_TO_UDP_TTL:
 				createStream.setSrtToUdpTtl(value);
 				addAdvanceControlProperties(advancedControllableProperties,
@@ -2544,13 +2562,31 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TOS:
-				streamInfo.setSrtToUdpTos(value);
-				this.localStreamInfoList.set(streamIndex, streamInfo);
-				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
-				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
-				populateLocalExtendedStats(stats, advancedControllableProperties);
-				break;
+				try {
+					String copyHexValue;
+					Integer copyValue;
+					if (value.startsWith(DecoderConstant.HEX_PREFIX)) {
+						copyValue = Integer.parseInt(value.replace(DecoderConstant.HEX_PREFIX, ""), 16);
+					} else {
+						copyValue = (int) Float.parseFloat(value);
+					}
+					copyHexValue = DecoderConstant.HEX_PREFIX + String.format("%02X", 0xFF & copyValue);
+					if (copyValue < Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MIN_OF_TOS;
+					}
+					if (copyValue > Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MAX_OF_TOS;
+					}
+					streamInfo.setSrtToUdpTos(copyHexValue);
+					this.localStreamInfoList.set(streamIndex, streamInfo);
+					addAdvanceControlProperties(advancedControllableProperties,
+							createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
+					populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+					break;
+				} catch (Exception var60) {
+					throw new NumberFormatException("Value of ParameterToS is invalid. TOS must be hex value range to 00-FF");
+				}
 			case SRT_TO_UDP_TTL:
 				streamInfo.setSrtToUdpTtl(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
