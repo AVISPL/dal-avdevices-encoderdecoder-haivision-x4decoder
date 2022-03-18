@@ -8,13 +8,14 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.BufferingMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.HDR;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.OutputFrameRate;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.QuadMode;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.State;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.decoder.controllingmetric.StillImage;
-import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * Set of decoder configuration properties
@@ -45,7 +46,7 @@ public class DecoderInfo {
 	private Integer stillImage;
 
 	@JsonAlias("stillImageDelay")
-	private Integer stillImageDelay;
+	private String stillImageDelay;
 
 	@JsonAlias("szStillImageFileName")
 	private String szStillImageFileName;
@@ -57,10 +58,10 @@ public class DecoderInfo {
 	private Integer bufferingMode;
 
 	@JsonAlias("bufferingDelay")
-	private Integer bufferingDelay;
+	private String bufferingDelay;
 
 	@JsonAlias("multisyncBufferingDelay")
-	private Integer multisyncBufferingDelay;
+	private String multisyncBufferingDelay;
 
 	@JsonAlias("hdrDynamicRange")
 	private Integer hdrDynamicRange;
@@ -252,22 +253,28 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #stillImageDelay}
 	 */
-	public Integer getStillImageDelay() {
-		if (stillImageDelay < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
-			return DecoderConstant.MIN_STILL_IMAGE_DELAY;
-		} else if (stillImageDelay > DecoderConstant.MAX_STILL_IMAGE_DELAY) {
-			return DecoderConstant.MAX_STILL_IMAGE_DELAY;
+	public String getStillImageDelay() {
+		if (StringUtils.isNullOrEmpty(stillImageDelay)) {
+			return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
+		}
+		try {
+			if (Integer.parseInt(stillImageDelay) < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
+				return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
+			} else if (Integer.parseInt(stillImageDelay) > DecoderConstant.MAX_STILL_IMAGE_DELAY) {
+				return DecoderConstant.MAX_STILL_IMAGE_DELAY.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
 		}
 		return stillImageDelay;
 	}
-
 
 	/**
 	 * Sets {@code stillImageDelay}
 	 *
 	 * @param stillImageDelay the {@code java.lang.Integer} field
 	 */
-	public void setStillImageDelay(Integer stillImageDelay) {
+	public void setStillImageDelay(String stillImageDelay) {
 		this.stillImageDelay = stillImageDelay;
 	}
 
@@ -337,11 +344,18 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #bufferingDelay}
 	 */
-	public Integer getBufferingDelay() {
-		if (bufferingDelay < DecoderConstant.MIN_BUFFERING_DELAY) {
-			return DecoderConstant.MIN_BUFFERING_DELAY;
-		} else if (bufferingDelay > DecoderConstant.MAX_BUFFERING_DELAY) {
-			return DecoderConstant.MAX_BUFFERING_DELAY;
+	public String getBufferingDelay() {
+		if (StringUtils.isNullOrEmpty(bufferingDelay)) {
+			return DecoderConstant.MIN_BUFFERING_DELAY.toString();
+		}
+		try {
+			if (Integer.parseInt(bufferingDelay) < DecoderConstant.MIN_BUFFERING_DELAY) {
+				return DecoderConstant.MIN_BUFFERING_DELAY.toString();
+			} else if (Integer.parseInt(bufferingDelay) > DecoderConstant.MAX_BUFFERING_DELAY) {
+				return DecoderConstant.MAX_BUFFERING_DELAY.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.MIN_BUFFERING_DELAY.toString();
 		}
 		return bufferingDelay;
 	}
@@ -351,7 +365,7 @@ public class DecoderInfo {
 	 *
 	 * @param bufferingDelay the {@code java.lang.Integer} field
 	 */
-	public void setBufferingDelay(Integer bufferingDelay) {
+	public void setBufferingDelay(String bufferingDelay) {
 		this.bufferingDelay = bufferingDelay;
 	}
 
@@ -360,11 +374,18 @@ public class DecoderInfo {
 	 *
 	 * @return value of {@link #multisyncBufferingDelay}
 	 */
-	public Integer getMultisyncBufferingDelay() {
-		if (multisyncBufferingDelay < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
-			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY;
-		} else if (multisyncBufferingDelay > DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY) {
-			return DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY;
+	public String getMultisyncBufferingDelay() {
+		if (StringUtils.isNullOrEmpty(multisyncBufferingDelay)) {
+			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
+		}
+		try {
+			if (Integer.parseInt(multisyncBufferingDelay) < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
+				return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
+			} else if (Integer.parseInt(multisyncBufferingDelay) > DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY) {
+				return DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY.toString();
+			}
+		} catch (Exception e) {
+			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
 		}
 		return multisyncBufferingDelay;
 	}
@@ -374,7 +395,7 @@ public class DecoderInfo {
 	 *
 	 * @param multisyncBufferingDelay the {@code java.lang.Integer} field
 	 */
-	public void setMultisyncBufferingDelay(Integer multisyncBufferingDelay) {
+	public void setMultisyncBufferingDelay(String multisyncBufferingDelay) {
 		this.multisyncBufferingDelay = multisyncBufferingDelay;
 	}
 

@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -38,17 +36,6 @@ public enum NetworkType {
 	 */
 	public String getName() {
 		return this.name;
-	}
-
-	/**
-	 * @return list of network type
-	 */
-	public static List<String> getTypeList() {
-		List<String> list = new LinkedList<>();
-		for (NetworkType type : NetworkType.values()) {
-			list.add(type.getName());
-		}
-		return list;
 	}
 
 	/**

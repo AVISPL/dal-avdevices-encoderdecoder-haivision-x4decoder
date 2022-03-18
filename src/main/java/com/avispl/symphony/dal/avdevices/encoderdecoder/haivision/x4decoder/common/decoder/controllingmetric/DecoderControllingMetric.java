@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 public enum DecoderControllingMetric {
 
-	STREAM_ID("StreamId"),
+	STREAM("Stream"),
 	ALT_STREAM_ID("AltStreamId"),
 	BUFFERING_DELAY("BufferingDelay"),
 	BUFFERING_MODE("BufferingMode"),

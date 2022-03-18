@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Set of decoder controlling metric keys
+ * Set of stream controlling metric keys
  *
  * @author Harry / Symphony Dev Team<br>
  * Created on 3/8/2022
@@ -21,30 +21,27 @@ public enum StreamControllingMetric {
 	SOURCE_ADDRESS("SourceAddress"),
 	DESTINATION_PORT("DestinationPort"),
 	REJECT_UNENCRYPTED_CALLERS("RejectUnencryptedCallers"),
-	TYPE("Type"),
-	SRT_TO_UDP_STREAM_CONVERSION("SrtToUdpStreamConversion"),
+	NETWORK_TYPE("Type"),
 	ADDRESS("Address"),
-	DECODER_ID("DecoderId"),
 	FEC_RTP("FecRtp"),
 	ID("Id"),
 	LATENCY("Latency"),
 	PASSPHRASE("Passphrase"),
-	PASSPHRASE_SET("PassphraseSet"),
 	PORT("Port"),
-	SOURCE_IP("SourceIp"),
 	SOURCE_PORT("SourcePort"),
 	SRT_MODE("SrtMode"),
-	SRT_TO_UDP("SrtToUdp"),
+	SRT_TO_UDP_STREAM_CONVERSION("SrtToUdpStreamConversion"),
 	SRT_TO_UDP_ADDRESS("SrtToUdpAddress"),
 	SRT_TO_UDP_PORT("SrtToUdpPort"),
 	SRT_TO_UDP_TOS("SrtToUdpTos"),
 	SRT_TO_UDP_TTL("SrtToUdpTtl"),
-	STRICT_MODE("StrictMode"),
-	USER_DATA("UserData"),
 	ENCRYPTED("Encrypted"),
 	CREATE("Create"),
 	DELETE("Delete"),
-	UPDATE("Update");
+	UPDATE("Update"),
+	APPLY_CHANGE("ApplyChange"),
+	CANCEL("Cancel"),
+	EDITED("Edited");
 
 	private final String name;
 

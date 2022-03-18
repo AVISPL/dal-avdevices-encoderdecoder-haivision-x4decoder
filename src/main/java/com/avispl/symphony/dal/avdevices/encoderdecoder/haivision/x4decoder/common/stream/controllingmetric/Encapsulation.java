@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,18 +49,6 @@ public enum Encapsulation {
 	 */
 	public Integer getCode() {
 		return code;
-	}
-
-	/**
-	 *
-	 * @return list of encapsulation
-	 */
-	public static List<String> getEncapsulationList() {
-		List<String> list = new LinkedList<>();
-		for (Encapsulation encapsulation : Encapsulation.values()) {
-			list.add(encapsulation.getName());
-		}
-		return list;
 	}
 
 	/**

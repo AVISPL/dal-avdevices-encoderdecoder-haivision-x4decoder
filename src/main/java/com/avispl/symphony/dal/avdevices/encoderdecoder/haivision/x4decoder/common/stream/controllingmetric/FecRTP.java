@@ -4,8 +4,6 @@
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.stream.controllingmetric;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Optional;
  */
 public enum FecRTP {
 
-	DISABLE("disable", 0),
+	DISABLE("Disable", 0),
 	MPEG_PRO_FEC("MPEG PRO FEC", 2);
 
 	private final String name;
@@ -53,21 +51,10 @@ public enum FecRTP {
 	}
 
 	/**
-	 * @return list of encapsulation
-	 */
-	public static List<String> getFecRTPList() {
-		List<String> list = new LinkedList<>();
-		for (FecRTP fecRTP : FecRTP.values()) {
-			list.add(fecRTP.getName());
-		}
-		return list;
-	}
-
-	/**
-	 * This method is used to get encapsulation mode by name
+	 * This method is used to get fec rtp mode by name
 	 *
-	 * @param name is the name of encapsulation mode that want to get
-	 * @return Encapsulation is the protocol that want to get
+	 * @param name is the name of fec rtp mode that want to get
+	 * @return FecRTP is the protocol that want to get
 	 */
 	public static FecRTP getByName(String name) {
 		Optional<FecRTP> fecRTP = Arrays.stream(FecRTP.values()).filter(com -> com.getName().equals(name)).findFirst();

@@ -3,9 +3,6 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 /**
  * Set of controlling metric group keys
  *
@@ -16,8 +13,8 @@ import java.util.Optional;
 public enum ControllingMetricGroup {
 
 	DECODER("Decoder"),
-	STREAM("Stream"),
-	CREATE_STREAM("CreateStream");
+	CREATE_STREAM("CreateStream"),
+	STREAM("Stream");
 
 	private final String name;
 
@@ -41,14 +38,23 @@ public enum ControllingMetricGroup {
 	}
 
 	/**
-	 * This method is used to get controlling metric by name
+	 * This method is used to get controlling metric group by name
 	 *
 	 * @param name is the name of controlling metric that want to get
 	 * @return ControllingMetric is the controlling metric group that want to get
 	 */
 	public static ControllingMetricGroup getByName(String name) {
-		Optional<ControllingMetricGroup> controllingMetricGroup = Arrays.stream(ControllingMetricGroup.values()).filter(com -> name.contains(com.getName())).findFirst();
-		return controllingMetricGroup.orElse(null);
+		if (name.contains("Decoder")) {
+			return ControllingMetricGroup.DECODER;
+		}
+		if (name.contains("Create")) {
+			return ControllingMetricGroup.CREATE_STREAM;
+		}
+		if (name.contains("Stream")) {
+			return ControllingMetricGroup.STREAM;
+		} else {
+			return null;
+		}
 	}
 
 }
