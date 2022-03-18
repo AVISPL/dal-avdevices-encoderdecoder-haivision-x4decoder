@@ -513,23 +513,8 @@ public class StreamInfo {
 	 * @return value of {@link #srtToUdpTos}
 	 */
 	public String getSrtToUdpTos() {
-		if (StringUtils.isNullOrEmpty(srtToUdpTos) || !srtToUdpTos.startsWith("0x")) {
+		if (StringUtils.isNullOrEmpty(srtToUdpTos)) {
 			return DecoderConstant.SRT_TO_UDP_TOS;
-		}else {
-			String valueCopy = srtToUdpTos.replace("0x", "");
-			try {
-				int decTos = Integer.parseInt(valueCopy, 16);
-				int decMaxTos = Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16);
-				int decMinTos = Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16);
-				if (decTos < decMinTos) {
-					srtToUdpTos = "0x" + DecoderConstant.MIN_OF_TOS;
-				}
-				if (decTos > decMaxTos) {
-					srtToUdpTos = "0x" + DecoderConstant.MAX_OF_TOS;
-				}
-			} catch (Exception e) {
-				return DecoderConstant.SRT_TO_UDP_TOS;
-			}
 		}
 		return srtToUdpTos;
 	}

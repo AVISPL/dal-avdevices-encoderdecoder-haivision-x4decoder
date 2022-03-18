@@ -63,13 +63,16 @@ public class DecoderConstant {
 	public static final String SRT_TO_UDP_TOS = "0x80";
 	public static final String MAX_OF_TOS = "FF";
 	public static final String MIN_OF_TOS = "00";
+	public static final String HEX_PREFIX = "0x";
 	public static final int MIN_DECODER_ID = 0;
 	public static final int MAX_DECODER_ID = 4;
 	public static final Integer MIN_STILL_IMAGE_DELAY = 1;
+	public static final Integer DEFAULT_STILL_IMAGE_DELAY = 1;
 	public static final Integer MAX_STILL_IMAGE_DELAY = 1000;
 	public static final Integer MIN_BUFFERING_DELAY = 0;
 	public static final Integer MAX_BUFFERING_DELAY = 3000;
 	public static final Integer MIN_MULTI_SYNC_BUFFERING_DELAY = 0;
+	public static final Integer DEFAULT_MULTI_SYNC_BUFFERING_DELAY = 1000;
 	public static final Integer MAX_MULTI_SYNC_BUFFERING_DELAY = 10000;
 	public static final Integer MIN_PORT = 1025;
 	public static final Integer MAX_PORT = 65535;

@@ -255,7 +255,7 @@ public class DecoderInfo {
 	 */
 	public String getStillImageDelay() {
 		if (StringUtils.isNullOrEmpty(stillImageDelay)) {
-			return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
+			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
 		}
 		try {
 			if (Integer.parseInt(stillImageDelay) < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
@@ -376,7 +376,7 @@ public class DecoderInfo {
 	 */
 	public String getMultisyncBufferingDelay() {
 		if (StringUtils.isNullOrEmpty(multisyncBufferingDelay)) {
-			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
+			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
 		}
 		try {
 			if (Integer.parseInt(multisyncBufferingDelay) < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
