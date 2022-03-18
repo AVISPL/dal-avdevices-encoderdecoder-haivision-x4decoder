@@ -15,11 +15,13 @@ public enum AudioPairMetric {
 	// Static metric
 	AUDIO_PAIR_MODE("PairMode"),
 	COMPRESSION("Compression"),
-	BITRATE("Bitrate"),
+	BITRATE("Bitrate(kbps)"),
 	AV_SYNC_MS("AvSyncMs"),
 	DISCONTINUITIES("Discontinuities"),
 	DECODE_ERRORS("DecodeErrors"),
+	LAST_DECODE_ERRORS("LastDecodeErrors"),
 	OUTPUT_ERRORS("OutputErrors"),
+	LAST_OUTPUT_ERRORS("LastOutputErrors"),
 	SAMPE_RATE_IN("SampeRateIn"),
 	SAMPE_RATE_OUT(" SampeRateOut");
 
