@@ -580,7 +580,7 @@ public class StreamInfo {
 	 * @return String default stream name
 	 */
 	public String getDefaultStreamName() {
-		return getEncapsulation().getName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
+		return getEncapsulation().getShortName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
 				DecoderConstant.COLON + DecoderConstant.LEFT_PARENTHESES + getPort() + DecoderConstant.RIGHT_PARENTHESES;
 	}
 
