@@ -207,7 +207,7 @@ public class Source {
 			case RECEIVED_PACKETS:
 				return normalizeData.getDataValue(getReceivedPackets());
 			case LAST_RECEIVED_PACKETS:
-				return normalizeData.getDataExtraInfo(getReceivedPackets());
+				return normalizeData.getDataExtraInfoCase1(getReceivedPackets());
 			case RECEIVED_BYTES:
 				return normalizeData.getValueOnly(getReceivedBytes());
 			case PTS:
