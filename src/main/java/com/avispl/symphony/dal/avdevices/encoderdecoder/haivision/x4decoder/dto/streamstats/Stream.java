@@ -87,7 +87,7 @@ public class Stream {
 			case CONNECTIONS:
 				return normalizeData.getDataValue(streamStats.getConnections());
 			case LAST_CONNECTIONS:
-				return normalizeData.getDataExtraInfo(streamStats.getConnections());
+				return normalizeData.getDataExtraInfoCase1(streamStats.getConnections());
 			case RECEIVED_PACKET:
 				return normalizeData.getValueOnly(streamStats.getReceivedPackets());
 			case RECEIVED_BYTES:
@@ -95,7 +95,7 @@ public class Stream {
 			case OUTPUT_PACKETS:
 				return normalizeData.getDataValue(streamStats.getOutputPackets());
 			case LAST_OUTPUT_PACKETS:
-				return normalizeData.getDataExtraInfo(streamStats.getOutputPackets());
+				return normalizeData.getDataExtraInfoCase1(streamStats.getOutputPackets());
 			case PROGRAM_NUMBER:
 				return streamStats.getProgramNumber();
 			case PCR_PID:
@@ -103,15 +103,15 @@ public class Stream {
 			case ERROR_DROPPED_PACKETS:
 				return normalizeData.getDataValue(streamStats.getDroppedPackets());
 			case ERROR_LAST_DROPPED_PACKETS:
-				return normalizeData.getDataExtraInfo(streamStats.getDroppedPackets());
+				return normalizeData.getDataExtraInfoCase1(streamStats.getDroppedPackets());
 			case ERROR_CORRUPTED_FRAMES:
 				return normalizeData.getDataValue(streamStats.getCorruptedFrames());
 			case ERROR_LAST_CORRUPTED_FRAMES:
-				return normalizeData.getDataExtraInfo(streamStats.getCorruptedFrames());
+				return normalizeData.getDataExtraInfoCase1(streamStats.getCorruptedFrames());
 			case ERROR_RESTARTS:
 				return normalizeData.getDataValue(streamStats.getResumedStreamFlags());
 			case ERROR_LAST_RESTARTS:
-				return normalizeData.getDataExtraInfo(streamStats.getResumedStreamFlags());
+				return normalizeData.getDataExtraInfoCase1(streamStats.getResumedStreamFlags());
 			case OUTPUT_BYTES:
 				return normalizeData.getValueOnly(streamStats.getOutputBytes());
 			case LAST_RECEIVED:

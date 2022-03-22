@@ -64,19 +64,19 @@ public class NormalizeData {
 	}
 
 	/**
-	 * get data extra info in string
+	 * get data extra info in string in case the extra data is behind the "last" keyword eg: 0 [0.00%] (Last: Never)
 	 *
 	 * @param data the normalized data
 	 * @return String
 	 */
-	public String getDataExtraInfo(String data) {
+	public String getDataExtraInfoCase1(String data) {
 		if(data == null){
 			return DecoderConstant.EMPTY;
 		}
 		StringBuilder stringBuilder = new StringBuilder();
 		String[] spiltDataList = data.split(DecoderConstant.SPACE);
 		for (int i = 0; i < spiltDataList.length; i++) {
-			if (spiltDataList[i].contains("Last")) {
+			if (spiltDataList[i].contains("(")) {
 				i++;
 				for (int j = i; j < spiltDataList.length; j++) {
 					stringBuilder.append(spiltDataList[j] + DecoderConstant.SPACE);
@@ -85,6 +85,29 @@ public class NormalizeData {
 			}
 		}
 		return stringBuilder.toString().replace(DecoderConstant.RIGHT_PARENTHESES, DecoderConstant.EMPTY);
+	}
+
+	/**
+	 * get data extra info in string in case the extra data is cover by parenthesis's  eg: (TC - System Time)
+	 *
+	 * @param data the normalized data
+	 * @return String
+	 */
+	public String getDataExtraInfoCase2(String data) {
+		if(data == null){
+			return DecoderConstant.EMPTY;
+		}
+		StringBuilder stringBuilder = new StringBuilder();
+		String[] spiltDataList = data.split(DecoderConstant.SPACE);
+		for (int i = 0; i < spiltDataList.length; i++) {
+			if (spiltDataList[i].contains("(")) {
+				for (int j = i; j < spiltDataList.length; j++) {
+					stringBuilder.append(spiltDataList[j] + DecoderConstant.SPACE);
+				}
+				break;
+			}
+		}
+		return stringBuilder.toString().replace(DecoderConstant.RIGHT_PARENTHESES, DecoderConstant.EMPTY).replace(DecoderConstant.LEFT_PARENTHESES, DecoderConstant.EMPTY);
 	}
 
 	/**
