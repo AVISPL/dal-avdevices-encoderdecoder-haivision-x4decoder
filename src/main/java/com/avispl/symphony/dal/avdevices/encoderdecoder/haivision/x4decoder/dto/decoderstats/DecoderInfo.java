@@ -255,7 +255,7 @@ public class DecoderInfo {
 	 */
 	public String getStillImageDelay() {
 		if (StringUtils.isNullOrEmpty(stillImageDelay)) {
-			return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
+			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
 		}
 		try {
 			if (Integer.parseInt(stillImageDelay) < DecoderConstant.MIN_STILL_IMAGE_DELAY) {
@@ -376,7 +376,7 @@ public class DecoderInfo {
 	 */
 	public String getMultisyncBufferingDelay() {
 		if (StringUtils.isNullOrEmpty(multisyncBufferingDelay)) {
-			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
+			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
 		}
 		try {
 			if (Integer.parseInt(multisyncBufferingDelay) < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
@@ -629,6 +629,81 @@ public class DecoderInfo {
 				",\"outputFrameRate\":" + outputFrameRate +
 				",\"quadMode\":" + quadMode +
 				'}';
+	}
+
+	/**
+	 * This method is used to compare object in specify Buffering mode
+	 */
+	public boolean equalsByBufferingMode(Object o, BufferingMode bufferingMode) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DecoderInfo that = (DecoderInfo) o;
+		switch (bufferingMode) {
+			case AUTO:
+				return true;
+			case FIXED:
+				return Objects.equals(bufferingDelay, that.bufferingDelay);
+			case MULTI_SYNC:
+				return Objects.equals(multisyncBufferingDelay, that.multisyncBufferingDelay);
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * This method is used to compare object in specify quad mode
+	 */
+	public boolean equalsByQuadMode(Object o, boolean isEnableQuadMode) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DecoderInfo that = (DecoderInfo) o;
+
+		if(isEnableQuadMode){
+			return Objects.equals(quadMode, that.quadMode);
+		}
+		return true;
+	}
+
+	/**
+	 * This method is used to compare object in specify case
+	 */
+	public boolean deepEquals(Object o, BufferingMode bufferingMode, boolean isEnableQuadMode) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DecoderInfo that = (DecoderInfo) o;
+		return Objects.equals(id, that.id)
+				&& Objects.equals(streamId, that.streamId)
+				&& Objects.equals(altStreamId, that.altStreamId)
+				&& Objects.equals(state, that.state)
+				&& Objects.equals(latency, that.latency)
+				&& Objects.equals(stillImage, that.stillImage)
+				&& Objects.equals(stillImageDelay, that.stillImageDelay)
+				&& Objects.equals(szStillImageFileName, that.szStillImageFileName)
+				&& Objects.equals(enableBuffering, that.enableBuffering)
+				&& Objects.equals(this.bufferingMode, that.bufferingMode)
+				&& equalsByBufferingMode(o, getBufferingMode())
+				&& Objects.equals(hdrDynamicRange, that.hdrDynamicRange)
+				&& Objects.equals(nNumOfOutputs, that.nNumOfOutputs)
+				&& Objects.equals(output1, that.output1)
+				&& Objects.equals(output2, that.output2)
+				&& Objects.equals(output3, that.output3)
+				&& Objects.equals(output4, that.output4)
+				&& Objects.equals(outputFrameRate, that.outputFrameRate)
+				&& Objects.equals(previewEnabled, that.previewEnabled)
+				&& Objects.equals(previewIntervalSec, that.previewIntervalSec)
+				&& equalsByQuadMode(o, isEnableQuadMode);
 	}
 
 	@Override

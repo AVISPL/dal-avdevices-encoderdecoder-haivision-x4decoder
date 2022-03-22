@@ -15,22 +15,24 @@ import java.util.Optional;
  */
 public enum Encapsulation {
 
-	TS_OVER_UDP("TS over UDP", 2),
-	TS_OVER_RTP("TS over RTP", 3),
-	TS_OVER_SRT("TS over SRT", 34);
+	TS_OVER_UDP("TS over UDP", 2, "Udp"),
+	TS_OVER_RTP("TS over RTP", 3, "Rtp"),
+	TS_OVER_SRT("TS over SRT", 34, "Srt");
 
 	private final String name;
 	private final Integer code;
+	private final String shortName;
 
 	/**
 	 * Parameterized constructor
-	 *
-	 * @param name Name of decoder monitoring metric
+	 *  @param name Name of decoder monitoring metric
 	 * @param code  Code of decoder encapsulation mode
+	 * @param shortName
 	 */
-	Encapsulation(String name, Integer code) {
+	Encapsulation(String name, Integer code, String shortName) {
 		this.name = name;
 		this.code = code;
+		this.shortName = shortName;
 	}
 
 	/**
@@ -49,6 +51,15 @@ public enum Encapsulation {
 	 */
 	public Integer getCode() {
 		return code;
+	}
+
+	/**
+	 * Retrieves {@code {@link #shortName}}
+	 *
+	 * @return value of {@link #shortName}
+	 */
+	public String getShortName() {
+		return shortName;
 	}
 
 	/**

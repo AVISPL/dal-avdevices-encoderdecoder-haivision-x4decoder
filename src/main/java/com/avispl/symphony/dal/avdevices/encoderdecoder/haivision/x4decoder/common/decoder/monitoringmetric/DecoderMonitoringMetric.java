@@ -63,8 +63,11 @@ public enum DecoderMonitoringMetric {
 	HDR_TYPE_IN("HdrTypeIn"),
 	HDR_TYPE("HdrType"),
 	HDR_COLOUR_PRIMARIES("HdrColourPrimaries"),
+	HDR_COLOUR_PRIMARIES_REC("HdrColourPrimariesRec"),
 	HDR_TRANSFER_CHARACTERISTICS("HdrTransferCharacteristics"),
+	HDR_TRANSFER_CHARACTERISTICS_REC("HdrTransferCharacteristicsRec"),
 	HDR_MATRIX_COEFFICIENTS("HdrMatrixCoefficients"),
+	HDR_MATRIX_COEFFICIENTS_REC("HdrMatrixCoefficientsRec"),
 	TC_RECEIVED_PACKETS("TimeCodeTcReceivedPackets"),
 	LAST_TC_RECEIVED_PACKETS("LastTimeCodeTcReceivedPackets"),
 	TC_OUTPUT_PACKETS("TimeCodeTcOutputPackets"),
@@ -72,14 +75,16 @@ public enum DecoderMonitoringMetric {
 	TC_FREED_PACKETS("TimeCodeTcFreedPackets"),
 	LAST_TC_FREED_PACKETS("LastTimeCodeTcFreedPackets"),
 	MULTI_SYNC_STATUS("MultisyncStatus"),
-	MULTI_SYNC_DELAY_ACTUAL("MultisyncDelayActual"),
+	MULTI_SYNC_DELAY_ACTUAL("MultisyncDelayActual(ms)"),
 	MULTI_SYNC_DELAY_RANGE("MultisyncDelayRange"),
-	MULTI_SYNC_DELAY_SET("MultisyncDelaySet"),
-	MULTI_SYNC_SYSTEM_TIME("MultisyncSystemTime"),
-	MULTI_SYNC_TIME_CODE("MultisyncTimecode"),
+	MULTI_SYNC_DELAY_SET("MultisyncDelaySet(ms)"),
+	MULTI_SYNC_DELAY_SET_ALERT("MultisyncDelaySetAlert"),
+	MULTI_SYNC_SYSTEM_TIME("MultisyncSystemTime(ms)"),
+	MULTI_SYNC_TIME_CODE("MultisyncTimecode(ms)"),
 	MULTI_SYNC_TIME_CODE_PACKETS("MultisyncTimecodePackets"),
-	MULTI_SYNC_TIME_DIFF("MultisyncTimeDiff"),
-	MULTI_SYNC_TRANSMISSION_TIME("MultisyncTransmissionTime");
+	MULTI_SYNC_TIME_DIFF("MultisyncTimeDiff(ms)"),
+	MULTI_SYNC_TIME_DIFF_COORDINATE_TIME("MultisyncTimeDiffCoordinateTime"),
+	MULTI_SYNC_TRANSMISSION_TIME("MultisyncTransmissionTime(ms)");
 
 	private final String name;
 

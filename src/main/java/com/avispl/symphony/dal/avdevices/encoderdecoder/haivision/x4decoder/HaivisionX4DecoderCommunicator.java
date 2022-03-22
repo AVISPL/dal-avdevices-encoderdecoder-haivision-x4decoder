@@ -209,8 +209,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				createStreamControl(stats, advancedControllableProperties, ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH, splitProperty[1], value);
 				break;
 			case STREAM:
-				String streamName = splitProperty[0].substring(6);
-				streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + streamName + DecoderConstant.HASH, streamName, splitProperty[1], value);
+				String controlStreamName = splitProperty[0].substring(6);
+				streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + controlStreamName + DecoderConstant.HASH, controlStreamName, splitProperty[1], value);
 				break;
 			default:
 				if (logger.isWarnEnabled()) {
@@ -279,7 +279,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		}
 		if (!isEmergencyDelivery) {
 			populateDecoderMonitoringMetrics(stats);
-			if (isUpdateLocalDecoderControl || localDecoderInfoList.size() == 0) {
+			if (isUpdateLocalDecoderControl || localDecoderInfoList.isEmpty()) {
 				localDecoderInfoList = decoderInfoDTOList.stream().map(decoderInfo -> new DecoderInfo(decoderInfo)).collect(Collectors.toList());
 				isUpdateLocalDecoderControl = false;
 			}
@@ -1081,10 +1081,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		DecoderInfo decoderInfo = this.localDecoderInfoList.get(decoderID);
 		DecoderInfo decoderInfoDTO = this.decoderInfoDTOList.get(decoderID);
 
-		String applyChange = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.APPLY_CHANGE.getName();
+		BufferingMode bufferingMode = decoderInfo.getBufferingMode();
+		boolean isEnableQuadMode = decoderInfo.getOutput1() && decoderInfo.getOutput2() && decoderInfo.getOutput3() && decoderInfo.getOutput4();
+
+				String applyChange = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.APPLY_CHANGE.getName();
 		String cancel = ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.CANCEL.getName();
 
-		if (!decoderInfo.equals(decoderInfoDTO)) {
+		if (!decoderInfo.deepEquals(decoderInfoDTO, bufferingMode, isEnableQuadMode)) {
 			stats.put(ControllingMetricGroup.DECODER.getName() + decoderID + DecoderConstant.HASH + DecoderControllingMetric.EDITED.getName(), "True");
 			stats.put(applyChange, DecoderConstant.EMPTY);
 			stats.put(cancel, DecoderConstant.EMPTY);
@@ -2059,12 +2062,29 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TOS:
-				createStream.setSrtToUdpTos(value);
-				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), createStream.getSrtToUdpTos()));
-				populateCancelButtonForCreateStream(stats, advancedControllableProperties);
-				populateLocalExtendedStats(stats, advancedControllableProperties);
-				break;
+				try {
+					Integer copyValue;
+					if (value.startsWith(DecoderConstant.HEX_PREFIX)) {
+						copyValue = Integer.parseInt(value.replace(DecoderConstant.HEX_PREFIX, ""), 16);
+					} else {
+						copyValue = (int) Float.parseFloat(value);
+					}
+					String copyHexValue = DecoderConstant.HEX_PREFIX + String.format("%02X", 0xFF & copyValue);
+					if (copyValue < Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MIN_OF_TOS;
+					}
+					if (copyValue > Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MAX_OF_TOS;
+					}
+					createStream.setSrtToUdpTos(copyHexValue);
+					addAdvanceControlProperties(advancedControllableProperties,
+							createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), createStream.getSrtToUdpTos()));
+					populateCancelButtonForCreateStream(stats, advancedControllableProperties);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+					break;
+				} catch (Exception var60) {
+					throw new NumberFormatException("Value of ParameterToS is invalid. TOS must be hex value range to 00-FF");
+				}
 			case SRT_TO_UDP_TTL:
 				createStream.setSrtToUdpTtl(value);
 				addAdvanceControlProperties(advancedControllableProperties,
@@ -2544,13 +2564,30 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				populateLocalExtendedStats(stats, advancedControllableProperties);
 				break;
 			case SRT_TO_UDP_TOS:
-				streamInfo.setSrtToUdpTos(value);
-				this.localStreamInfoList.set(streamIndex, streamInfo);
-				addAdvanceControlProperties(advancedControllableProperties,
-						createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
-				populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
-				populateLocalExtendedStats(stats, advancedControllableProperties);
-				break;
+				try {
+					Integer copyValue;
+					if (value.startsWith(DecoderConstant.HEX_PREFIX)) {
+						copyValue = Integer.parseInt(value.replace(DecoderConstant.HEX_PREFIX, ""), 16);
+					} else {
+						copyValue = (int) Float.parseFloat(value);
+					}
+					String copyHexValue = DecoderConstant.HEX_PREFIX + String.format("%02X", 0xFF & copyValue);
+					if (copyValue < Integer.parseInt(DecoderConstant.MIN_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MIN_OF_TOS;
+					}
+					if (copyValue > Integer.parseInt(DecoderConstant.MAX_OF_TOS, 16)) {
+						copyHexValue = DecoderConstant.HEX_PREFIX + DecoderConstant.MAX_OF_TOS;
+					}
+					streamInfo.setSrtToUdpTos(copyHexValue);
+					this.localStreamInfoList.set(streamIndex, streamInfo);
+					addAdvanceControlProperties(advancedControllableProperties,
+							createText(stats, streamControllingGroup + StreamControllingMetric.SRT_TO_UDP_TOS.getName(), streamInfo.getSrtToUdpTos()));
+					populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
+					populateLocalExtendedStats(stats, advancedControllableProperties);
+					break;
+				} catch (Exception var60) {
+					throw new NumberFormatException("Value of ParameterToS is invalid. TOS must be hex value range to 00-FF");
+				}
 			case SRT_TO_UDP_TTL:
 				streamInfo.setSrtToUdpTtl(value);
 				this.localStreamInfoList.set(streamIndex, streamInfo);
@@ -2588,7 +2625,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				StreamInfo controlResult = performStreamControl(streamInfo);
 				if (controlResult != null) {
 					this.localStreamInfoList.set(streamIndex, controlResult);
-					this.streamInfoDTOList.set(streamIndex, controlResult);
 					populateApplyChangeAndCancelButtonForStream(stats, advancedControllableProperties, streamID);
 				}
 				break;

@@ -231,11 +231,11 @@ public class AudioPair {
 			case DECODE_ERRORS:
 				return normalizeData.getDataValue(getDecodeErrors());
 			case LAST_DECODE_ERRORS:
-				return normalizeData.getDataExtraInfo(getDecodeErrors());
+				return normalizeData.getDataExtraInfoCase1(getDecodeErrors());
 			case OUTPUT_ERRORS:
 				return normalizeData.getDataValue(getOutputErrors());
 			case LAST_OUTPUT_ERRORS:
-				return normalizeData.getDataExtraInfo(getOutputErrors());
+				return normalizeData.getDataExtraInfoCase1(getOutputErrors());
 			case SAMPE_RATE_IN:
 				return getSampeRateIn().toString();
 			case SAMPE_RATE_OUT:
