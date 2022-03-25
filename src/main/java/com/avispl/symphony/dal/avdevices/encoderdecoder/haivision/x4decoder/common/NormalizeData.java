@@ -42,7 +42,7 @@ public class NormalizeData {
 	 * @param data the normalized data
 	 * @return String
 	 */
-	public String getValueOnly(String data) {
+	public static String getValueOnly(String data) {
 		if(data == null){
 			return DecoderConstant.EMPTY;
 		}

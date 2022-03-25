@@ -580,8 +580,13 @@ public class StreamInfo {
 	 * @return String default stream name
 	 */
 	public String getDefaultStreamName() {
-		return getEncapsulation().getShortName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
-				DecoderConstant.COLON + DecoderConstant.LEFT_PARENTHESES + getPort() + DecoderConstant.RIGHT_PARENTHESES;
+		if (getAddress().equals(DecoderConstant.ADDRESS_ANY) || getAddress().equals(DecoderConstant.EMPTY) ) {
+			return getEncapsulation().getShortName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + DecoderConstant.LEFT_PARENTHESES + DecoderConstant.ADDRESS_ANY + DecoderConstant.RIGHT_PARENTHESES +
+					DecoderConstant.COLON  + getPort() ;
+		}else {
+			return getEncapsulation().getShortName() + DecoderConstant.COLON + DecoderConstant.SLASH + DecoderConstant.SLASH + getAddress() +
+					DecoderConstant.COLON  + getPort() ;
+		}
 	}
 
 	/**
