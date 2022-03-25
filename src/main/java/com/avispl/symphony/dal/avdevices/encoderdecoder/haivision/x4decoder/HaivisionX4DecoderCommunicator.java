@@ -106,6 +106,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private boolean isUpdateLocalDecoderControl = false;
 	private boolean isUpdateLocalStreamControl = false;
 	private boolean isCreatedStreamControl = false;
+	private Boolean isConfigManagement;
 
 	private boolean isEmergencyDelivery = false;
 	private ExtendedStatistics localExtendedStatistics;
@@ -121,6 +122,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private String streamName;
 	private String portNumber;
 	private String streamStatus;
+	private String configManagement;
 
 	/**
 	 * Retrieves {@code {@link #streamName }}
@@ -174,6 +176,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	public void setStreamStatus(String streamStatus) {
 		this.streamStatus = streamStatus;
+	}
+
+	/**
+	 * Retrieves {@code {@link #configManagement }}
+	 *
+	 * @return value of {@link #configManagement}
+	 */
+	public String getConfigManagement() {
+		return configManagement;
+	}
+
+	/**
+	 * Sets {@code controllingCapabilitiesTrigger}
+	 *
+	 * @param configManagement the {@code java.lang.String} field
+	 */
+	public void setConfigManagement(String configManagement) {
+		this.configManagement = configManagement;
 	}
 
 	/**
@@ -291,7 +311,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 			// check Role is Admin or Operator
 			String role = authenticationInfo.getAuthenticationRole().getRole();
-			if (role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) {
+			if ((role.equals(DecoderConstant.OPERATOR_ROLE) || role.equals(DecoderConstant.ADMIN_ROLE)) && handleAdapterPropertyIsConfigManagementFromUser()) {
 				populateControllingMetrics(stats, advancedControllableProperties);
 				extendedStatistics.setControllableProperties(advancedControllableProperties);
 			}
@@ -697,7 +717,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						// Port number filtering
 						if (this.portNumber != null && portNumberSet != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
-							boolean isValidPort = handleAdapterPortRangeFromUser(port);
+							boolean isValidPort = handleAdapterPropertyPortRangeFromUser(port);
 							if (!isValidPort) {
 								continue;
 							}
@@ -825,7 +845,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @return boolean the port and port range filtering result
 	 */
-	public boolean handleAdapterPortRangeFromUser(Integer portNumber) {
+	public boolean handleAdapterPropertyPortRangeFromUser(Integer portNumber) {
 		int minPortNumber = 0;
 		int maxPortNumber = 0;
 		try {
@@ -858,6 +878,19 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			throw new ResourceNotReachableException(DecoderConstant.PORT_NUMBER_ERROR);
 		}
 		return false;
+	}
+
+	/**
+	 * This method is used to handle  input from adapter properties in case is config management
+	 *
+	 * @return boolean is configManagement
+	 */
+	public boolean handleAdapterPropertyIsConfigManagementFromUser() {
+		if (isConfigManagement != null) {
+			return isConfigManagement;
+		}
+			isConfigManagement = !StringUtils.isNullOrEmpty(this.configManagement) && this.configManagement.equalsIgnoreCase("true");
+			return isConfigManagement;
 	}
 
 	//region Populate decoder control properties
