@@ -264,7 +264,7 @@ public class DecoderInfo {
 				return DecoderConstant.MAX_STILL_IMAGE_DELAY.toString();
 			}
 		} catch (Exception e) {
-			return DecoderConstant.MIN_STILL_IMAGE_DELAY.toString();
+			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
 		}
 		return stillImageDelay;
 	}
@@ -376,7 +376,7 @@ public class DecoderInfo {
 	 */
 	public String getMultisyncBufferingDelay() {
 		if (StringUtils.isNullOrEmpty(multisyncBufferingDelay)) {
-			return DecoderConstant.DEFAULT_STILL_IMAGE_DELAY.toString();
+			return DecoderConstant.DEFAULT_MULTI_SYNC_BUFFERING_DELAY.toString();
 		}
 		try {
 			if (Integer.parseInt(multisyncBufferingDelay) < DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY) {
@@ -385,7 +385,7 @@ public class DecoderInfo {
 				return DecoderConstant.MAX_MULTI_SYNC_BUFFERING_DELAY.toString();
 			}
 		} catch (Exception e) {
-			return DecoderConstant.MIN_MULTI_SYNC_BUFFERING_DELAY.toString();
+			return DecoderConstant.DEFAULT_MULTI_SYNC_BUFFERING_DELAY.toString();
 		}
 		return multisyncBufferingDelay;
 	}
