@@ -140,8 +140,8 @@ public class HaivisionX4DecoderCommunicatorTest {
 		String streamName = "SRT - WAN Listen (6515), tests";
 		String portNumber = "1257-90000";
 
-		haivisionX4DecoderCommunicator.setStreamName(streamName);
-		haivisionX4DecoderCommunicator.setPortNumber(portNumber);
+		haivisionX4DecoderCommunicator.setStreamNameFilter(streamName);
+		haivisionX4DecoderCommunicator.setPortNumberFilter(portNumber);
 
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();

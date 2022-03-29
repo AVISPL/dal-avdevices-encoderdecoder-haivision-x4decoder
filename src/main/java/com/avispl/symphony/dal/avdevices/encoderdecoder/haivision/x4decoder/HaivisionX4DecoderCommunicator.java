@@ -119,18 +119,18 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private StreamInfo createStream;
 
 	//Adapter Properties
-	private String streamName;
-	private String portNumber;
-	private String streamStatus;
+	private String streamNameFilter;
+	private String portNumberFilter;
+	private String streamStatusFilter;
 	private String configManagement;
 
 	/**
-	 * Retrieves {@code {@link #streamName }}
+	 * Retrieves {@code {@link #streamNameFilter }}
 	 *
-	 * @return value of {@link #streamName}
+	 * @return value of {@link #streamNameFilter}
 	 */
-	public String getStreamName() {
-		return streamName;
+	public String getStreamNameFilter() {
+		return streamNameFilter;
 	}
 
 	/**
@@ -138,44 +138,44 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * @param streamsName the {@code java.lang.String} field
 	 */
-	public void setStreamName(String streamsName) {
-		this.streamName = streamsName;
+	public void setStreamNameFilter(String streamsName) {
+		this.streamNameFilter = streamsName;
 	}
 
 	/**
-	 * Retrieves {@code {@link #portNumber}}
+	 * Retrieves {@code {@link #portNumberFilter }}
 	 *
-	 * @return value of {@link #portNumber}
+	 * @return value of {@link #portNumberFilter}
 	 */
-	public String getPortNumber() {
-		return portNumber;
+	public String getPortNumberFilter() {
+		return portNumberFilter;
 	}
 
 	/**
 	 * Sets {@code portNumber}
 	 *
-	 * @param portNumber the {@code java.lang.String} field
+	 * @param portNumberFilter the {@code java.lang.String} field
 	 */
-	public void setPortNumber(String portNumber) {
-		this.portNumber = portNumber;
+	public void setPortNumberFilter(String portNumberFilter) {
+		this.portNumberFilter = portNumberFilter;
 	}
 
 	/**
-	 * Retrieves {@code {@link #streamStatus}}
+	 * Retrieves {@code {@link #streamStatusFilter }}
 	 *
-	 * @return value of {@link #streamStatus}
+	 * @return value of {@link #streamStatusFilter}
 	 */
-	public String getStreamStatus() {
-		return streamStatus;
+	public String getStreamStatusFilter() {
+		return streamStatusFilter;
 	}
 
 	/**
 	 * Sets {@code streamStatus}
 	 *
-	 * @param streamStatus the {@code java.lang.String} field
+	 * @param streamStatusFilter the {@code java.lang.String} field
 	 */
-	public void setStreamStatus(String streamStatus) {
-		this.streamStatus = streamStatus;
+	public void setStreamStatusFilter(String streamStatusFilter) {
+		this.streamStatusFilter = streamStatusFilter;
 	}
 
 	/**
@@ -683,14 +683,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void retrieveStreamStats(Map<String, String> stats) {
 
 		// Retrieve Adapter Properties
-		if (this.streamName != null && streamNameSet == null) {
-			streamNameSet = handleAdapterPropertiesInputFromUser(this.streamName);
+		if (this.streamNameFilter != null && streamNameSet == null) {
+			streamNameSet = handleAdapterPropertiesInputFromUser(this.streamNameFilter);
 		}
-		if (this.streamStatus != null && streamStatusSet == null) {
-			streamStatusSet = handleAdapterPropertiesInputFromUser(this.streamStatus);
+		if (this.streamStatusFilter != null && streamStatusSet == null) {
+			streamStatusSet = handleAdapterPropertiesInputFromUser(this.streamStatusFilter);
 		}
-		if (this.portNumber != null && portNumberSet == null) {
-			portNumberSet = handleAdapterPropertiesInputFromUser(this.portNumber);
+		if (this.portNumberFilter != null && portNumberSet == null) {
+			portNumberSet = handleAdapterPropertiesInputFromUser(this.portNumberFilter);
 		}
 
 		try {
@@ -704,31 +704,31 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamStats streamStats = stream.getStreamStats();
 
 						// Stream name filtering
-						if (this.streamName != null && streamNameSet != null && streamNameSet.contains(streamInfo.getName())) {
+						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamInfo.getName())) {
 							populateStreamStats(stats, stream);
 							continue;
 						}
 
 						// Stream status filtering
-						if (this.streamStatus != null && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
+						if (this.streamStatusFilter != null && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
 							continue;
 						}
 
 						// Port number filtering
-						if (this.portNumber != null && portNumberSet != null) {
+						if (this.portNumberFilter != null && portNumberSet != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
 							boolean isValidPort = handleAdapterPropertyPortRangeFromUser(port);
 							if (!isValidPort) {
 								continue;
 							}
 						}
-						if (this.streamStatus != null) {
+						if (this.streamStatusFilter != null) {
 							populateStreamStats(stats, stream);
 						}
-						if (this.portNumber != null) {
+						if (this.portNumberFilter != null) {
 							populateStreamStats(stats, stream);
 						}
-						if (this.streamName == null) {
+						if (this.streamNameFilter == null) {
 							populateStreamStats(stats, stream);
 						}
 					}
