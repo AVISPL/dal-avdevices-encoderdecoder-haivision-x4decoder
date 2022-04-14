@@ -68,18 +68,17 @@ public class HaivisionX4DecoderCommunicatorTest {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) haivisionX4DecoderCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		String deviceInfoGroup = MonitoringMetricGroup.DEVICE_INFO.getName() + DecoderConstant.HASH;
 		String decoderStatisticGroup = MonitoringMetricGroup.DECODER_STATISTICS.getName() + 1 + DecoderConstant.HASH;
 
-		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.SERIAL_NUMBER.getName()));
-		Assertions.assertEquals(MonitoringData.HARDWARE_REVISION.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.HARDWARE_REVISION.getName()));
-		Assertions.assertEquals(MonitoringData.PART_NUMBER.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.PART_NUMBER.getName()));
-		Assertions.assertEquals(MonitoringData.FIRMWARE_VERSION.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_VERSION.getName()));
-		Assertions.assertEquals(MonitoringData.HARDWARE_COMPATIBILITY.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.HARDWARE_COMPATIBILITY.getName()));
-		Assertions.assertEquals(MonitoringData.CPLD_REVISION.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.CPLD_REVISION.getName()));
-		Assertions.assertEquals(MonitoringData.BOOT_VERSION.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.BOOT_VERSION.getName()));
-		Assertions.assertEquals(MonitoringData.CARD_TYPE.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.CARD_TYPE.getName()));
-		Assertions.assertEquals(MonitoringData.FIRMWARE_DATE.getData(), stats.get(deviceInfoGroup + DeviceInfoMetric.FIRMWARE_DATE.getName()));
+		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getData(), stats.get(DeviceInfoMetric.SERIAL_NUMBER.getName()));
+		Assertions.assertEquals(MonitoringData.HARDWARE_REVISION.getData(), stats.get(DeviceInfoMetric.HARDWARE_REVISION.getName()));
+		Assertions.assertEquals(MonitoringData.PART_NUMBER.getData(), stats.get(DeviceInfoMetric.PART_NUMBER.getName()));
+		Assertions.assertEquals(MonitoringData.FIRMWARE_VERSION.getData(), stats.get(DeviceInfoMetric.FIRMWARE_VERSION.getName()));
+		Assertions.assertEquals(MonitoringData.HARDWARE_COMPATIBILITY.getData(), stats.get(DeviceInfoMetric.HARDWARE_COMPATIBILITY.getName()));
+		Assertions.assertEquals(MonitoringData.CPLD_REVISION.getData(), stats.get(DeviceInfoMetric.CPLD_REVISION.getName()));
+		Assertions.assertEquals(MonitoringData.BOOT_VERSION.getData(), stats.get(DeviceInfoMetric.BOOT_VERSION.getName()));
+		Assertions.assertEquals(MonitoringData.CARD_TYPE.getData(), stats.get(DeviceInfoMetric.CARD_TYPE.getName()));
+		Assertions.assertEquals(MonitoringData.FIRMWARE_DATE.getData(), stats.get(DeviceInfoMetric.FIRMWARE_DATE.getName()));
 		Assertions.assertEquals(MonitoringData.DECODER_ID.getData(), stats.get(decoderStatisticGroup + DecoderMonitoringMetric.DECODER_ID.getName()));
 	}
 
