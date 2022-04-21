@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpHeaders;
@@ -125,6 +126,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private String configManagement;
 
 	/**
+	 * ReentrantLock to prevent null pointer exception to localExtendedStatistics when controlProperty method is called before GetMultipleStatistics method.
+	 */
+	private final ReentrantLock reentrantLock = new ReentrantLock();
+
+	/**
 	 * Retrieves {@code {@link #streamNameFilter }}
 	 *
 	 * @return value of {@link #streamNameFilter}
@@ -205,38 +211,47 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	public void controlProperty(ControllableProperty controllableProperty) {
 		String property = controllableProperty.getProperty();
 		String value = String.valueOf(controllableProperty.getValue());
-		Map<String, String> stats = this.localExtendedStatistics.getStatistics();
-		List<AdvancedControllableProperty> advancedControllableProperties = this.localExtendedStatistics.getControllableProperties();
 
-		if (this.logger.isDebugEnabled()) {
-			this.logger.debug("controlProperty property " + property);
-			this.logger.debug("controlProperty value " + value);
-		}
-		// Decoder control
-		String[] splitProperty = property.split(String.valueOf(DecoderConstant.HASH));
-		if (splitProperty.length != 2) {
-			throw new IllegalArgumentException("Unexpected length of control property");
-		}
-		ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitProperty[0]);
+		reentrantLock.lock();
+		try {
+			if (this.localExtendedStatistics == null) {
+				return;
+			}
+			Map<String, String> stats = this.localExtendedStatistics.getStatistics();
+			List<AdvancedControllableProperty> advancedControllableProperties = this.localExtendedStatistics.getControllableProperties();
 
-		switch (controllingGroup) {
-			case DECODER:
-				String name = splitProperty[0].substring(7);
-				Integer decoderID = Integer.parseInt(name);
-				decoderControl(stats, advancedControllableProperties, decoderID, splitProperty[1], value);
-				break;
-			case CREATE_STREAM:
-				createStreamControl(stats, advancedControllableProperties, ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH, splitProperty[1], value);
-				break;
-			case STREAM:
-				String controlStreamName = splitProperty[0].substring(6);
-				streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + controlStreamName + DecoderConstant.HASH, controlStreamName, splitProperty[1], value);
-				break;
-			default:
-				if (logger.isWarnEnabled()) {
-					logger.warn(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
-				}
-				throw new IllegalStateException(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
+			if (this.logger.isDebugEnabled()) {
+				this.logger.debug("controlProperty property " + property);
+				this.logger.debug("controlProperty value " + value);
+			}
+			// Decoder control
+			String[] splitProperty = property.split(String.valueOf(DecoderConstant.HASH));
+			if (splitProperty.length != 2) {
+				throw new IllegalArgumentException("Unexpected length of control property");
+			}
+			ControllingMetricGroup controllingGroup = ControllingMetricGroup.getByName(splitProperty[0]);
+
+			switch (controllingGroup) {
+				case DECODER:
+					String name = splitProperty[0].substring(7);
+					Integer decoderID = Integer.parseInt(name);
+					decoderControl(stats, advancedControllableProperties, decoderID, splitProperty[1], value);
+					break;
+				case CREATE_STREAM:
+					createStreamControl(stats, advancedControllableProperties, ControllingMetricGroup.CREATE_STREAM.getName() + DecoderConstant.HASH, splitProperty[1], value);
+					break;
+				case STREAM:
+					String controlStreamName = splitProperty[0].substring(6);
+					streamControl(stats, advancedControllableProperties, ControllingMetricGroup.STREAM.getName() + controlStreamName + DecoderConstant.HASH, controlStreamName, splitProperty[1], value);
+					break;
+				default:
+					if (logger.isWarnEnabled()) {
+						logger.warn(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
+					}
+					throw new IllegalStateException(String.format("Controlling group %s is not supported.", controllingGroup.getName()));
+			}
+		} finally {
+			reentrantLock.unlock();
 		}
 	}
 
@@ -265,15 +280,14 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Getting statistics from the device X4 decoder at host %s with port %s", this.host, this.getPort()));
 		}
+		reentrantLock.lock();
+		try {
 		final ExtendedStatistics extendedStatistics = new ExtendedStatistics();
 		final Map<String, String> stats = new HashMap<>();
 		final List<AdvancedControllableProperty> advancedControllableProperties = new ArrayList<>();
 		failedMonitor = new HashMap<>();
 		filteredStreamIDSet = new HashSet<>();
 
-		if (localExtendedStatistics == null) {
-			localExtendedStatistics = new ExtendedStatistics();
-		}
 		if (authenticationCookie == null) {
 			authenticationCookie = initAuthenticationCookie();
 		}
@@ -320,7 +334,18 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			localExtendedStatistics = extendedStatistics;
 		}
 		isEmergencyDelivery = false;
+		}
+		finally {
+			reentrantLock.unlock();
+		}
 		return Collections.singletonList(localExtendedStatistics);
+	}
+
+	@Override
+	protected void internalDestroy() {
+		localExtendedStatistics.getStatistics().clear();
+		localExtendedStatistics.getControllableProperties().clear();
+		super.internalDestroy();
 	}
 
 	@Override
