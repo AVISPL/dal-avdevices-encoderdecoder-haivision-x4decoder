@@ -3,7 +3,6 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.authetication;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -16,24 +15,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationRole {
 
-	@JsonAlias("role")
-	private String role;
-
-	/**
-	 * Retrieves {@code {@link #role}}
-	 *
-	 * @return value of {@link #role}
-	 */
-	public String getRole() {
-		return role;
-	}
-
-	/**
-	 * Sets {@code role}
-	 *
-	 * @param role the {@code java.lang.String} field
-	 */
-	public void setRole(String role) {
-		this.role = role;
-	}
+//  ToDo: comment out controlling capabilities, filtering and config management
+//
+//	@JsonAlias("role")
+//	private String role;
+//
+//	/**
+//	 * Retrieves {@code {@link #role}}
+//	 *
+//	 * @return value of {@link #role}
+//	 */
+//	public String getRole() {
+//		return role;
+//	}
+//
+//	/**
+//	 * Sets {@code role}
+//	 *
+//	 * @param role the {@code java.lang.String} field
+//	 */
+//	public void setRole(String role) {
+//		this.role = role;
+//	}
 }

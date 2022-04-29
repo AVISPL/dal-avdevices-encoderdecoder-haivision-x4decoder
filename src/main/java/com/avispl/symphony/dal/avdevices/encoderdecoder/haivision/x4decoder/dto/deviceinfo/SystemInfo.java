@@ -3,7 +3,6 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.deviceinfo;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -16,24 +15,25 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SystemInfo {
 
-	@JsonAlias("hasHDR")
-	private boolean hasHDR;
-
-	/**
-	 * Retrieves {@code {@link #hasHDR}}
-	 *
-	 * @return value of {@link #hasHDR}
-	 */
-	public boolean isHasHDR() {
-		return hasHDR;
-	}
-
-	/**
-	 * Sets {@code hasHDR}
-	 *
-	 * @param hasHDR the {@code boolean} field
-	 */
-	public void setHasHDR(boolean hasHDR) {
-		this.hasHDR = hasHDR;
-	}
+//  ToDo: comment out controlling capabilities, filtering and config management
+//	@JsonAlias("hasHDR")
+//	private boolean hasHDR;
+//
+//	/**
+//	 * Retrieves {@code {@link #hasHDR}}
+//	 *
+//	 * @return value of {@link #hasHDR}
+//	 */
+//	public boolean isHasHDR() {
+//		return hasHDR;
+//	}
+//
+//	/**
+//	 * Sets {@code hasHDR}
+//	 *
+//	 * @param hasHDR the {@code boolean} field
+//	 */
+//	public void setHasHDR(boolean hasHDR) {
+//		this.hasHDR = hasHDR;
+//	}
 }
