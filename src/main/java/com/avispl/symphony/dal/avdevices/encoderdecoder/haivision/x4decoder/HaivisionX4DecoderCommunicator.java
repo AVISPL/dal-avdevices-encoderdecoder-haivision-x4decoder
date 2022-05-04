@@ -755,7 +755,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						if (this.streamNameFilter == null) {
 							populateStreamStats(stats, stream);
 						}
-						populateStreamStats(stats, stream);
 					}
 				} else {
 					updateStreamStatisticsFailedMonitor(failedMonitor);
@@ -864,7 +863,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			}
 			return setAdapterPropertiesElement;
 		}
-		return Collections.emptySet();
+		return null;
 	}
 
 	/**
