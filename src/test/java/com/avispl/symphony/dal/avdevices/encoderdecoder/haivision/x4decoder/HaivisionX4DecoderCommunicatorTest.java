@@ -41,7 +41,7 @@ class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicator.setHost("mx4d.demo.haivision.com");
 		haivisionX4DecoderCommunicator.setPort(443);
 		haivisionX4DecoderCommunicator.setLogin("operator");
-		haivisionX4DecoderCommunicator.setPassword("12345678");
+		haivisionX4DecoderCommunicator.setPassword("supervisor");
 		haivisionX4DecoderCommunicator.init();
 		haivisionX4DecoderCommunicator.connect();
 	}
@@ -92,7 +92,7 @@ class HaivisionX4DecoderCommunicatorTest {
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getLogin()).thenReturn("123");
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getPassword()).thenReturn("456");
 		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
-			 haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
+			haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
 		Assertions.assertEquals(ExceptionMessage.GETTING_SESSION_ID_ERRO.getMessage(), exception.getMessage());
 	}
@@ -126,6 +126,19 @@ class HaivisionX4DecoderCommunicatorTest {
 						+ ExceptionMessage.GETTING_DEVICE_INFO.getMessage()
 				,
 				exception.getMessage());
+	}
+
+	/**
+	 * Test HaivisionX4DecoderCommunicator.internalDestroy Successful
+	 * Expected does not throw NPE
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testHaivisionX4DecoderInternalDestroySuccessful() {
+		Assertions.assertDoesNotThrow( () -> {
+			haivisionX4DecoderCommunicator.getMultipleStatistics();
+			haivisionX4DecoderCommunicator.internalDestroy();
+		});
 	}
 
 //	/**
