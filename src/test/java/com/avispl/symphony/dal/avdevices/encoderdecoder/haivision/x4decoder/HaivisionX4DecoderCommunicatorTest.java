@@ -135,8 +135,6 @@ class HaivisionX4DecoderCommunicatorTest {
 	@Tag("RealDevice")
 	@Test
 	void testHaivisionX4DecoderInternalDestroySuccessful() {
-		haivisionX4DecoderCommunicator.getMultipleStatistics();
-		haivisionX4DecoderCommunicator.internalDestroy();
 		Assertions.assertDoesNotThrow( () -> {
 			haivisionX4DecoderCommunicator.getMultipleStatistics();
 			haivisionX4DecoderCommunicator.internalDestroy();
