@@ -732,8 +732,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamInfo streamInfo = stream.getStreamInfo();
 						StreamStats streamStats = stream.getStreamStats();
 
+
 						// Stream name filtering
-						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamInfo.getName())) {
+						String streamName = streamInfo.getName();
+						if (StringUtils.isNullOrEmpty(streamName)){
+							streamName= streamInfo.getDefaultStreamName();
+						}
+						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamName)) {
 							populateStreamStats(stats, stream);
 							continue;
 						}
@@ -757,7 +762,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						if (this.portNumberFilter != null) {
 							populateStreamStats(stats, stream);
 						}
-						if (this.streamNameFilter == null) {
+						if (StringUtils.isNullOrEmpty(this.streamNameFilter)) {
 							populateStreamStats(stats, stream);
 						}
 					}
