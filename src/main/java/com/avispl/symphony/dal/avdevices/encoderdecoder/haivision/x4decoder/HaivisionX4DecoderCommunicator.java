@@ -735,7 +735,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 						// Stream name filtering
 						String streamName = streamInfo.getName();
-						if (streamName.isEmpty()){
+						if (StringUtils.isNullOrEmpty(streamName)){
 							streamName= streamInfo.getDefaultStreamName();
 						}
 						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamName)) {
