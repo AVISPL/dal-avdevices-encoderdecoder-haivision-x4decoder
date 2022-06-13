@@ -732,19 +732,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						StreamInfo streamInfo = stream.getStreamInfo();
 						StreamStats streamStats = stream.getStreamStats();
 
+
 						// Stream name filtering
-						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamInfo.getName())) {
+						String streamName = streamInfo.getName();
+						if (StringUtils.isNullOrEmpty(streamName)){
+							streamName= streamInfo.getDefaultStreamName();
+						}
+						if (this.streamNameFilter != null && streamNameSet != null && streamNameSet.contains(streamName)) {
 							populateStreamStats(stats, stream);
 							continue;
 						}
 
 						// Stream status filtering
-						if (this.streamStatusFilter != null && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
+						if (StringUtils.isNotNullOrEmpty(this.streamStatusFilter) && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
 							continue;
 						}
 
 						// Port number filtering
-						if (this.portNumberFilter != null && portNumberSet != null) {
+						if (StringUtils.isNotNullOrEmpty(this.portNumberFilter) && portNumberSet != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
 							boolean isValidPort = handleAdapterPropertyPortRangeFromUser(port);
 							if (!isValidPort) {
@@ -757,7 +762,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						if (this.portNumberFilter != null) {
 							populateStreamStats(stats, stream);
 						}
-						if (this.streamNameFilter == null) {
+						if (StringUtils.isNullOrEmpty(this.streamNameFilter)) {
 							populateStreamStats(stats, stream);
 						}
 					}

@@ -52,9 +52,8 @@ public enum ControllingMetricGroup {
 		}
 		if (name.contains("Stream")) {
 			return ControllingMetricGroup.STREAM;
-		} else {
-			return null;
 		}
+		throw new IllegalArgumentException("Could not find the controlling metric group with name: " + name);
 	}
 
 }
