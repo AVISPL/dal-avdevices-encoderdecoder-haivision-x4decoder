@@ -744,12 +744,12 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 						}
 
 						// Stream status filtering
-						if (this.streamStatusFilter != null && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
+						if (StringUtils.isNotNullOrEmpty(this.streamStatusFilter) && streamStatusSet != null && !streamStatusSet.contains(streamStats.getState())) {
 							continue;
 						}
 
 						// Port number filtering
-						if (this.portNumberFilter != null && portNumberSet != null) {
+						if (StringUtils.isNotNullOrEmpty(this.portNumberFilter) && portNumberSet != null) {
 							Integer port = Integer.parseInt(streamInfo.getPort());
 							boolean isValidPort = handleAdapterPropertyPortRangeFromUser(port);
 							if (!isValidPort) {
