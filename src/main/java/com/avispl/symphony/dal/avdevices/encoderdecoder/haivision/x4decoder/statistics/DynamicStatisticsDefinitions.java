@@ -8,6 +8,7 @@ import java.util.Optional;
 
 /**
  * DynamicStatisticsDefinitions contains definitions for Dynamic property candidates.
+ * Values, defined here, grant availability of certain properties as historical/dynamic.
  *
  * @author Maksym.Rossiitsev / Symphony Dev Team<br>
  * @since 1.1.0
@@ -39,6 +40,9 @@ public enum DynamicStatisticsDefinitions {
 
     /**
      * Check if dynamic property definition exists, by name.
+     * The reason the validation is made by "endsWith" is that the group names may be dynamic,
+     * so not to expand properties definitions more and making them too vast and vague - we have a specific
+     * definitions, ignoring the group names.
      *
      * @param name of the property to check
      * @return true if definition exists, false otherwise
