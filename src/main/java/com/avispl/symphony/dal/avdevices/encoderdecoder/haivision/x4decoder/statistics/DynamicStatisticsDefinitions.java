@@ -15,14 +15,17 @@ import java.util.Optional;
  * */
 public enum DynamicStatisticsDefinitions {
     Temperature("Temperature"),
-    VideoLatency("DecoderBufferingVideoLatency(ms)"),
+    DecoderBufferingVideoLatency("DecoderBufferingVideoLatency(ms)"),
     BitrateKbps("Bitrate(kbps)"),
-    BitrateMbps("Bitrate(Mbps)"),
-    GeneralBitRateMbps("GeneralBitRate(Mbps)"),
-    AvSyncMs("AvSyncMs"),
+    AvSyncMs("AvSyncMs(ms)"),
     MultisyncDelayActual("MultisyncDelayActual(ms)"),
     MultisyncTransmissionTime("MultisyncTransmissionTime(ms)"),
-    VideoLoadPercentage("VideoLoadPercentage");
+    VideoLoadPercentage("VideoLoadPercentage(%)"),
+    GeneralBitrateMbps("GeneralBitRate(Mbps)"),
+    BitrateMbps("Bitrate(Mbps)"),
+    SRTBuffer("SRTBuffer(ms)"),
+    SRTLatency("SRTLatency(ms)"),
+    SRTPathMaxBandwidth("SRTPathMaxBandwidth(kbps)");
 
     private final String name;
     DynamicStatisticsDefinitions(final String name) {
