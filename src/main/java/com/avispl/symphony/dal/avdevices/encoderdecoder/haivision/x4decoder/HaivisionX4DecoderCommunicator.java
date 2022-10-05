@@ -939,21 +939,21 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private void provisionTypedStatistics(Map<String, String> statistics, ExtendedStatistics extendedStatistics) {
 		Map<String, String> dynamicStatistics = new HashMap<>();
 		Map<String, String> staticStatistics = new HashMap<>();
-		statistics.forEach((s, s2) -> {
+		statistics.forEach((propertyName, propertyValue) -> {
 			// To ignore the group properties are in, we need to split it
 			// whenever there's a hash involved and take the 2nd part
 			boolean propertyListed = false;
 			if (!StringUtils.isNullOrEmpty(historicalProperties)) {
-				if (propertyName.contains(HaivisionConstant.HASH)) {
-					propertyListed = historicalProperties.contains(propertyName.split(HaivisionConstant.HASH)[1]);
+				if (propertyName.contains(DecoderConstant.HASH)) {
+					propertyListed = historicalProperties.contains(propertyName.split(DecoderConstant.HASH)[1]);
 				} else {
 					propertyListed = historicalProperties.contains(propertyName);
 				}
 			}
 			if (propertyListed && DynamicStatisticsDefinitions.checkIfExists(propertyName)) {
-				dynamicStatistics.put(s, s2);
+				dynamicStatistics.put(propertyName, propertyValue);
 			} else {
-				staticStatistics.put(s, s2);
+				staticStatistics.put(propertyName, propertyValue);
 			}
 		});
 		extendedStatistics.setDynamicStatistics(dynamicStatistics);
