@@ -332,8 +332,13 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 	@Override
 	protected void internalDestroy() {
-		localExtendedStatistics.getStatistics().clear();
-		localExtendedStatistics.getControllableProperties().clear();
+		if (localExtendedStatistics != null && localExtendedStatistics.getStatistics() != null) {
+			localExtendedStatistics.getStatistics().clear();
+		}
+//		ToDo: comment out controlling capabilities, filtering and config management
+//		if (localExtendedStatistics != null && localExtendedStatistics.getControllableProperties() != null) {
+//			localExtendedStatistics.getControllableProperties().clear();
+//		}
 		super.internalDestroy();
 	}
 
