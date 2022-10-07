@@ -6,7 +6,7 @@
 
     <groupId>com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder</groupId>
     <artifactId>symphony-dal-avdevices-encoderdecoder-haivision-x4decoder</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,21 +71,21 @@
             <artifactId>symphony-api-commons</artifactId>
             <version>5.4.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/symphony-api-commons-5.4.0.jar</systemPath>
+            <systemPath>${basedir}/lib/symphony-api-commons-5.7.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.avispl.symphony.api</groupId>
             <artifactId>symphony-api-dal</artifactId>
             <version>5.4.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/symphony-api-dal-5.4.0.jar</systemPath>
+            <systemPath>${basedir}/lib/symphony-api-dal-5.7.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.avispl.symphony.dal</groupId>
             <artifactId>symphony-dal-commons</artifactId>
             <version>5.4.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/symphony-dal-commons-5.4.0.jar</systemPath>
+            <systemPath>${basedir}/lib/symphony-dal-commons-5.7.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.icmp4j</groupId>
