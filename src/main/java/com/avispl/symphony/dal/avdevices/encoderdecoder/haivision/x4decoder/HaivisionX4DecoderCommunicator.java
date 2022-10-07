@@ -3,14 +3,7 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.statistics.DynamicStatisticsDefinitions;
@@ -89,9 +82,9 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private String portNumberFilter;
 	private String streamStatusFilter;
 	/**
-	 * Configurable property for historical properties, comma separated values
+	 * Configurable property for historical properties, comma separated values kept as a set locally
 	 * */
-	private String historicalProperties;
+	private Set<String> historicalProperties = new HashSet<>();
 
 //	ToDo: comment out controlling capabilities, filtering and config management
 //  private SystemInfo systemInfo;
@@ -120,7 +113,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return value of {@link #historicalProperties}
 	 */
 	public String getHistoricalProperties() {
-		return historicalProperties;
+		return String.join(",", this.historicalProperties);
 	}
 
 	/**
@@ -129,7 +122,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param historicalProperties new value of {@link #historicalProperties}
 	 */
 	public void setHistoricalProperties(String historicalProperties) {
-		this.historicalProperties = historicalProperties;
+		this.historicalProperties.clear();
+		Arrays.asList(historicalProperties.split(",")).forEach(propertyName -> {
+			this.historicalProperties.add(propertyName.trim());
+		});
 	}
 
 	/**
@@ -943,7 +939,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			// To ignore the group properties are in, we need to split it
 			// whenever there's a hash involved and take the 2nd part
 			boolean propertyListed = false;
-			if (!StringUtils.isNullOrEmpty(historicalProperties)) {
+			if (!historicalProperties.isEmpty()) {
 				if (propertyName.contains(DecoderConstant.HASH)) {
 					propertyListed = historicalProperties.contains(propertyName.split(DecoderConstant.HASH)[1]);
 				} else {
