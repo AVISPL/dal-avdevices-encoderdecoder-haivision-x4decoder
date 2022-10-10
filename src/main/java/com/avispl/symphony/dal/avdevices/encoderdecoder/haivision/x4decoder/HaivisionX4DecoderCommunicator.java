@@ -3,16 +3,10 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.statistics.DynamicStatisticsDefinitions;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.CollectionUtils;
@@ -87,6 +81,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private String streamNameFilter;
 	private String portNumberFilter;
 	private String streamStatusFilter;
+	/**
+	 * Configurable property for historical properties, comma separated values kept as a set locally
+	 * */
+	private Set<String> historicalProperties = new HashSet<>();
 
 //	ToDo: comment out controlling capabilities, filtering and config management
 //  private SystemInfo systemInfo;
@@ -108,6 +106,27 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * ReentrantLock to prevent null pointer exception to localExtendedStatistics when controlProperty method is called before GetMultipleStatistics method.
 	 */
 	private final ReentrantLock reentrantLock = new ReentrantLock();
+
+	/**
+	 * Retrieves {@link #historicalProperties}
+	 *
+	 * @return value of {@link #historicalProperties}
+	 */
+	public String getHistoricalProperties() {
+		return String.join(",", this.historicalProperties);
+	}
+
+	/**
+	 * Sets {@link #historicalProperties} value
+	 *
+	 * @param historicalProperties new value of {@link #historicalProperties}
+	 */
+	public void setHistoricalProperties(String historicalProperties) {
+		this.historicalProperties.clear();
+		Arrays.asList(historicalProperties.split(",")).forEach(propertyName -> {
+			this.historicalProperties.add(propertyName.trim());
+		});
+	}
 
 	/**
 	 * Retrieves {@code {@link #streamNameFilter }}
@@ -318,8 +337,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 //				populateControllingMetrics(stats, advancedControllableProperties);
 //				extendedStatistics.setControllableProperties(advancedControllableProperties);
 //			}
-
-				extendedStatistics.setStatistics(stats);
+				provisionTypedStatistics(stats, extendedStatistics);
 				localExtendedStatistics = extendedStatistics;
 			}
 			isEmergencyDelivery = false;
@@ -916,6 +934,37 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		return false;
 	}
 
+
+	/**
+	 * Add a property as a regular statistics property, or as dynamic one, based on the {@link #historicalProperties} configuration
+	 * and DynamicStatisticsDefinitions static definitions.
+	 *
+	 * @param statistics map of all device properties
+	 * @param extendedStatistics device statistics object
+	 * */
+	private void provisionTypedStatistics(Map<String, String> statistics, ExtendedStatistics extendedStatistics) {
+		Map<String, String> dynamicStatistics = new HashMap<>();
+		Map<String, String> staticStatistics = new HashMap<>();
+		statistics.forEach((propertyName, propertyValue) -> {
+			// To ignore the group properties are in, we need to split it
+			// whenever there's a hash involved and take the 2nd part
+			boolean propertyListed = false;
+			if (!historicalProperties.isEmpty()) {
+				if (propertyName.contains(DecoderConstant.HASH)) {
+					propertyListed = historicalProperties.contains(propertyName.split(DecoderConstant.HASH)[1]);
+				} else {
+					propertyListed = historicalProperties.contains(propertyName);
+				}
+			}
+			if (propertyListed && DynamicStatisticsDefinitions.checkIfExists(propertyName)) {
+				dynamicStatistics.put(propertyName, propertyValue);
+			} else {
+				staticStatistics.put(propertyName, propertyValue);
+			}
+		});
+		extendedStatistics.setDynamicStatistics(dynamicStatistics);
+		extendedStatistics.setStatistics(staticStatistics);
+	}
 // 	ToDo: comment out controlling capabilities, filtering and config management
 //	/**
 //	 * This method is used to handle  input from adapter properties in case is config management
