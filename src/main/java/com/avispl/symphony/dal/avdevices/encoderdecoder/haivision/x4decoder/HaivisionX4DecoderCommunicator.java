@@ -393,6 +393,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		return DecoderConstant.HTTPS
 				+ getHost()
+				+ DecoderConstant.COLON
+				+ getPort()
 				+ path;
 	}
 
@@ -409,7 +411,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		try {
 			if (this.authenticationCookie.getSessionID() == null) {
 				HttpClient httpClient = this.obtainHttpClient(true);
-
 				HttpPost httppost = new HttpPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION));
 				httppost.setHeader("Content-Type", "text/xml");
 				httppost.setHeader("Content-Type", "application/json");
