@@ -54,7 +54,7 @@ jobs:
       - name: PMD check
         run: mvn pmd:check
       - id: getfilename
-        run: echo "name=file::$(ls target/symphony-dal-avdevices-encoderdecoder-haivision-x4decoder-${{ needs.versiongenerate.outputs.version }}.jar)" >> $GITHUB_OUTPUT
+        run: echo "file=$(ls target/symphony-dal-avdevices-encoderdecoder-haivision-x4decoder-${{ needs.versiongenerate.outputs.version }}.jar)" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
           name: HaivisionX4DecoderCommunicator
