@@ -12,9 +12,9 @@ package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.com
  */
 public class DecoderConstant {
 
-	public static final char HASH = '#';
 	public static final char NEXT_LINE = '\n';
 	public static final char SLASH = '/';
+	public static final String HASH = "#";
 	public static final String COMMA = ",";
 	public static final String COLON = ":";
 	public static final String RIGHT_PARENTHESES = ")";
