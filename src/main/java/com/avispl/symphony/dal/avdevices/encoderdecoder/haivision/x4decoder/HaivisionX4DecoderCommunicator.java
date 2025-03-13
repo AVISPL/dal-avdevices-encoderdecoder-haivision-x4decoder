@@ -3,22 +3,17 @@
  */
 package com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.statistics.DynamicStatisticsDefinitions;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.CollectionUtils;
-
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 
 import com.avispl.symphony.api.dal.control.Controller;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
@@ -48,6 +43,7 @@ import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.dto.streamstats.StreamStats;
 import com.avispl.symphony.dal.communicator.RestCommunicator;
 import com.avispl.symphony.dal.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * An implementation of RestCommunicator to provide communication and interaction with Haivision X4 Decoders
@@ -101,6 +97,28 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 //	private List<StreamInfo> localStreamInfoList;
 //	private StreamInfo createStream;
 //	private String configManagement;
+
+private ClientHttpRequestInterceptor haivisionInterceptor = new HaivisionX4DecoderInterceptor();
+
+	class HaivisionX4DecoderInterceptor implements ClientHttpRequestInterceptor {
+		@Override
+		public ClientHttpResponse intercept(org.springframework.http.HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+
+			ClientHttpResponse response = execution.execute(request, body);
+
+			if (request.getURI().getPath().contains(DecoderURL.AUTHENTICATION)) {
+				HttpHeaders headers = response.getHeaders();
+				String sessionId = headers.getFirst(DecoderConstant.SESSION_ID);
+				if (StringUtils.isNotNullOrEmpty(sessionId)) {
+					authenticationCookie.setSessionID(sessionId);
+				} else {
+					authenticationCookie.setSessionID(null);
+					throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
+				}
+			}
+			return response;
+		}
+	}
 
 	/**
 	 * ReentrantLock to prevent null pointer exception to localExtendedStatistics when controlProperty method is called before GetMultipleStatistics method.
@@ -360,6 +378,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 		super.internalDestroy();
 	}
 
+	public HaivisionX4DecoderCommunicator (){
+		logger.debug("Haivision: Creating Communicator");
+	}
+	@Override
+	protected void internalInit() throws Exception {
+		logger.debug("Haivision: INTERNAL INIT STARTED");
+		super.internalInit();
+	}
+
 	@Override
 	protected void authenticate() {
 		// The device has its own authentication behavior, do not use the common one
@@ -370,7 +397,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 */
 	@Override
 	protected HttpHeaders putExtraRequestHeaders(HttpMethod httpMethod, String uri, HttpHeaders headers) throws Exception {
-		headers.set("Content-Type", "text/xml");
+		//headers.set("Content-Type", "text/xml");
 		headers.set("Content-Type", "application/json");
 
 		String sessionID = authenticationCookie.getSessionID();
@@ -398,8 +425,6 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		return DecoderConstant.HTTPS
 				+ getHost()
-				+ DecoderConstant.COLON
-				+ getPort()
 				+ path;
 	}
 
@@ -409,39 +434,29 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * When there is no Session ID data or having an Exception, The Session ID of Authentication Cookie is going to set with null value
 	 */
 	private void retrieveSessionFromDecoder() {
-		ObjectNode request = JsonNodeFactory.instance.objectNode();
+		Map<String, String> request = new HashMap<>();
 		request.put(DecoderConstant.USERNAME, getLogin());
 		request.put(DecoderConstant.PASSWORD, getPassword());
 
 		try {
 			if (this.authenticationCookie.getSessionID() == null) {
-				HttpClient httpClient = this.obtainHttpClient(true);
-				HttpPost httppost = new HttpPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION));
-				httppost.setHeader("Content-Type", "text/xml");
-				httppost.setHeader("Content-Type", "application/json");
-				StringEntity entity = new StringEntity(request.toString());
-				httppost.setEntity(entity);
-				HttpResponse response = null;
-
-				// Get SessionID
-				try {
-					response = httpClient.execute(httppost);
-				} finally {
-					if (response instanceof CloseableHttpResponse) {
-						((CloseableHttpResponse) response).close();
-					}
-				}
-				Header headerResponse = response.getFirstHeader(DecoderConstant.SESSION_ID);
-
-				if (headerResponse.getValue() != null) {
-					authenticationCookie.setSessionID(headerResponse.getValue());
-				} else {
-					throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
-				}
+				doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION), request);
 			}
 		} catch (Exception e) {
 			throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR, e);
 		}
+	}
+
+
+	@Override
+	protected RestTemplate obtainRestTemplate() throws Exception {
+		RestTemplate restTemplate = super.obtainRestTemplate();
+		List<ClientHttpRequestInterceptor> restTemplateInterceptors = restTemplate.getInterceptors();
+
+		if (!restTemplateInterceptors.contains(haivisionInterceptor))
+			restTemplateInterceptors.add(haivisionInterceptor);
+
+		return restTemplate;
 	}
 
 //	ToDo: comment out controlling capabilities, filtering and config management
