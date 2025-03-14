@@ -98,8 +98,18 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 //	private StreamInfo createStream;
 //	private String configManagement;
 
-private ClientHttpRequestInterceptor haivisionInterceptor = new HaivisionX4DecoderInterceptor();
+	/**
+	 * API header interceptor instance
+	 * @since 1.1.1
+	 * */
+	private ClientHttpRequestInterceptor haivisionInterceptor = new HaivisionX4DecoderInterceptor();
 
+	/**
+	 * HttpRequest interceptor to intercept cookie header and further use it for authentication
+	 *
+	 * @author Maksym.Rossiitsev/Symphony Team
+	 * @since 1.1.1
+	 * */
 	class HaivisionX4DecoderInterceptor implements ClientHttpRequestInterceptor {
 		@Override
 		public ClientHttpResponse intercept(org.springframework.http.HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
@@ -397,7 +407,6 @@ private ClientHttpRequestInterceptor haivisionInterceptor = new HaivisionX4Decod
 	 */
 	@Override
 	protected HttpHeaders putExtraRequestHeaders(HttpMethod httpMethod, String uri, HttpHeaders headers) throws Exception {
-		//headers.set("Content-Type", "text/xml");
 		headers.set("Content-Type", "application/json");
 
 		String sessionID = authenticationCookie.getSessionID();
