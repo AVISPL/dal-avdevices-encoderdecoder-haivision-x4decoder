@@ -434,6 +434,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 
 		return DecoderConstant.HTTPS
 				+ getHost()
+				+ DecoderConstant.COLON
+				+ getPort()
 				+ path;
 	}
 
