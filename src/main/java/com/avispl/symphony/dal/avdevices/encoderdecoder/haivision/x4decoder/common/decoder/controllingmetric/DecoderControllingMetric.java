@@ -67,7 +67,7 @@ public enum DecoderControllingMetric {
 	 * @return DecoderControllingMetric is the decoder controlling metric that want to get
 	 */
 	public static DecoderControllingMetric getByName(String name) {
-		Optional<DecoderControllingMetric> decoderControllingMetric = Arrays.stream(DecoderControllingMetric.values()).filter(com -> com.getName().equals(name)).findFirst();
+		Optional<DecoderControllingMetric> decoderControllingMetric = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
 		return decoderControllingMetric.orElse(null);
 	}
 }

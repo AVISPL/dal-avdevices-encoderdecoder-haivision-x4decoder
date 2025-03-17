@@ -70,8 +70,8 @@ public enum State {
 	 * @return State is the state that want to get
 	 */
 	public static State getByCode(Integer name) {
-		Optional<State> state = Arrays.stream(State.values()).filter(com -> com.getCode().equals(name)).findFirst();
-		return state.orElse(State.STOPPED);
+		Optional<State> state = Arrays.stream(values()).filter(com -> com.getCode().equals(name)).findFirst();
+		return state.orElse(STOPPED);
 	}
 }
 

@@ -60,8 +60,8 @@ public enum StillImage {
 	 * @return StillImage is the still image that want to get
 	 */
 	public static StillImage getByName(String name) {
-		Optional<StillImage> stillImage = Arrays.stream(StillImage.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return stillImage.orElse(StillImage.FREEZE);
+		Optional<StillImage> stillImage = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return stillImage.orElse(FREEZE);
 	}
 }
 

@@ -58,8 +58,8 @@ public enum BufferingMode {
 	 * @return BufferingMode is the buffering mode that want to get
 	 */
 	public static BufferingMode getByName(String name) {
-		Optional<BufferingMode> bufferingMode = Arrays.stream(BufferingMode.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return bufferingMode.orElse(BufferingMode.AUTO);
+		Optional<BufferingMode> bufferingMode = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return bufferingMode.orElse(AUTO);
 	}
 }
 
