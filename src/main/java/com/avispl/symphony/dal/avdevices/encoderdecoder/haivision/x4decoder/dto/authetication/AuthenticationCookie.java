@@ -14,8 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticationCookie {
-
-	private String sessionID;
+	private volatile String sessionID;
 
 	/**
 	 * Retrieves {@code {@link #sessionID }}

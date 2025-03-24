@@ -45,13 +45,13 @@ public enum ControllingMetricGroup {
 	 */
 	public static ControllingMetricGroup getByName(String name) {
 		if (name.contains("Decoder")) {
-			return ControllingMetricGroup.DECODER;
+			return DECODER;
 		}
 		if (name.contains("Create")) {
-			return ControllingMetricGroup.CREATE_STREAM;
+			return CREATE_STREAM;
 		}
 		if (name.contains("Stream")) {
-			return ControllingMetricGroup.STREAM;
+			return STREAM;
 		}
 		throw new IllegalArgumentException("Could not find the controlling metric group with name: " + name);
 	}

@@ -57,8 +57,8 @@ public enum QuadMode {
 	 * @return QuadMode is the quad mode that want to get
 	 */
 	public static QuadMode getByName(String name) {
-		Optional<QuadMode> quadMode = Arrays.stream(QuadMode.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return quadMode.orElse(QuadMode.NORMAL);
+		Optional<QuadMode> quadMode = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return quadMode.orElse(NORMAL);
 	}
 }
 

@@ -70,7 +70,7 @@ public enum StreamControllingMetric {
 	 * @return DecoderControllingMetric is the decoder controlling metric that want to get
 	 */
 	public static StreamControllingMetric getByName(String name) {
-		Optional<StreamControllingMetric> streamControllingMetric = Arrays.stream(StreamControllingMetric.values()).filter(com -> com.getName().equals(name)).findFirst();
+		Optional<StreamControllingMetric> streamControllingMetric = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
 		return streamControllingMetric.orElse(null);
 	}
 }
