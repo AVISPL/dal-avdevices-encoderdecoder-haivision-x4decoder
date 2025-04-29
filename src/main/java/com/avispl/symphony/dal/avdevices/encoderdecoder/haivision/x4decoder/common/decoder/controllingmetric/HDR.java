@@ -59,8 +59,8 @@ public enum HDR {
 	 * @return HDR is the HDR that want to get
 	 */
 	public static HDR getByName(String name) {
-		Optional<HDR> hdr = Arrays.stream(HDR.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return hdr.orElse(HDR.AUTO);
+		Optional<HDR> hdr = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return hdr.orElse(AUTO);
 	}
 }
 

@@ -69,8 +69,8 @@ public enum Encapsulation {
 	 * @return Encapsulation is the protocol that want to get
 	 */
 	public static Encapsulation getByName(String name) {
-		Optional<Encapsulation> encapsulation = Arrays.stream(Encapsulation.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return encapsulation.orElse(Encapsulation.TS_OVER_UDP);
+		Optional<Encapsulation> encapsulation = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return encapsulation.orElse(TS_OVER_UDP);
 	}
 }
 

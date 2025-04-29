@@ -57,8 +57,8 @@ public enum FecRTP {
 	 * @return FecRTP is the protocol that want to get
 	 */
 	public static FecRTP getByName(String name) {
-		Optional<FecRTP> fecRTP = Arrays.stream(FecRTP.values()).filter(com -> com.getName().equals(name)).findFirst();
-		return fecRTP.orElse(FecRTP.DISABLE);
+		Optional<FecRTP> fecRTP = Arrays.stream(values()).filter(com -> com.getName().equals(name)).findFirst();
+		return fecRTP.orElse(DISABLE);
 	}
 }
 
