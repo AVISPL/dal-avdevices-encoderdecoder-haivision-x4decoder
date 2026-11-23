@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.security.auth.login.FailedLoginException;
+
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.statistics.DynamicStatisticsDefinitions;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,6 +21,7 @@ import com.avispl.symphony.api.dal.control.Controller;
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
+import com.avispl.symphony.api.dal.error.CommandFailureException;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import com.avispl.symphony.api.dal.monitor.Monitorable;
 import com.avispl.symphony.dal.avdevices.encoderdecoder.haivision.x4decoder.common.DecoderConstant;
@@ -102,14 +105,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			ClientHttpResponse response = execution.execute(request, body);
 
 			if (request.getURI().getPath().contains(DecoderURL.AUTHENTICATION)) {
-				HttpHeaders headers = response.getHeaders();
-				String sessionId = headers.getFirst(DecoderConstant.SESSION_ID);
-				if (StringUtils.isNotNullOrEmpty(sessionId)) {
-					authenticationCookie.setSessionID(sessionId);
-				} else {
-					authenticationCookie.setSessionID(null);
-					throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR);
-				}
+				// an error response (e.g. 401) is passed on to the RestTemplate error handling, which reports it as a login error;
+				// a missing session cookie is handled in retrieveSessionFromDecoder
+				String sessionId = response.getStatusCode().is2xxSuccessful() ? response.getHeaders().getFirst(DecoderConstant.SESSION_ID) : null;
+				authenticationCookie.setSessionID(StringUtils.isNotNullOrEmpty(sessionId) ? sessionId : null);
 			}
 			return response;
 		}
@@ -224,7 +223,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return List<Statistics> This return the list of statistics
 	 */
 	@Override
-	public List<Statistics> getMultipleStatistics() {
+	public List<Statistics> getMultipleStatistics() throws Exception {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Getting statistics from the device X4 decoder at host %s with port %s", this.host, this.getPort()));
 		}
@@ -315,17 +314,36 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 *
 	 * When there is no Session ID data or having an Exception, The Session ID of Authentication Cookie is going to set with null value
 	 */
-	private void retrieveSessionFromDecoder() {
+	private void retrieveSessionFromDecoder() throws FailedLoginException {
+		if (this.authenticationCookie.getSessionID() != null) {
+			return;
+		}
 		Map<String, String> request = new HashMap<>();
 		request.put(DecoderConstant.USERNAME, getLogin());
 		request.put(DecoderConstant.PASSWORD, getPassword());
 
 		try {
-			if (this.authenticationCookie.getSessionID() == null) {
-				doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION), request);
+			doPost(buildDeviceFullPath(DecoderURL.BASE_URI + DecoderURL.AUTHENTICATION), request);
+		} catch (FailedLoginException e) {
+			// 401, mapped by RestCommunicator
+			this.authenticationCookie.setSessionID(null);
+			throw e;
+		} catch (CommandFailureException e) {
+			this.authenticationCookie.setSessionID(null);
+			if (e.getStatusCode() == 401 || e.getStatusCode() == 403) {
+				throw (FailedLoginException) new FailedLoginException(DecoderConstant.GETTING_SESSION_ID_ERR).initCause(e);
 			}
-		} catch (Exception e) {
 			throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR, e);
+		} catch (ResourceNotReachableException e) {
+			this.authenticationCookie.setSessionID(null);
+			throw e;
+		} catch (Exception e) {
+			this.authenticationCookie.setSessionID(null);
+			throw new ResourceNotReachableException(DecoderConstant.GETTING_SESSION_ID_ERR, e);
+		}
+		if (this.authenticationCookie.getSessionID() == null) {
+			// the device accepted the request but returned no session cookie
+			throw new FailedLoginException(DecoderConstant.GETTING_SESSION_ID_ERR);
 		}
 	}
 
@@ -627,7 +645,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @param stats list statistic property
 	 * @throws ResourceNotReachableException when failedMonitor said all device monitoring data are failed to get
 	 */
-	private void populateDecoderMonitoringMetrics(Map<String, String> stats) {
+	private void populateDecoderMonitoringMetrics(Map<String, String> stats) throws FailedLoginException {
 		Objects.requireNonNull(stats);
 
 		if (!StringUtils.isNullOrEmpty(getPassword()) && !StringUtils.isNullOrEmpty(getLogin())) {
