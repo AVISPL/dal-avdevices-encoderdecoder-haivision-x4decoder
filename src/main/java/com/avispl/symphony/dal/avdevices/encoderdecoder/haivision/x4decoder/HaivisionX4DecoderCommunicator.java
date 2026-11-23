@@ -395,6 +395,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				updateDeviceInfoFailedMonitor(failedMonitor);
 			}
 		} catch (Exception e) {
+			rethrowIfUnreachable(e);
+			logger.warn("Unable to retrieve device info", e);
 			updateDeviceInfoFailedMonitor(failedMonitor);
 		}
 	}
@@ -459,6 +461,8 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 			}
 		} catch (Exception e) {
+			rethrowIfUnreachable(e);
+			logger.warn("Unable to retrieve statistics of decoder " + decoderID, e);
 			updateDecoderStatisticsFailedMonitor(failedMonitor, decoderID);
 		}
 	}
@@ -582,7 +586,24 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 				updateStreamStatisticsFailedMonitor(failedMonitor);
 			}
 		} catch (Exception e) {
+			rethrowIfUnreachable(e);
+			logger.warn("Unable to retrieve stream statistics", e);
 			updateStreamStatisticsFailedMonitor(failedMonitor);
+		}
+	}
+
+	/**
+	 * Stop the monitoring cycle when the device can't be reached (timeout, connection refused or reset). Without this,
+	 * every remaining request of the cycle waits for its own timeout, and the next cycle starts that much later than the
+	 * monitoring rate. The session is cleared so the next cycle logs in again.
+	 *
+	 * @param e exception thrown by a request
+	 * @throws ResourceNotReachableException when the device is not reachable
+	 */
+	private void rethrowIfUnreachable(Exception e) {
+		if (e instanceof ResourceNotReachableException) {
+			authenticationCookie.setSessionID(null);
+			throw (ResourceNotReachableException) e;
 		}
 	}
 
