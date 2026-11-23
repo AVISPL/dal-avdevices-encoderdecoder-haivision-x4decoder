@@ -37,6 +37,27 @@ public class NormalizeData {
 	}
 
 	/**
+	 * Format an enumerated state/mode value with consistent capitalization: AUTOMATIC -> Automatic, NOT_DECODING -> Not Decoding.
+	 * Values that are not all uppercase (already formatted, or codec names such as H.264) are returned unchanged.
+	 *
+	 * @param value the raw value
+	 * @return formatted value
+	 */
+	public static String formatEnumValue(String value) {
+		if (value == null || !value.matches("[A-Z0-9_ ]*[A-Z][A-Z0-9_ ]*")) {
+			return value;
+		}
+		StringBuilder result = new StringBuilder();
+		for (String word : value.replace('_', ' ').trim().split("\\s+")) {
+			if (result.length() > 0) {
+				result.append(' ');
+			}
+			result.append(word.charAt(0)).append(word.substring(1).toLowerCase());
+		}
+		return result.toString();
+	}
+
+	/**
 	 * get value contain number only
 	 *
 	 * @param data the normalized data
