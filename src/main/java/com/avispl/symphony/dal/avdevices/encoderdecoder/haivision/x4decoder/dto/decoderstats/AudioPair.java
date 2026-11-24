@@ -219,7 +219,7 @@ public class AudioPair {
 
 		switch (audioPairMetric) {
 			case AUDIO_PAIR_MODE:
-				return getAudioPairMode();
+				return NormalizeData.formatEnumValue(getAudioPairMode());
 			case COMPRESSION:
 				return getCompression();
 			case BITRATE:

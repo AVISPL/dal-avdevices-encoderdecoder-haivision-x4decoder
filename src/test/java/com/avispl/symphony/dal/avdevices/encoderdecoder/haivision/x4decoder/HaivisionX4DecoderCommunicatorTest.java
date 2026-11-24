@@ -57,7 +57,7 @@ class HaivisionX4DecoderCommunicatorTest {
 	 */
 	@Tag("RealDevice")
 	@Test
-	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() {
+	void testHaivisionX4DecoderCommunicatorGetMonitoringDataSuccessful() throws Exception {
 
 //    ToDo: comment out controlling capabilities, filtering and config management
 //		String isConfigManagement = "true";
@@ -81,8 +81,8 @@ class HaivisionX4DecoderCommunicatorTest {
 	}
 
 	/**
-	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics will throw ResourceNotReachableException when Username or Password are incorrect
-	 * Expected throw ResourceNotReachableException "Username and Password are incorrect";
+	 * Test HaivisionX4DecoderCommunicator.getMultipleStatistics will throw FailedLoginException when Username or Password are incorrect
+	 * Expected throw FailedLoginException (login error, SYAL-2273)
 	 */
 	@Tag("RealDevice")
 	@Test
@@ -91,10 +91,9 @@ class HaivisionX4DecoderCommunicatorTest {
 		haivisionX4DecoderCommunicatorSpy.setHost("***REMOVED***");
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getLogin()).thenReturn("123");
 		Mockito.when(haivisionX4DecoderCommunicatorSpy.getPassword()).thenReturn("456");
-		ResourceNotReachableException exception = Assertions.assertThrows(ResourceNotReachableException.class, () -> {
+		Assertions.assertThrows(javax.security.auth.login.FailedLoginException.class, () -> {
 			haivisionX4DecoderCommunicatorSpy.getMultipleStatistics().get(0);
 		});
-		Assertions.assertEquals(ExceptionMessage.GETTING_SESSION_ID_ERRO.getMessage(), exception.getMessage());
 	}
 
 	/**

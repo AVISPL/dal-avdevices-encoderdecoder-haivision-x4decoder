@@ -79,7 +79,7 @@ public class Stream {
 			case ENCAPSULATION:
 				return streamInfo.getEncapsulation().getName();
 			case STATE:
-				return streamStats.getState();
+				return NormalizeData.formatEnumValue(streamStats.getState());
 			case SOURCE_ADDRESS:
 				return streamStats.getSourceAddress();
 			case BIT_RATE:
