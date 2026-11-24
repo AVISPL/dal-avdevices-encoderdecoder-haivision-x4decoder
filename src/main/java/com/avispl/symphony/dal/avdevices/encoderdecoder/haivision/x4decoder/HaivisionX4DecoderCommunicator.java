@@ -120,6 +120,11 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	private final ReentrantLock reentrantLock = new ReentrantLock();
 
 	/**
+	 * Adapter metadata (version, build date, uptime), reported in the AdapterMetadata group
+	 */
+	private final AdapterMetadata adapterMetadata = new AdapterMetadata();
+
+	/**
 	 * Retrieves {@link #historicalProperties}
 	 *
 	 * @return value of {@link #historicalProperties}
@@ -240,7 +245,10 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			if (!isEmergencyDelivery) {
 				populateDecoderMonitoringMetrics(stats);
 				provisionTypedStatistics(stats, extendedStatistics);
+				populateAdapterMetadata(extendedStatistics.getStatistics());
 				localExtendedStatistics = extendedStatistics;
+			} else if (localExtendedStatistics != null && localExtendedStatistics.getStatistics() != null) {
+				populateAdapterMetadata(localExtendedStatistics.getStatistics());
 			}
 			isEmergencyDelivery = false;
 		}
@@ -256,6 +264,15 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 			localExtendedStatistics.getStatistics().clear();
 		}
 		super.internalDestroy();
+	}
+
+	/**
+	 * Add the AdapterMetadata group (adapter version, build date, uptime) to the statistics
+	 *
+	 * @param statistics statistics to add the properties to
+	 */
+	private void populateAdapterMetadata(Map<String, String> statistics) {
+		adapterMetadata.populate(statistics);
 	}
 
 	public HaivisionX4DecoderCommunicator (){
