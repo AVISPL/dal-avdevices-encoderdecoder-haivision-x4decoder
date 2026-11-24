@@ -215,7 +215,7 @@ public class Source {
 			case DTS:
 				return getDts();
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 }

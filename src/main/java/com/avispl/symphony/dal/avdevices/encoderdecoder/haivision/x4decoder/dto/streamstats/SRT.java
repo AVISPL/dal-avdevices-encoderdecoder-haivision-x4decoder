@@ -235,7 +235,7 @@ public class SRT {
 			case DROPPED_PACKET:
 				return getDroppedPackets();
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 }

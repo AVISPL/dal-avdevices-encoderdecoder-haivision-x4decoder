@@ -119,7 +119,7 @@ public class Stream {
 			case STREAM_SUMMARY:
 				return streamStats.getStreamSummary();
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 }

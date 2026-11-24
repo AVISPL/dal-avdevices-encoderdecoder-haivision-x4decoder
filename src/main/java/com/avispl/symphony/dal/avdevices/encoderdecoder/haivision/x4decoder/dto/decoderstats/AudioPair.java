@@ -241,7 +241,7 @@ public class AudioPair {
 			case SAMPE_RATE_OUT:
 				return getSampeRateOut().toString();
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 }

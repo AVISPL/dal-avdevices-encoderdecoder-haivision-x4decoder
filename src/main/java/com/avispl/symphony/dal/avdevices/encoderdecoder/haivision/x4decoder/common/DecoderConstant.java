@@ -24,6 +24,7 @@ public class DecoderConstant {
 	public static final String EMPTY = "";
 	public static final String HTTPS = "https://";
 	public static final String NONE = "None";
+	public static final String NA = "N/A";
 	public static final String AUTHORIZED = "Authorized";
 	public static final String GETTING_DEVICE_INFO_ERR = "Failed to get device info";
 	public static final String GETTING_SYSTEM_INFO_ERR = "Failed to get system info";

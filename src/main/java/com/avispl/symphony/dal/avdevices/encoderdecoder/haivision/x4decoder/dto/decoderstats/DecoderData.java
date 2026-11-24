@@ -216,7 +216,7 @@ public class DecoderData{
 			case MULTI_SYNC_TRANSMISSION_TIME:
 				return normalizeData.getValueOnly(decoderStats.getMultisyncTransmissionTime());
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 }

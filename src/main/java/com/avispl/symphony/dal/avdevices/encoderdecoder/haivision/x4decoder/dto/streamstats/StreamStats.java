@@ -176,7 +176,7 @@ public class StreamStats {
 			case -3:
 				return "UNLICENSED";
 			default:
-				return DecoderConstant.NONE;
+				return DecoderConstant.NA;
 		}
 	}
 

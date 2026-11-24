@@ -365,7 +365,7 @@ public class HaivisionX4DecoderCommunicator extends RestCommunicator implements 
 	 * @return String (none/value)
 	 */
 	private String checkForNullData(String value) {
-		return value == null || value.equals(DecoderConstant.EMPTY) ? DecoderConstant.NONE : value;
+		return value == null || value.equals(DecoderConstant.EMPTY) ? DecoderConstant.NA : value;
 	}
 
 	/**
